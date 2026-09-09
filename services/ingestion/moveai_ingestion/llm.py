@@ -1,5 +1,6 @@
 """Model adapter boundary (ADR-0006). Extraction models return schema-only output. No tools are exposed.
 Source text is untrusted data; the system instruction is the spec §12 extraction instruction verbatim."""
+
 from __future__ import annotations
 
 import json
@@ -100,8 +101,11 @@ class MockExtractionModel:
         if not source_hint:
             raise SchemaViolation("mock model needs a source_hint path")
         path = Path(source_hint)
-        candidates = [path.with_suffix(path.suffix + ".extraction.json"), path.with_suffix(".extraction.json"),
-                      path.parent / (path.name.split(".")[0] + ".extraction.json")]
+        candidates = [
+            path.with_suffix(path.suffix + ".extraction.json"),
+            path.with_suffix(".extraction.json"),
+            path.parent / (path.name.split(".")[0] + ".extraction.json"),
+        ]
         sidecar = next((c for c in candidates if c.exists()), candidates[-1])
         if not sidecar.exists():
             return ExtractionResult(flags=["no_sidecar"]), 0.0
@@ -121,19 +125,27 @@ class AnthropicExtractionModel:
 
     def extract(self, doc: ParsedDocument, *, source_hint: str | None = None) -> tuple[ExtractionResult, float]:
         schema = ExtractionResult.model_json_schema()
-        user = ("<untrusted_source_document>\n" + doc.text()[:120_000] + "\n</untrusted_source_document>\n"
-                "Return ONLY a JSON object matching this schema:\n" + json.dumps(schema))
-        resp = self._client.messages.create(model=self._model, max_tokens=8000, system=EXTRACTION_SYSTEM_INSTRUCTION,
-                                            messages=[{"role": "user", "content": user}])
+        user = (
+            "<untrusted_source_document>\n" + doc.text()[:120_000] + "\n</untrusted_source_document>\n"
+            "Return ONLY a JSON object matching this schema:\n" + json.dumps(schema)
+        )
+        resp = self._client.messages.create(
+            model=self._model,
+            max_tokens=8000,
+            system=EXTRACTION_SYSTEM_INSTRUCTION,
+            messages=[{"role": "user", "content": user}],
+        )
         text = "".join(getattr(b, "text", "") for b in resp.content)
         start, end = text.find("{"), text.rfind("}")
-        raw = json.loads(text[start:end + 1]) if start >= 0 else {}
+        raw = json.loads(text[start : end + 1]) if start >= 0 else {}
         usage = getattr(resp, "usage", None)
         cost = 0.0
         if usage:
             # rough accounting; real pricing is configured per deployment
-            cost = (usage.input_tokens * float(os.environ.get("PRICE_IN_PER_MTOK", "3")) +
-                    usage.output_tokens * float(os.environ.get("PRICE_OUT_PER_MTOK", "15"))) / 1_000_000
+            cost = (
+                usage.input_tokens * float(os.environ.get("PRICE_IN_PER_MTOK", "3"))
+                + usage.output_tokens * float(os.environ.get("PRICE_OUT_PER_MTOK", "15"))
+            ) / 1_000_000
         return validate_output(raw), cost
 
 

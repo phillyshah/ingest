@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
-
 from moveai_api.db import get_conn
 from moveai_api.main import app
 from moveai_planner.seed import seed

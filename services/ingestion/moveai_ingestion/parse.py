@@ -1,4 +1,5 @@
 """Parse stage: structure (headings, tables, anchors, lists, pages) with phase associations preserved (spec §5.4)."""
+
 from __future__ import annotations
 
 import io
@@ -12,11 +13,11 @@ from selectolax.parser import HTMLParser
 
 @dataclass
 class Block:
-    kind: str                      # heading | paragraph | list | table | image | footnote | ocr
+    kind: str  # heading | paragraph | list | table | image | footnote | ocr
     text: str
     locator: dict[str, Any]
     level: int | None = None
-    heading_path: list[str] = field(default_factory=list)   # enclosing headings at the time of the block
+    heading_path: list[str] = field(default_factory=list)  # enclosing headings at the time of the block
     rows: list[list[str]] | None = None
     caption: str | None = None
     confidence: float | None = None
@@ -54,22 +55,55 @@ def parse_html(content: bytes) -> ParsedDocument:
             while heading_stack and heading_stack[-1][0] >= level:
                 heading_stack.pop()
             heading_stack.append((level, text))
-            blocks.append(Block("heading", text, {"anchor": f"#{node.attributes.get('id')}" if node.attributes.get("id") else None, "css": tag},
-                                level=level, heading_path=[h[1] for h in heading_stack[:-1]]))
+            blocks.append(
+                Block(
+                    "heading",
+                    text,
+                    {
+                        "anchor": f"#{node.attributes.get('id')}" if node.attributes.get("id") else None,
+                        "css": tag,
+                    },
+                    level=level,
+                    heading_path=[h[1] for h in heading_stack[:-1]],
+                )
+            )
         elif tag == "p":
-            blocks.append(Block("footnote" if "footnote" in (node.attributes.get("class") or "") else "paragraph",
-                                node.text(strip=True), {"css": "p"}, heading_path=[h[1] for h in heading_stack]))
+            blocks.append(
+                Block(
+                    "footnote" if "footnote" in (node.attributes.get("class") or "") else "paragraph",
+                    node.text(strip=True),
+                    {"css": "p"},
+                    heading_path=[h[1] for h in heading_stack],
+                )
+            )
         elif tag in ("ol", "ul"):
             items = [li.text(strip=True) for li in node.css("li")]
             blocks.append(Block("list", "\n".join(items), {"css": tag}, heading_path=[h[1] for h in heading_stack]))
         elif tag == "table":
             rows = [[c.text(strip=True) for c in tr.css("th,td")] for tr in node.css("tr")]
             cap = node.css_first("caption")
-            blocks.append(Block("table", cap.text(strip=True) if cap else "", {"table": f"#{node.attributes.get('id')}" if node.attributes.get("id") else None},
-                                heading_path=[h[1] for h in heading_stack], rows=rows, caption=cap.text(strip=True) if cap else None))
+            blocks.append(
+                Block(
+                    "table",
+                    cap.text(strip=True) if cap else "",
+                    {"table": f"#{node.attributes.get('id')}" if node.attributes.get("id") else None},
+                    heading_path=[h[1] for h in heading_stack],
+                    rows=rows,
+                    caption=cap.text(strip=True) if cap else None,
+                )
+            )
         elif tag == "img":
-            blocks.append(Block("image", node.attributes.get("alt") or "", {"anchor": f"#{node.attributes.get('id')}" if node.attributes.get("id") else None,
-                                                                              "src": node.attributes.get("src")}, heading_path=[h[1] for h in heading_stack]))
+            blocks.append(
+                Block(
+                    "image",
+                    node.attributes.get("alt") or "",
+                    {
+                        "anchor": f"#{node.attributes.get('id')}" if node.attributes.get("id") else None,
+                        "src": node.attributes.get("src"),
+                    },
+                    heading_path=[h[1] for h in heading_stack],
+                )
+            )
     date = None
     for b in blocks:
         if b.kind == "paragraph" and "Published:" in b.text:
@@ -100,7 +134,16 @@ def parse_pdf(content: bytes) -> ParsedDocument:
                 heading_path = [line]
                 blocks.append(Block("heading", line, loc, level=2, page=pno))
             elif "|" in line:
-                blocks.append(Block("table", "", loc, heading_path=list(heading_path), rows=[[c.strip() for c in line.split("|")]], page=pno))
+                blocks.append(
+                    Block(
+                        "table",
+                        "",
+                        loc,
+                        heading_path=list(heading_path),
+                        rows=[[c.strip() for c in line.split("|")]],
+                        page=pno,
+                    )
+                )
             else:
                 blocks.append(Block("paragraph", line, loc, heading_path=list(heading_path), page=pno))
     return ParsedDocument(blocks, title, None, warnings, kind="pdf")
@@ -129,7 +172,14 @@ def parse_ocr(content: bytes, engine: OCREngine | None = None) -> ParsedDocument
         for blk in page.get("blocks", []):
             conf = blk.get("confidence")
             alts = blk.get("alternatives")
-            b = Block("ocr", blk["text"], {"page": page["page"], "bbox": blk.get("bbox")}, confidence=conf, alternatives=alts, page=page["page"])
+            b = Block(
+                "ocr",
+                blk["text"],
+                {"page": page["page"], "bbox": blk.get("bbox")},
+                confidence=conf,
+                alternatives=alts,
+                page=page["page"],
+            )
             if (conf is not None and conf < AMBIGUITY_THRESHOLD) or alts:
                 warnings.append(f"ambiguous OCR at page {page['page']} bbox {blk.get('bbox')}: {blk['text']!r} alternatives={alts}")
             blocks.append(b)

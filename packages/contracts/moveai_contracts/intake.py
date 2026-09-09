@@ -1,5 +1,6 @@
 """Case intake contract (spec §8, §19). Every field distinguishes known / unknown / not_assessed / not_applicable.
 A missing symptom report is not a negative finding."""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -14,9 +15,9 @@ class IntakeField(BaseModel):
     status: FieldStatus = FieldStatus.unknown
     value: Any = None
     unit: str | None = None
-    provenance: str = "unknown"          # pt_entered | narrative_extracted | integration | derived
-    confirmed_by: str | None = None      # app_user.id when a PT confirmed a narrative-extracted value
-    reported_text: str | None = None     # verbatim user text preserved (e.g. "slightly obese")
+    provenance: str = "unknown"  # pt_entered | narrative_extracted | integration | derived
+    confirmed_by: str | None = None  # app_user.id when a PT confirmed a narrative-extracted value
+    reported_text: str | None = None  # verbatim user text preserved (e.g. "slightly obese")
     measured_at: datetime | None = None
 
     @classmethod
@@ -30,18 +31,53 @@ class IntakeField(BaseModel):
 
 # Canonical intake field names. The planner and content packs refer to these keys.
 INTAKE_FIELDS: tuple[str, ...] = (
-    "age", "sex", "gender", "height", "weight", "bmi",
-    "diagnosis", "diagnosis_confirmation", "assessor", "candidate_condition",
-    "affected_side", "onset_date", "onset_certainty",
-    "procedure", "procedure_date", "procedure_type", "associated_procedures", "surgeon_restrictions",
-    "brace_restrictions", "weight_bearing_restrictions", "rom_restrictions",
-    "pain_rest", "pain_movement", "pain_night", "pain_scale",
-    "symptom_behavior", "irritability", "severity", "injury_location",
-    "rom_active", "rom_passive", "rom_measurement_context",
-    "functional_limitations", "goals", "intended_activity",
-    "comorbidities", "concerning_findings", "prior_interventions", "prior_injection",
-    "exercise_tolerance", "next_day_response", "prior_session_response",
-    "equipment", "accessibility_needs", "can_assume_starting_position", "session_time_minutes", "language",
+    "age",
+    "sex",
+    "gender",
+    "height",
+    "weight",
+    "bmi",
+    "diagnosis",
+    "diagnosis_confirmation",
+    "assessor",
+    "candidate_condition",
+    "affected_side",
+    "onset_date",
+    "onset_certainty",
+    "procedure",
+    "procedure_date",
+    "procedure_type",
+    "associated_procedures",
+    "surgeon_restrictions",
+    "brace_restrictions",
+    "weight_bearing_restrictions",
+    "rom_restrictions",
+    "pain_rest",
+    "pain_movement",
+    "pain_night",
+    "pain_scale",
+    "symptom_behavior",
+    "irritability",
+    "severity",
+    "injury_location",
+    "rom_active",
+    "rom_passive",
+    "rom_measurement_context",
+    "functional_limitations",
+    "goals",
+    "intended_activity",
+    "comorbidities",
+    "concerning_findings",
+    "prior_interventions",
+    "prior_injection",
+    "exercise_tolerance",
+    "next_day_response",
+    "prior_session_response",
+    "equipment",
+    "accessibility_needs",
+    "can_assume_starting_position",
+    "session_time_minutes",
+    "language",
     "functional_criteria_met",
     "assessment_timestamp",
 )
@@ -71,5 +107,5 @@ class CaseSubmission(BaseModel):
     narrative: str | None = None
     intake: Intake = Field(default_factory=Intake)
     assessment_time: datetime | None = None
-    catalog_release_id: str | None = None   # pin; default = latest published
-    service_date: str | None = None         # ISO date used to resolve terminology release
+    catalog_release_id: str | None = None  # pin; default = latest published
+    service_date: str | None = None  # ISO date used to resolve terminology release

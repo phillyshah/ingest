@@ -1,5 +1,6 @@
 """Mock MoveAI client (spec §11). MoveAI never writes catalog tables; it reads approved plans and the change feed
 through the versioned API with an integration-role credential, deduplicating events by id."""
+
 from __future__ import annotations
 
 import hashlib
@@ -13,14 +14,14 @@ import httpx
 
 @dataclass
 class MoveAIMockClient:
-    base_url: str                      # e.g. https://ingest.phillyshah.com/api/v1 or http://127.0.0.1:8000/v1
-    user_id: str                       # integration service account (dev shim) / bearer token in production
+    base_url: str  # e.g. https://ingest.phillyshah.com/api/v1 or http://127.0.0.1:8000/v1
+    user_id: str  # integration service account (dev shim) / bearer token in production
     tenant_id: str
     webhook_secret: str | None = None
     seen_event_ids: set[str] = field(default_factory=set)
     change_cursor: int = 0
-    transport: Any = None              # httpx transport override for tests
-    http: httpx.Client | None = None   # pre-built client (e.g. a FastAPI TestClient) for in-process tests
+    transport: Any = None  # httpx transport override for tests
+    http: httpx.Client | None = None  # pre-built client (e.g. a FastAPI TestClient) for in-process tests
 
     def _client(self) -> httpx.Client:
         headers = {"X-User-Id": self.user_id, "X-Tenant-Id": self.tenant_id, "X-Role": "integration"}

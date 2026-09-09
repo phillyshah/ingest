@@ -1,4 +1,5 @@
 """Object storage boundary: bytes never go into Postgres. LocalStorage for dev; Supabase Storage adapter later."""
+
 from __future__ import annotations
 
 import hashlib

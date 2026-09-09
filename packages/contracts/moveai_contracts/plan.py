@@ -1,4 +1,5 @@
 """/plan-options response and plan option shapes (spec §8, §10, §20B)."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -12,7 +13,7 @@ from .enums import PlanStatus
 class MissingField(BaseModel):
     field: str
     reason: str
-    required_by: str | None = None       # protocol/rule name
+    required_by: str | None = None  # protocol/rule name
 
 
 class SourceReference(BaseModel):
@@ -26,12 +27,12 @@ class SourceReference(BaseModel):
 
 
 class TimeWindow(BaseModel):
-    anchor: str                          # onset | procedure | assessment | plan_start
+    anchor: str  # onset | procedure | assessment | plan_start
     start: float | None = None
     end: float | None = None
     unit: str = "weeks"
     provisional: bool = True
-    text: str | None = None              # preserved approximate wording from the source
+    text: str | None = None  # preserved approximate wording from the source
     provenance: str = "unknown"
 
 
@@ -62,7 +63,7 @@ class PlanItem(BaseModel):
     media_state: str = "not_requested"
     instructions: list[str] = Field(default_factory=list)
     prescribed_dose: Dose | None = None
-    dose_label: str = "protocol_example"    # protocol_example | prescribed | none
+    dose_label: str = "protocol_example"  # protocol_example | prescribed | none
     goal_ids: list[str] = Field(default_factory=list)
     evidence_claim_ids: list[str] = Field(default_factory=list)
     source_references: list[SourceReference] = Field(default_factory=list)

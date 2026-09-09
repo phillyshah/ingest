@@ -1,5 +1,6 @@
 """Authentication/authorization boundary. Development: header shim. Production: Supabase Auth JWT verification
 plugs in behind `Principal` (same interface). Permissions are also enforced in the database (RLS, checks)."""
+
 from __future__ import annotations
 
 import os
@@ -8,7 +9,6 @@ from typing import Any
 
 import psycopg
 from fastapi import Depends, HTTPException, Request
-
 from moveai_contracts.enums import UserRole
 
 from .db import get_conn
@@ -30,7 +30,10 @@ def _shim(request: Request, conn: psycopg.Connection) -> Principal:
     user_id = request.headers.get("x-user-id")
     if not user_id:
         raise HTTPException(401, {"code": "unauthenticated", "message": "missing X-User-Id (dev shim) or bearer token"})
-    row = conn.execute("select id, tenant_id, email, display_name, roles::text[] as roles from app_user where id=%s", (user_id,)).fetchone()
+    row = conn.execute(
+        "select id, tenant_id, email, display_name, roles::text[] as roles from app_user where id=%s",
+        (user_id,),
+    ).fetchone()
     if not row:
         raise HTTPException(401, {"code": "unknown_user", "message": "user not found"})
     roles = [r for r in row["roles"]]
@@ -46,7 +49,13 @@ def _shim(request: Request, conn: psycopg.Connection) -> Principal:
 
 
 def _supabase(request: Request, conn: psycopg.Connection) -> Principal:  # pragma: no cover - wired at deployment
-    raise HTTPException(501, {"code": "auth_not_configured", "message": "Supabase Auth verification is not configured; set AUTH_MODE=shim for development"})
+    raise HTTPException(
+        501,
+        {
+            "code": "auth_not_configured",
+            "message": "Supabase Auth verification is not configured; set AUTH_MODE=shim for development",
+        },
+    )
 
 
 def current_principal(request: Request, conn: psycopg.Connection = Depends(get_conn)) -> Principal:
@@ -62,6 +71,7 @@ def require(*roles: str):
         if roles and not p.has(*roles):
             raise HTTPException(403, {"code": "forbidden", "message": f"requires one of {list(roles)}"})
         return p
+
     return dep
 
 

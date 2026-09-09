@@ -1,4 +1,5 @@
 """Outbox dispatcher: signed webhooks with replay protection, bounded retries, dead-letter (spec §10)."""
+
 from __future__ import annotations
 
 import hashlib
@@ -18,17 +19,36 @@ def sign(secret: str, body: bytes) -> str:
 
 
 def render(event: dict[str, Any]) -> bytes:
-    payload = {"id": str(event["id"]), "type": event["event_type"], "schema_version": event["schema_version"],
-               "tenant_id": str(event["tenant_id"]) if event["tenant_id"] else None, "object": {"table": event["object_table"], "id": str(event["object_id"]) if event["object_id"] else None,
-                                                                                                "version": event["object_version"]},
-               "occurred_at": event["created_at"].isoformat(), "data": event["payload"]}
+    payload = {
+        "id": str(event["id"]),
+        "type": event["event_type"],
+        "schema_version": event["schema_version"],
+        "tenant_id": str(event["tenant_id"]) if event["tenant_id"] else None,
+        "object": {
+            "table": event["object_table"],
+            "id": str(event["object_id"]) if event["object_id"] else None,
+            "version": event["object_version"],
+        },
+        "occurred_at": event["created_at"].isoformat(),
+        "data": event["payload"],
+    }
     return json.dumps(payload, sort_keys=True).encode()
 
 
-def dispatch_pending(conn: psycopg.Connection, *, url: str | None = None, secret: str | None = None, transport: Any = None, limit: int = 100) -> dict[str, int]:
+def dispatch_pending(
+    conn: psycopg.Connection,
+    *,
+    url: str | None = None,
+    secret: str | None = None,
+    transport: Any = None,
+    limit: int = 100,
+) -> dict[str, int]:
     url = url or os.environ.get("MOVEAI_WEBHOOK_URL")
     secret = secret or os.environ.get("MOVEAI_WEBHOOK_SECRET", "")
-    rows = conn.execute("select * from outbox_event where delivered_at is null and not dead_lettered order by created_at limit %s", (limit,)).fetchall()
+    rows = conn.execute(
+        "select * from outbox_event where delivered_at is null and not dead_lettered order by created_at limit %s",
+        (limit,),
+    ).fetchall()
     stats = {"delivered": 0, "failed": 0, "dead_lettered": 0, "skipped": 0}
     if not url:
         stats["skipped"] = len(rows)
@@ -37,7 +57,15 @@ def dispatch_pending(conn: psycopg.Connection, *, url: str | None = None, secret
         for ev in rows:
             body = render(ev)
             try:
-                r = client.post(url, content=body, headers={"content-type": "application/json", "x-moveai-signature": sign(secret, body), "x-moveai-event-id": str(ev["id"])})
+                r = client.post(
+                    url,
+                    content=body,
+                    headers={
+                        "content-type": "application/json",
+                        "x-moveai-signature": sign(secret, body),
+                        "x-moveai-event-id": str(ev["id"]),
+                    },
+                )
                 ok = r.status_code < 300
             except httpx.HTTPError:
                 ok = False
@@ -46,6 +74,9 @@ def dispatch_pending(conn: psycopg.Connection, *, url: str | None = None, secret
                 stats["delivered"] += 1
             else:
                 dead = ev["attempts"] + 1 >= MAX_ATTEMPTS
-                conn.execute("update outbox_event set attempts=attempts+1, dead_lettered=%s where id=%s", (dead, ev["id"]))
+                conn.execute(
+                    "update outbox_event set attempts=attempts+1, dead_lettered=%s where id=%s",
+                    (dead, ev["id"]),
+                )
                 stats["dead_lettered" if dead else "failed"] += 1
     return stats

@@ -1,11 +1,11 @@
 """Run every synthetic case through the planner and compare with the (clinical-lead-pending) expected routing."""
+
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
 import pytest
-
 from moveai_contracts.intake import CaseSubmission, Intake
 from moveai_planner.engine import plan_options
 from moveai_planner.seed import seed
@@ -31,7 +31,9 @@ def test_case(seeded_conn, case):
     sub = CaseSubmission(case_ref=case["id"], narrative=case["narrative"], intake=Intake.model_validate(case["intake"]))
     r = plan_options(conn, tenant_id=s["tenant_id"], user_id=s["pt"], submission=sub)
     exp = case["expected"]
-    assert r.status.value == exp["status"], f"{case['id']}: got {r.status.value}; missing={[m.field for m in r.missing_fields]}; blocked={r.blocked}"
+    assert r.status.value == exp["status"], (
+        f"{case['id']}: got {r.status.value}; missing={[m.field for m in r.missing_fields]}; blocked={r.blocked}"
+    )
     missing = {m.field for m in r.missing_fields}
     for f in exp["missing_fields_include"]:
         assert f in missing, f"{case['id']}: expected missing field {f}; got {sorted(missing)}"
@@ -54,6 +56,14 @@ def test_case_count_meets_spec():
 def test_paired_bmi_cases_identical_eligibility(seeded_conn):
     conn, s = seeded_conn
     a, b = (next(c for c in CASES if c["id"] == i) for i in ("demo-05-paired-bmi-a", "demo-06-paired-bmi-b"))
-    ra, rb = (plan_options(conn, tenant_id=s["tenant_id"], user_id=s["pt"], submission=CaseSubmission(case_ref=c["id"], narrative=c["narrative"], intake=Intake.model_validate(c["intake"]))) for c in (a, b))
+    ra, rb = (
+        plan_options(
+            conn,
+            tenant_id=s["tenant_id"],
+            user_id=s["pt"],
+            submission=CaseSubmission(case_ref=c["id"], narrative=c["narrative"], intake=Intake.model_validate(c["intake"])),
+        )
+        for c in (a, b)
+    )
     assert [i.variant_version_id for i in ra.options[0].items] == [i.variant_version_id for i in rb.options[0].items]
     assert ra.options[0].items[0].prescribed_dose == rb.options[0].items[0].prescribed_dose

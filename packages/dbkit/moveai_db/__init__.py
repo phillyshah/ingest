@@ -1,4 +1,5 @@
 """Thin psycopg 3 helpers: connection factory, tenant context, JSON adaptation, dict rows."""
+
 from __future__ import annotations
 
 import json

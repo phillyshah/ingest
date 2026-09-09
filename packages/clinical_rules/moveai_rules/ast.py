@@ -13,15 +13,15 @@ Three-valued semantics: a comparison on a field whose status is unknown/not_asse
 marked not_applicable (the attribute cannot exist for this case, e.g. "prior session response" on a first visit)
 evaluates comparisons to FALSE. and/or/not follow Kleene logic. `known`/`status` are always definite. Anything outside this grammar fails validation and cannot be saved as executable.
 """
+
 from __future__ import annotations
 
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, ValidationError, model_validator
-
 from moveai_contracts.enums import FieldStatus
 from moveai_contracts.intake import INTAKE_FIELDS, Intake
+from pydantic import BaseModel, Field, ValidationError, model_validator
 
 SCHEMA_VERSION = 1
 
@@ -56,8 +56,24 @@ COMPARISON_OPS = ("eq", "ne", "lt", "lte", "gt", "gte", "in", "contains")
 
 
 class Expr(BaseModel):
-    op: Literal["and", "or", "not", "known", "status", "eq", "ne", "lt", "lte", "gt", "gte", "in", "contains",
-                "between", "true", "false"]
+    op: Literal[
+        "and",
+        "or",
+        "not",
+        "known",
+        "status",
+        "eq",
+        "ne",
+        "lt",
+        "lte",
+        "gt",
+        "gte",
+        "in",
+        "contains",
+        "between",
+        "true",
+        "false",
+    ]
     args: list[Expr] | None = None
     arg: Expr | None = None
     field: str | None = None
@@ -153,8 +169,12 @@ def evaluate(expr: Expr, intake: Intake) -> Evaluation:
         if e.op == "known":
             return Trace(op="known", field=e.field, result=Tri.TRUE if f.is_known else Tri.FALSE)
         if e.op == "status":
-            return Trace(op="status", field=e.field, result=Tri.TRUE if f.status == e.is_ else Tri.FALSE,
-                         detail=f"status={f.status}")
+            return Trace(
+                op="status",
+                field=e.field,
+                result=Tri.TRUE if f.status == e.is_ else Tri.FALSE,
+                detail=f"status={f.status}",
+            )
         if f.status == FieldStatus.not_applicable:
             return Trace(op=e.op, field=e.field, result=Tri.FALSE, detail="not_applicable: attribute cannot be present")
         if not f.is_known:
@@ -232,8 +252,17 @@ class Action(BaseModel):
 class Rule(BaseModel):
     key: str
     name: str
-    kind: Literal["concern_screen", "restriction", "eligibility", "progression", "regression", "symptom_limit",
-                  "next_day_response", "population_modifier", "required_input"]
+    kind: Literal[
+        "concern_screen",
+        "restriction",
+        "eligibility",
+        "progression",
+        "regression",
+        "symptom_limit",
+        "next_day_response",
+        "population_modifier",
+        "required_input",
+    ]
     expression: Expr
     action: Action
     severity: Literal["info", "warning", "block"] = "info"

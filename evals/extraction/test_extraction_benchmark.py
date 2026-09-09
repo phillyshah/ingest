@@ -1,12 +1,12 @@
 """Extraction benchmark harness: each permitted fixture's sidecar is the annotated expectation. Reports field-level
 exact-match accuracy for the (mock) model and asserts critical fields are never guessed."""
+
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
 import pytest
-
 from moveai_ingestion.config import FIXTURES
 from moveai_ingestion.extract import run_extraction
 from moveai_ingestion.llm import MockExtractionModel
@@ -40,6 +40,7 @@ def test_benchmark_accuracy_report(capsys):
         got = run_extraction(doc, MockExtractionModel(), source_hint=str(path)).result.model_dump(mode="json")
         for e_exp, e_got in zip(expected["exercises"], got["exercises"], strict=False):
             for k in ("source_exercise_name", "assistance", "steps"):
-                total += 1; correct += e_exp.get(k) == e_got.get(k)
+                total += 1
+                correct += e_exp.get(k) == e_got.get(k)
     print(f"\nextraction benchmark: {correct}/{total} noncritical fields exact-match ({100 * correct / max(total, 1):.0f}%)")
     assert total > 0

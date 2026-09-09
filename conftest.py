@@ -1,4 +1,5 @@
 """Root pytest fixtures: a migrated local Postgres, a per-test rolled-back connection, seeded tenants/users."""
+
 from __future__ import annotations
 
 import os
@@ -48,10 +49,18 @@ def tenants(conn) -> dict[str, uuid.UUID]:
 @pytest.fixture()
 def users(conn, tenants) -> dict[str, uuid.UUID]:
     out = {}
-    for key, roles in {"admin": "{source_admin}", "rights": "{rights_reviewer}", "pt": "{pt}", "pt2": "{pt}",
-                       "lead": "{clinical_lead}", "auditor": "{auditor}", "integration": "{integration}"}.items():
+    for key, roles in {
+        "admin": "{source_admin}",
+        "rights": "{rights_reviewer}",
+        "pt": "{pt}",
+        "pt2": "{pt}",
+        "lead": "{clinical_lead}",
+        "auditor": "{auditor}",
+        "integration": "{integration}",
+    }.items():
         row = conn.execute(
             "insert into app_user(tenant_id,email,display_name,roles) values (%s,%s,%s,%s) returning id",
-            (tenants["tenant_a"], f"{key}-{uuid.uuid4().hex[:6]}@example.test", key, roles)).fetchone()
+            (tenants["tenant_a"], f"{key}-{uuid.uuid4().hex[:6]}@example.test", key, roles),
+        ).fetchone()
         out[key] = row["id"]
     return out

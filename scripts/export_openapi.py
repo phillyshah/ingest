@@ -1,4 +1,5 @@
 """Export the OpenAPI document to packages/contracts/openapi.json (committed; a test asserts it is current)."""
+
 from __future__ import annotations
 
 import json

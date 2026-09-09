@@ -1,4 +1,5 @@
 """Apply db/migrations/*.sql in order, recording each in schema_migration. Additive only."""
+
 from __future__ import annotations
 
 import os
@@ -20,8 +21,10 @@ def database_url() -> str:
 
 def reset(conn: psycopg.Connection) -> None:
     conn.execute("drop schema public cascade; create schema public;")
-    conn.execute("do $$ begin if exists (select 1 from pg_roles where rolname='moveai_app') then "
-                 "revoke all on schema public from moveai_app; end if; end $$;")
+    conn.execute(
+        "do $$ begin if exists (select 1 from pg_roles where rolname='moveai_app') then "
+        "revoke all on schema public from moveai_app; end if; end $$;"
+    )
     conn.commit()
 
 

@@ -1,5 +1,6 @@
 """BMI computation and CDC adult classification (spec §19). Classification is data: the boundaries come from a
 versioned segmentation definition, never from constants scattered in planner code."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -11,12 +12,54 @@ CDC_ADULT_BMI_V2024 = {
     "population_scope": "adults aged 20 years and older",
     "source_url": "https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html",
     "boundaries": [
-        {"class": "underweight", "min": None, "max": 18.5, "min_inclusive": True, "max_inclusive": False, "unit": "kg/m2"},
-        {"class": "healthy_weight", "min": 18.5, "max": 25.0, "min_inclusive": True, "max_inclusive": False, "unit": "kg/m2"},
-        {"class": "overweight", "min": 25.0, "max": 30.0, "min_inclusive": True, "max_inclusive": False, "unit": "kg/m2"},
-        {"class": "class_1_obesity", "min": 30.0, "max": 35.0, "min_inclusive": True, "max_inclusive": False, "unit": "kg/m2"},
-        {"class": "class_2_obesity", "min": 35.0, "max": 40.0, "min_inclusive": True, "max_inclusive": False, "unit": "kg/m2"},
-        {"class": "class_3_obesity", "min": 40.0, "max": None, "min_inclusive": True, "max_inclusive": False, "unit": "kg/m2"},
+        {
+            "class": "underweight",
+            "min": None,
+            "max": 18.5,
+            "min_inclusive": True,
+            "max_inclusive": False,
+            "unit": "kg/m2",
+        },
+        {
+            "class": "healthy_weight",
+            "min": 18.5,
+            "max": 25.0,
+            "min_inclusive": True,
+            "max_inclusive": False,
+            "unit": "kg/m2",
+        },
+        {
+            "class": "overweight",
+            "min": 25.0,
+            "max": 30.0,
+            "min_inclusive": True,
+            "max_inclusive": False,
+            "unit": "kg/m2",
+        },
+        {
+            "class": "class_1_obesity",
+            "min": 30.0,
+            "max": 35.0,
+            "min_inclusive": True,
+            "max_inclusive": False,
+            "unit": "kg/m2",
+        },
+        {
+            "class": "class_2_obesity",
+            "min": 35.0,
+            "max": 40.0,
+            "min_inclusive": True,
+            "max_inclusive": False,
+            "unit": "kg/m2",
+        },
+        {
+            "class": "class_3_obesity",
+            "min": 40.0,
+            "max": None,
+            "min_inclusive": True,
+            "max_inclusive": False,
+            "unit": "kg/m2",
+        },
     ],
     "min_age_years": 20,
 }
@@ -46,7 +89,7 @@ def compute_bmi(height_m: float, weight_kg: float) -> float:
 @dataclass(frozen=True)
 class Classification:
     value: float | None
-    klass: str | None            # None when not classifiable
+    klass: str | None  # None when not classifiable
     reason: str | None
     definition_version: str
 

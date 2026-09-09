@@ -1,4 +1,5 @@
 """Seed a database for development, tests, and the demo: terminology releases, content packs, a catalog release."""
+
 from __future__ import annotations
 
 import uuid
@@ -6,7 +7,6 @@ from pathlib import Path
 from typing import Any
 
 import psycopg
-
 from moveai_ingestion.config import FIXTURES
 from moveai_ingestion.packs import install_pack
 from moveai_ingestion.terminology import import_releases
@@ -16,14 +16,24 @@ from .release import publish
 
 
 def ensure_users(conn: psycopg.Connection, tenant_name: str = "demo-tenant") -> dict[str, Any]:
-    t = conn.execute("insert into tenant(name) values (%s) on conflict (name) do update set name=excluded.name returning id", (tenant_name,)).fetchone()["id"]
+    t = conn.execute(
+        "insert into tenant(name) values (%s) on conflict (name) do update set name=excluded.name returning id",
+        (tenant_name,),
+    ).fetchone()["id"]
     users = {}
-    for key, roles, email in (("admin", "{source_admin}", "admin@demo.test"), ("rights", "{rights_reviewer}", "rights@demo.test"),
-                              ("pt", "{pt}", "pt@demo.test"), ("pt2", "{pt}", "pt2@demo.test"), ("lead", "{clinical_lead}", "lead@demo.test"),
-                              ("auditor", "{auditor}", "auditor@demo.test"), ("integration", "{integration}", "moveai-adapter@demo.test")):
+    for key, roles, email in (
+        ("admin", "{source_admin}", "admin@demo.test"),
+        ("rights", "{rights_reviewer}", "rights@demo.test"),
+        ("pt", "{pt}", "pt@demo.test"),
+        ("pt2", "{pt}", "pt2@demo.test"),
+        ("lead", "{clinical_lead}", "lead@demo.test"),
+        ("auditor", "{auditor}", "auditor@demo.test"),
+        ("integration", "{integration}", "moveai-adapter@demo.test"),
+    ):
         users[key] = conn.execute(
             "insert into app_user(tenant_id,email,display_name,roles) values (%s,%s,%s,%s) on conflict (email) do update set roles=excluded.roles returning id",
-            (t, email, key, roles)).fetchone()["id"]
+            (t, email, key, roles),
+        ).fetchone()["id"]
     return {"tenant_id": t, **users}
 
 

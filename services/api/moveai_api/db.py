@@ -4,7 +4,6 @@ from collections.abc import Iterator
 
 import psycopg
 from fastapi import Request
-
 from moveai_db import connect
 
 

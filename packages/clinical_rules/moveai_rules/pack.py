@@ -1,15 +1,15 @@
 """Content-pack schema and loader (ADR-0007). A pack carries all clinical content with provenance and approval state.
 Shipped packs are unsigned_placeholder; the publisher refuses to publish them."""
+
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import BaseModel, Field, model_validator
-
 from moveai_contracts.dose import Dose, DoseField
 from moveai_contracts.enums import ApprovalState, AssistanceMode
+from pydantic import BaseModel, Field, model_validator
 
 from .ast import Rule
 
@@ -21,7 +21,7 @@ class PackSource(BaseModel):
     title: str
     document_version: str | None = None
     source_type: str = "pdf"
-    rights: dict[str, str] = Field(default_factory=dict)      # permission -> allowed|denied|unknown
+    rights: dict[str, str] = Field(default_factory=dict)  # permission -> allowed|denied|unknown
     rights_evidence: dict[str, Any] = Field(default_factory=dict)
     notes: str | None = None
 
@@ -57,7 +57,7 @@ class PackVariant(BaseModel):
     balance_demand: str | None = None
     tags: list[str] = Field(default_factory=list)
     requires_starting_position: bool = False
-    source_reference: dict[str, Any] | None = None   # {source, locator, source_exercise_name}
+    source_reference: dict[str, Any] | None = None  # {source, locator, source_exercise_name}
     media_state: str = "not_requested"
     approval_state: ApprovalState = ApprovalState.unsigned_placeholder
 
@@ -96,7 +96,7 @@ class PackPhase(BaseModel):
     name: str
     goals: list[str] = Field(default_factory=list)
     window: dict[str, Any] = Field(default_factory=dict)
-    items: list[str] = Field(default_factory=list)          # clinical_use keys
+    items: list[str] = Field(default_factory=list)  # clinical_use keys
     entry_rules: list[str] = Field(default_factory=list)
     advance_criteria: list[str] = Field(default_factory=list)
     hold_criteria: list[str] = Field(default_factory=list)
@@ -113,7 +113,7 @@ class PackProtocol(BaseModel):
     name: str
     population_description: str | None = None
     branch_conditions: list[str] = Field(default_factory=list)
-    eligibility_rules: list[str] = Field(default_factory=list)    # rule keys: TRUE => eligible; UNKNOWN => needs inputs
+    eligibility_rules: list[str] = Field(default_factory=list)  # rule keys: TRUE => eligible; UNKNOWN => needs inputs
     required_inputs: list[str] = Field(default_factory=list)
     setting: list[str] = Field(default_factory=lambda: ["home", "supervised"])
     phases: list[PackPhase]
@@ -126,8 +126,8 @@ class PackProtocol(BaseModel):
 
 class PackApplicability(BaseModel):
     key: str
-    target: str                     # clinical_use key or protocol key
-    target_type: str                # clinical_use | protocol
+    target: str  # clinical_use key or protocol key
+    target_type: str  # clinical_use | protocol
     relationship_type: str
     predicates: list[dict[str, Any]]
     predicate_logic: str = "and"
@@ -164,7 +164,7 @@ class ContentPack(BaseModel):
     rules: list[Rule] = Field(default_factory=list)
     protocols: list[PackProtocol] = Field(default_factory=list)
     applicability: list[PackApplicability] = Field(default_factory=list)
-    intake_prompts: dict[str, str] = Field(default_factory=dict)    # field -> reason text shown when missing
+    intake_prompts: dict[str, str] = Field(default_factory=dict)  # field -> reason text shown when missing
 
     @model_validator(mode="after")
     def _integrity(self) -> ContentPack:

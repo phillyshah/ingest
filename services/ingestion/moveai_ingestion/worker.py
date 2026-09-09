@@ -1,4 +1,5 @@
 """Long-running worker: claims jobs, runs stages, heartbeats, reclaims expired leases. Low concurrency by default."""
+
 from __future__ import annotations
 
 import logging
@@ -32,11 +33,13 @@ def main() -> None:
         last_reclaim = 0.0
         while not _stop:
             if time.monotonic() - last_reclaim > 30:
-                n = q.reclaim_expired(conn); conn.commit()
+                n = q.reclaim_expired(conn)
+                conn.commit()
                 if n:
                     log.warning("reclaimed %d expired job leases", n)
                 last_reclaim = time.monotonic()
-            job = q.claim(conn, worker_id); conn.commit()
+            job = q.claim(conn, worker_id)
+            conn.commit()
             if not job:
                 time.sleep(poll)
                 continue

@@ -1,4 +1,5 @@
 """Remaining API DTOs: sources, jobs, reviews, protocols, releases, changes, campaigns, errors (spec §10, §21F)."""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -33,9 +34,18 @@ class Page(BaseModel):
 
 
 PERMISSION_OPS: tuple[str, ...] = (
-    "can_fetch", "can_store_fulltext", "can_store_excerpt", "can_embed_for_search", "can_process_with_model",
-    "can_store_transcript", "can_download_media", "can_display_to_clinician", "can_display_to_patient",
-    "can_redistribute", "can_transform", "can_train_model",
+    "can_fetch",
+    "can_store_fulltext",
+    "can_store_excerpt",
+    "can_embed_for_search",
+    "can_process_with_model",
+    "can_store_transcript",
+    "can_download_media",
+    "can_display_to_clinician",
+    "can_display_to_patient",
+    "can_redistribute",
+    "can_transform",
+    "can_train_model",
 )
 
 
@@ -58,7 +68,7 @@ class SourceCreate(BaseModel):
     intended_uses: list[str] = Field(default_factory=list)
     crawl_limits: dict[str, Any] = Field(default_factory=dict)
     rights: RightsInput | None = None
-    local_path: str | None = None       # clinician upload / permitted fixture; absolute path under fixtures/
+    local_path: str | None = None  # clinician upload / permitted fixture; absolute path under fixtures/
 
 
 class SourceOut(BaseModel):
@@ -101,9 +111,11 @@ class IngestionJobOut(BaseModel):
 
 
 class ReviewCreate(BaseModel):
-    entity_table: str = Field(pattern="^(exercise_variant_version|clinical_use_version|protocol_version|rule_version|"
-                              "media_asset_version|diagnosis_mapping_version|population_applicability_version|"
-                              "rights_grant|source_version)$")
+    entity_table: str = Field(
+        pattern="^(exercise_variant_version|clinical_use_version|protocol_version|rule_version|"
+        "media_asset_version|diagnosis_mapping_version|population_applicability_version|"
+        "rights_grant|source_version)$"
+    )
     version_id: str
     decision: ReviewDecision
     reason: str | None = None
@@ -132,17 +144,25 @@ class ProtocolCreate(BaseModel):
     required_inputs: list[str] = Field(default_factory=list)
     phases: list[dict[str, Any]] = Field(default_factory=list)
     monitoring: list[dict[str, Any]] = Field(default_factory=list)
-    rules: list[dict[str, Any]] = Field(default_factory=list)   # typed rule ASTs, validated
+    rules: list[dict[str, Any]] = Field(default_factory=list)  # typed rule ASTs, validated
     recovery_horizon: dict[str, Any] | None = None
     tenant_private: bool = True
 
 
 class CatalogReleaseCreate(BaseModel):
     label: str
-    include_tables: list[str] = Field(default_factory=lambda: [
-        "exercise_variant_version", "clinical_use_version", "protocol_version", "rule_version",
-        "media_asset_version", "population_applicability_version", "diagnosis_mapping_version",
-        "segmentation_definition_version"])
+    include_tables: list[str] = Field(
+        default_factory=lambda: [
+            "exercise_variant_version",
+            "clinical_use_version",
+            "protocol_version",
+            "rule_version",
+            "media_asset_version",
+            "population_applicability_version",
+            "diagnosis_mapping_version",
+            "segmentation_definition_version",
+        ]
+    )
 
 
 class CatalogReleaseOut(BaseModel):

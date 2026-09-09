@@ -2813,6 +2813,107 @@
         ]
       }
     },
+    "/v1/ingestion-campaigns/events-all": {
+      "get": {
+        "description": "Polling fallback for the board when the client cannot use EventSource (dev header shim).",
+        "operationId": "events_all_v1_ingestion_campaigns_events_all_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "After",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "maximum": 1000,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Events All V1 Ingestion Campaigns Events All Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Events All",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/v1/ingestion-campaigns/preview-unsaved": {
+      "post": {
+        "description": "Scope preview for the new-campaign form before anything is saved (spec \u00a721B).",
+        "operationId": "preview_unsaved_v1_ingestion_campaigns_preview_unsaved_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignScopeInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Preview Unsaved V1 Ingestion Campaigns Preview Unsaved Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Unsaved",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
     "/v1/ingestion-campaigns/stream": {
       "get": {
         "description": "Server-sent events: campaign events since `after`. Clients reconnect with the last id (spec \u00a721F).",

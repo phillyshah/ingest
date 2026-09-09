@@ -1,5 +1,4 @@
 import pytest
-
 from moveai_contracts.intake import Intake, IntakeField
 from moveai_rules import Tri, classify_bmi, compute_bmi, evaluate, parse_expr, to_kg, to_meters
 from moveai_rules.ast import Action
@@ -24,8 +23,15 @@ def test_kleene_logic():
 
 def test_absence_of_report_is_not_negative():
     # "no concerning findings" can only be TRUE when the finding was assessed and is empty
-    e = parse_expr({"op": "and", "args": [{"op": "known", "field": "concerning_findings"},
-                                          {"op": "eq", "field": "concerning_findings", "value": []}]})
+    e = parse_expr(
+        {
+            "op": "and",
+            "args": [
+                {"op": "known", "field": "concerning_findings"},
+                {"op": "eq", "field": "concerning_findings", "value": []},
+            ],
+        }
+    )
     assert evaluate(e, Intake()).result is Tri.FALSE
     assert evaluate(e, intake(concerning_findings=[])).result is Tri.TRUE
     assert evaluate(e, intake(concerning_findings=["night pain unrelated to movement"])).result is Tri.FALSE
@@ -50,8 +56,17 @@ def test_unsupported_constructs_rejected():
 
 
 def test_bmi_boundaries_unrounded():
-    cases = {18.4999: "underweight", 18.5: "healthy_weight", 24.9999: "healthy_weight", 25.0: "overweight",
-             29.9999: "overweight", 30.0: "class_1_obesity", 35.0: "class_2_obesity", 39.9999: "class_2_obesity", 40.0: "class_3_obesity"}
+    cases = {
+        18.4999: "underweight",
+        18.5: "healthy_weight",
+        24.9999: "healthy_weight",
+        25.0: "overweight",
+        29.9999: "overweight",
+        30.0: "class_1_obesity",
+        35.0: "class_2_obesity",
+        39.9999: "class_2_obesity",
+        40.0: "class_3_obesity",
+    }
     for v, k in cases.items():
         assert classify_bmi(v, 55).klass == k, v
 
@@ -63,7 +78,8 @@ def test_bmi_minor_and_unknown_age_not_classified():
 
 
 def test_unit_conversion():
-    h = to_meters(70, "in"); w = to_kg(200, "lb")
+    h = to_meters(70, "in")
+    w = to_kg(200, "lb")
     assert abs(compute_bmi(h, w) - 28.69) < 0.01
     with pytest.raises(ValueError):
         to_kg(1, "stone")

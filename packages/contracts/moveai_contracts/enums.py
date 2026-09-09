@@ -1,4 +1,5 @@
 """Enums mirroring db/migrations/0001_foundation.sql. A test asserts parity with the SQL enums."""
+
 from enum import StrEnum
 
 

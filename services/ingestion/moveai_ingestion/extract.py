@@ -1,13 +1,19 @@
 """Extract stage: run the model, then deterministic validators that cannot be talked out of by the document."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
 
 from .llm import ExtractionModel, ExtractionResult
 from .parse import ParsedDocument
 
-INJECTION_MARKERS = ("ignore previous instructions", "ignore all previous", "you are now", "call the", "system prompt")
+INJECTION_MARKERS = (
+    "ignore previous instructions",
+    "ignore all previous",
+    "you are now",
+    "call the",
+    "system prompt",
+)
 
 
 @dataclass

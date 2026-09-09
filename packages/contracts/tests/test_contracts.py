@@ -1,14 +1,17 @@
 import pytest
-
 from moveai_contracts.dose import Dose, DoseField
 from moveai_contracts.enums import SQL_ENUM_MAP
 
 
 def test_sql_enum_parity(conn):
     for sql_name, py_enum in SQL_ENUM_MAP.items():
-        labels = [r["l"] for r in conn.execute(
-            "select e.enumlabel as l from pg_enum e join pg_type t on t.oid=e.enumtypid where t.typname=%s order by e.enumsortorder",
-            (sql_name,)).fetchall()]
+        labels = [
+            r["l"]
+            for r in conn.execute(
+                "select e.enumlabel as l from pg_enum e join pg_type t on t.oid=e.enumtypid where t.typname=%s order by e.enumsortorder",
+                (sql_name,),
+            ).fetchall()
+        ]
         assert labels == [m.value for m in py_enum], sql_name
 
 

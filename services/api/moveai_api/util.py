@@ -16,6 +16,7 @@ def clean_all(rows: list[dict]) -> list[dict]:
 
 def as_uuid(s: str, what: str = "id") -> uuid.UUID:
     from fastapi import HTTPException
+
     try:
         return uuid.UUID(s)
     except ValueError as e:
@@ -24,4 +25,8 @@ def as_uuid(s: str, what: str = "id") -> uuid.UUID:
 
 def paginate(items: list[Any], limit: int, key: str = "id") -> dict[str, Any]:
     page = items[:limit]
-    return {"items": page, "next_cursor": (page[-1][key] if len(items) > limit else None), "total": len(items)}
+    return {
+        "items": page,
+        "next_cursor": (page[-1][key] if len(items) > limit else None),
+        "total": len(items),
+    }

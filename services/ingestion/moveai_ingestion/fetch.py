@@ -1,4 +1,5 @@
 """Fetch stage: allowlist, SSRF defence, redirect limits, size limits, hashing (spec §5)."""
+
 from __future__ import annotations
 
 import hashlib
@@ -30,7 +31,13 @@ class Fetched:
     warnings: list[str] = field(default_factory=list)
 
 
-EXECUTABLE_MAGIC = (b"MZ", b"\x7fELF", b"#!", b"\xca\xfe\xba\xbe", b"PK\x03\x04")  # PE, ELF, script, Mach-O, zip/office
+EXECUTABLE_MAGIC = (
+    b"MZ",
+    b"\x7fELF",
+    b"#!",
+    b"\xca\xfe\xba\xbe",
+    b"PK\x03\x04",
+)  # PE, ELF, script, Mach-O, zip/office
 
 
 def canonicalize(url: str) -> str:
@@ -83,7 +90,12 @@ def fetch_file(url: str) -> Fetched:
     content = path.read_bytes()
     if len(content) > MAX_DOCUMENT_BYTES:
         raise FetchError("too_large", f"{len(content)} bytes exceeds limit")
-    ct = {".html": "text/html", ".htm": "text/html", ".pdf": "application/pdf", ".json": "application/json"}.get(path.suffix.lower(), "application/octet-stream")
+    ct = {
+        ".html": "text/html",
+        ".htm": "text/html",
+        ".pdf": "application/pdf",
+        ".json": "application/json",
+    }.get(path.suffix.lower(), "application/octet-stream")
     _quarantine_check(content, ct)
     return Fetched(final_url=url, content=content, content_type=ct, sha256=hashlib.sha256(content).hexdigest())
 
@@ -93,14 +105,18 @@ def fetch_http(url: str) -> Fetched:
     warnings: list[str] = []
     current = url
     for _ in range(MAX_REDIRECTS + 1):
-        with httpx.Client(follow_redirects=False, timeout=FETCH_TIMEOUT_S, headers={"User-Agent": "MoveAI-Ingest/0.1 (+policy: allowlist only)"}) as client:
+        with httpx.Client(
+            follow_redirects=False,
+            timeout=FETCH_TIMEOUT_S,
+            headers={"User-Agent": "MoveAI-Ingest/0.1 (+policy: allowlist only)"},
+        ) as client:
             with client.stream("GET", current) as resp:
                 if resp.status_code in (301, 302, 303, 307, 308):
                     nxt = resp.headers.get("location")
                     if not nxt:
                         raise FetchError("fetch_failed", "redirect without location")
                     current = httpx.URL(current).join(nxt).__str__()
-                    _check_url_allowed(current)   # redirect target must itself be allowlisted and non-private
+                    _check_url_allowed(current)  # redirect target must itself be allowlisted and non-private
                     warnings.append(f"redirected to {current}")
                     continue
                 if resp.status_code != 200:
@@ -116,8 +132,15 @@ def fetch_http(url: str) -> Fetched:
                 content = bytes(buf)
                 ct = resp.headers.get("content-type", "application/octet-stream").split(";")[0].strip()
                 _quarantine_check(content, ct)
-                return Fetched(final_url=current, content=content, content_type=ct, sha256=hashlib.sha256(content).hexdigest(),
-                               etag=resp.headers.get("etag"), last_modified=resp.headers.get("last-modified"), warnings=warnings)
+                return Fetched(
+                    final_url=current,
+                    content=content,
+                    content_type=ct,
+                    sha256=hashlib.sha256(content).hexdigest(),
+                    etag=resp.headers.get("etag"),
+                    last_modified=resp.headers.get("last-modified"),
+                    warnings=warnings,
+                )
     raise FetchError("fetch_failed", "too many redirects")
 
 
