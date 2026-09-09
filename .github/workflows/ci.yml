@@ -27,12 +27,14 @@ jobs:
       - run: uv run python scripts/seed.py && uv run python scripts/demo.py
   reviewer:
     runs-on: ubuntu-latest
-    defaults: { run: { working-directory: apps/reviewer } }
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with: { version: 10 }
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: pnpm, cache-dependency-path: apps/reviewer/pnpm-lock.yaml }
+        # The pnpm workspace root holds the lockfile (pnpm-workspace.yaml + package.json at the repo root).
+        with: { node-version: 22, cache: pnpm, cache-dependency-path: pnpm-lock.yaml }
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint && pnpm test && pnpm build
+      - run: pnpm -C apps/reviewer lint
+      - run: pnpm -C apps/reviewer test
+      - run: pnpm -C apps/reviewer build

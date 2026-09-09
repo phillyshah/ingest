@@ -6,6 +6,8 @@ settings:
 
 importers:
 
+  .: {}
+
   apps/reviewer:
     dependencies:
       '@dnd-kit/core':

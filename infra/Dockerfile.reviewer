@@ -1,11 +1,12 @@
 FROM node:22-alpine AS build
 WORKDIR /app
-COPY apps/reviewer/package.json apps/reviewer/pnpm-lock.yaml* ./apps/reviewer/
-COPY pnpm-workspace.yaml package.json* ./
-RUN corepack enable && cd apps/reviewer && pnpm install --frozen-lockfile
+# The lockfile lives at the pnpm workspace root, so install from there.
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY apps/reviewer/package.json ./apps/reviewer/
+RUN corepack enable && pnpm install --frozen-lockfile
 COPY apps/reviewer ./apps/reviewer
 COPY packages/contracts/openapi.json ./packages/contracts/openapi.json
-RUN cd apps/reviewer && pnpm build
+RUN pnpm -C apps/reviewer build
 
 FROM caddy:2-alpine
 COPY --from=build /app/apps/reviewer/dist /srv/reviewer
