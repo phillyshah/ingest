@@ -1,0 +1,16 @@
+.pgdata/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
+apps/reviewer/dist/
+apps/reviewer/playwright-report/
+apps/reviewer/test-results/
+.env
+.env.*
+!.env.example
+*.log
+.demo-out/

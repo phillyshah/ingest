@@ -1,0 +1,24 @@
+[project]
+name = "moveai-planner"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "moveai-contracts",
+  "moveai-db",
+  "moveai-clinical-rules",
+  "psycopg[binary,pool]>=3.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["moveai_planner"]
+
+[tool.uv.sources]
+moveai-db = { workspace = true }
+moveai-contracts = { workspace = true }
+moveai-clinical-rules = { workspace = true }
+moveai-planner = { workspace = true }
+moveai-ingestion = { workspace = true }
