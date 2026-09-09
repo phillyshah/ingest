@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: 10 }
+        # No version input: the pnpm version comes from "packageManager" in the root package.json.
       - uses: actions/setup-node@v4
         # The pnpm workspace root holds the lockfile (pnpm-workspace.yaml + package.json at the repo root).
         with: { node-version: 22, cache: pnpm, cache-dependency-path: pnpm-lock.yaml }
