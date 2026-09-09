@@ -6,7 +6,7 @@ label: "Surgically repaired MCL tear — UNSIGNED PLACEHOLDER, not a treatment p
 condition:
   internal_code: mcl_tear_surgical_repair
   preferred_name: Medial collateral ligament tear, surgically repaired
-  synonyms: [MCL repair, MCL tear surgery, medial collateral ligament repair, repaired MCL]
+  synonyms: [MCL repair, MCL tear surgery, medial collateral ligament repair, repaired MCL, MCL reconstruction, MCL tear, medial collateral ligament]
   body_region: knee
   ambiguity_flags: [laterality_required, repair_vs_reconstruction, associated_procedures, surgeon_protocol_required]
   icd10cm:

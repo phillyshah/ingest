@@ -1,0 +1,947 @@
+[
+  {
+    "id": "fs-01-minimal",
+    "family": "frozen_shoulder",
+    "narrative": "55-year-old slightly obese man with frozen shoulder",
+    "intake": {
+      "fields": {}
+    },
+    "expected": {
+      "status": "needs_assessment",
+      "missing_fields_include": [
+        "affected_side",
+        "irritability",
+        "concerning_findings",
+        "surgeon_restrictions"
+      ],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": "canonical sparse input"
+  },
+  {
+    "id": "fs-02-high-irritability-complete",
+    "family": "frozen_shoulder",
+    "narrative": "55-year-old slightly obese man with frozen shoulder",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true,
+            "assessor": "pt"
+          }
+        },
+        "irritability": {
+          "status": "known",
+          "value": "high"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 100
+          },
+          "unit": "deg"
+        },
+        "rom_passive": {
+          "status": "known",
+          "value": {
+            "flexion": 110
+          },
+          "unit": "deg"
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "goals": {
+          "status": "known",
+          "value": [
+            "reach behind head"
+          ]
+        },
+        "prior_interventions": {
+          "status": "known",
+          "value": []
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "sex": {
+          "status": "known",
+          "value": "male"
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "no_approved_pathway",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": "complete; placeholder pack cannot prescribe"
+  },
+  {
+    "id": "fs-03-low-irritability-stiff",
+    "family": "frozen_shoulder",
+    "narrative": "55-year-old slightly obese man with frozen shoulder",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true,
+            "assessor": "pt"
+          }
+        },
+        "irritability": {
+          "status": "known",
+          "value": "low"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 100
+          },
+          "unit": "deg"
+        },
+        "rom_passive": {
+          "status": "known",
+          "value": {
+            "flexion": 110
+          },
+          "unit": "deg"
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "goals": {
+          "status": "known",
+          "value": [
+            "reach behind head"
+          ]
+        },
+        "prior_interventions": {
+          "status": "known",
+          "value": []
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "sex": {
+          "status": "known",
+          "value": "male"
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "no_approved_pathway",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "fs-04-unknown-side",
+    "family": "frozen_shoulder",
+    "narrative": "55-year-old slightly obese man with frozen shoulder, side not documented",
+    "intake": {
+      "fields": {
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true,
+            "assessor": "pt"
+          }
+        },
+        "irritability": {
+          "status": "known",
+          "value": "low"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 100
+          },
+          "unit": "deg"
+        },
+        "rom_passive": {
+          "status": "known",
+          "value": {
+            "flexion": 110
+          },
+          "unit": "deg"
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "goals": {
+          "status": "known",
+          "value": [
+            "reach behind head"
+          ]
+        },
+        "prior_interventions": {
+          "status": "known",
+          "value": []
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "sex": {
+          "status": "known",
+          "value": "male"
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "needs_assessment",
+      "missing_fields_include": [
+        "affected_side"
+      ],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "fs-05-diabetes-incomplete",
+    "family": "frozen_shoulder",
+    "narrative": "55-year-old slightly obese man with frozen shoulder with diabetes",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true,
+            "assessor": "pt"
+          }
+        },
+        "irritability": {
+          "status": "known",
+          "value": "low"
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "goals": {
+          "status": "known",
+          "value": [
+            "reach behind head"
+          ]
+        },
+        "prior_interventions": {
+          "status": "known",
+          "value": []
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "sex": {
+          "status": "known",
+          "value": "male"
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        },
+        "comorbidities": {
+          "status": "known",
+          "value": [
+            "type 2 diabetes"
+          ]
+        }
+      }
+    },
+    "expected": {
+      "status": "needs_assessment",
+      "missing_fields_include": [
+        "rom_active",
+        "rom_passive"
+      ],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": "comorbidity is context, not an exclusion"
+  },
+  {
+    "id": "fs-06-postop-capsular-release",
+    "family": "frozen_shoulder",
+    "narrative": "55-year-old slightly obese man with frozen shoulder after capsular release",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true,
+            "assessor": "pt"
+          }
+        },
+        "irritability": {
+          "status": "known",
+          "value": "low"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 100
+          },
+          "unit": "deg"
+        },
+        "rom_passive": {
+          "status": "known",
+          "value": {
+            "flexion": 110
+          },
+          "unit": "deg"
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "arthroscopic capsular release"
+        },
+        "goals": {
+          "status": "known",
+          "value": [
+            "reach behind head"
+          ]
+        },
+        "prior_interventions": {
+          "status": "known",
+          "value": []
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "sex": {
+          "status": "known",
+          "value": "male"
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        },
+        "procedure_date": {
+          "status": "known",
+          "value": "2026-08-15"
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "own approved protocol",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "fs-07-concomitant-repair-restrictions",
+    "family": "frozen_shoulder",
+    "narrative": "55-year-old slightly obese man with frozen shoulder with rotator cuff repair",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true,
+            "assessor": "pt"
+          }
+        },
+        "irritability": {
+          "status": "known",
+          "value": "low"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 100
+          },
+          "unit": "deg"
+        },
+        "rom_passive": {
+          "status": "known",
+          "value": {
+            "flexion": 110
+          },
+          "unit": "deg"
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "no active ER x6w"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "capsular release + cuff repair"
+        },
+        "goals": {
+          "status": "known",
+          "value": [
+            "reach behind head"
+          ]
+        },
+        "prior_interventions": {
+          "status": "known",
+          "value": []
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "sex": {
+          "status": "known",
+          "value": "male"
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "own approved protocol",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "fs-08-neuro-systemic",
+    "family": "frozen_shoulder",
+    "narrative": "55-year-old slightly obese man with frozen shoulder",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true,
+            "assessor": "pt"
+          }
+        },
+        "irritability": {
+          "status": "known",
+          "value": "low"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 100
+          },
+          "unit": "deg"
+        },
+        "rom_passive": {
+          "status": "known",
+          "value": {
+            "flexion": 110
+          },
+          "unit": "deg"
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "goals": {
+          "status": "known",
+          "value": [
+            "reach behind head"
+          ]
+        },
+        "prior_interventions": {
+          "status": "known",
+          "value": []
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": [
+            "night pain unrelated to movement",
+            "weight loss"
+          ]
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "sex": {
+          "status": "known",
+          "value": "male"
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "Concerning",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "fs-09-cannot-assume-position",
+    "family": "frozen_shoulder",
+    "narrative": "55-year-old slightly obese man with frozen shoulder",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true,
+            "assessor": "pt"
+          }
+        },
+        "irritability": {
+          "status": "known",
+          "value": "low"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 100
+          },
+          "unit": "deg"
+        },
+        "rom_passive": {
+          "status": "known",
+          "value": {
+            "flexion": 110
+          },
+          "unit": "deg"
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "goals": {
+          "status": "known",
+          "value": [
+            "reach behind head"
+          ]
+        },
+        "prior_interventions": {
+          "status": "known",
+          "value": []
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "sex": {
+          "status": "known",
+          "value": "male"
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        },
+        "can_assume_starting_position": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "no_approved_pathway",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": "observed limitation recorded; exclusion rule slot unsigned"
+  },
+  {
+    "id": "fs-10-worsening-after-session",
+    "family": "frozen_shoulder",
+    "narrative": "55-year-old slightly obese man with frozen shoulder",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true,
+            "assessor": "pt"
+          }
+        },
+        "irritability": {
+          "status": "known",
+          "value": "low"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 100
+          },
+          "unit": "deg"
+        },
+        "rom_passive": {
+          "status": "known",
+          "value": {
+            "flexion": 110
+          },
+          "unit": "deg"
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "goals": {
+          "status": "known",
+          "value": [
+            "reach behind head"
+          ]
+        },
+        "prior_interventions": {
+          "status": "known",
+          "value": []
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "sex": {
+          "status": "known",
+          "value": "male"
+        },
+        "prior_session_response": {
+          "status": "known",
+          "value": "worse"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "Worsen",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "fs-11-prior-injection-context",
+    "family": "frozen_shoulder",
+    "narrative": "55-year-old slightly obese man with frozen shoulder, had a steroid injection last month",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true,
+            "assessor": "pt"
+          }
+        },
+        "irritability": {
+          "status": "known",
+          "value": "low"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 100
+          },
+          "unit": "deg"
+        },
+        "rom_passive": {
+          "status": "known",
+          "value": {
+            "flexion": 110
+          },
+          "unit": "deg"
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "goals": {
+          "status": "known",
+          "value": [
+            "reach behind head"
+          ]
+        },
+        "prior_interventions": {
+          "status": "known",
+          "value": [
+            "corticosteroid injection 2026-08"
+          ]
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "sex": {
+          "status": "known",
+          "value": "male"
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        },
+        "prior_injection": {
+          "status": "known",
+          "value": true
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "no_approved_pathway",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": "injection is context, not a surgical switch"
+  },
+  {
+    "id": "fs-12-missing-concern-screen",
+    "family": "frozen_shoulder",
+    "narrative": "55-year-old slightly obese man with frozen shoulder",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true,
+            "assessor": "pt"
+          }
+        },
+        "irritability": {
+          "status": "known",
+          "value": "low"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 100
+          },
+          "unit": "deg"
+        },
+        "rom_passive": {
+          "status": "known",
+          "value": {
+            "flexion": 110
+          },
+          "unit": "deg"
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "goals": {
+          "status": "known",
+          "value": [
+            "reach behind head"
+          ]
+        },
+        "prior_interventions": {
+          "status": "known",
+          "value": []
+        },
+        "concerning_findings": {
+          "status": "not_assessed"
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "sex": {
+          "status": "known",
+          "value": "male"
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "needs_assessment",
+      "missing_fields_include": [
+        "concerning_findings"
+      ],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": "missing report is not a negative finding"
+  }
+]

@@ -1,0 +1,775 @@
+[
+  {
+    "id": "hs-01-sparse",
+    "family": "hamstring_strain",
+    "narrative": "Patient with a hamstring pull, treated with physical therapy and no surgery",
+    "intake": {
+      "fields": {}
+    },
+    "expected": {
+      "status": "needs_assessment",
+      "missing_fields_include": [
+        "affected_side",
+        "severity",
+        "diagnosis_confirmation",
+        "concerning_findings"
+      ],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": "'pull' normalizes to candidate strain only"
+  },
+  {
+    "id": "hs-02-complete",
+    "family": "hamstring_strain",
+    "narrative": "Patient with a hamstring pull, treated with physical therapy and no surgery",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "onset_date": {
+          "status": "known",
+          "value": "2026-08-20"
+        },
+        "injury_location": {
+          "status": "known",
+          "value": "proximal biceps femoris"
+        },
+        "severity": {
+          "status": "known",
+          "value": "grade 1"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true
+          }
+        },
+        "functional_limitations": {
+          "status": "known",
+          "value": [
+            "running"
+          ]
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 2
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "intended_activity": {
+          "status": "known",
+          "value": [
+            "recreational running"
+          ]
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "age": {
+          "status": "known",
+          "value": 34,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "no_approved_pathway",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "hs-03-unknown-side",
+    "family": "hamstring_strain",
+    "narrative": "Patient with a hamstring pull, treated with physical therapy and no surgery",
+    "intake": {
+      "fields": {
+        "onset_date": {
+          "status": "known",
+          "value": "2026-08-20"
+        },
+        "injury_location": {
+          "status": "known",
+          "value": "proximal biceps femoris"
+        },
+        "severity": {
+          "status": "known",
+          "value": "grade 1"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true
+          }
+        },
+        "functional_limitations": {
+          "status": "known",
+          "value": [
+            "running"
+          ]
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 2
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "intended_activity": {
+          "status": "known",
+          "value": [
+            "recreational running"
+          ]
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "age": {
+          "status": "known",
+          "value": 34,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "needs_assessment",
+      "missing_fields_include": [
+        "affected_side"
+      ],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "hs-04-uncertain-severity",
+    "family": "hamstring_strain",
+    "narrative": "Patient with a hamstring pull, treated with physical therapy and no surgery",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "onset_date": {
+          "status": "known",
+          "value": "2026-08-20"
+        },
+        "injury_location": {
+          "status": "known",
+          "value": "proximal biceps femoris"
+        },
+        "severity": {
+          "status": "unknown"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true
+          }
+        },
+        "functional_limitations": {
+          "status": "known",
+          "value": [
+            "running"
+          ]
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 2
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "intended_activity": {
+          "status": "known",
+          "value": [
+            "recreational running"
+          ]
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "age": {
+          "status": "known",
+          "value": 34,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "needs_assessment",
+      "missing_fields_include": [
+        "severity"
+      ],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "hs-05-unknown-location",
+    "family": "hamstring_strain",
+    "narrative": "Patient with a hamstring pull, treated with physical therapy and no surgery",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "onset_date": {
+          "status": "known",
+          "value": "2026-08-20"
+        },
+        "injury_location": {
+          "status": "unknown"
+        },
+        "severity": {
+          "status": "known",
+          "value": "grade 1"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true
+          }
+        },
+        "functional_limitations": {
+          "status": "known",
+          "value": [
+            "running"
+          ]
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 2
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "intended_activity": {
+          "status": "known",
+          "value": [
+            "recreational running"
+          ]
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "age": {
+          "status": "known",
+          "value": 34,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "needs_assessment",
+      "missing_fields_include": [
+        "injury_location"
+      ],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "hs-06-concerning-presentation",
+    "family": "hamstring_strain",
+    "narrative": "Patient with a hamstring pull, treated with physical therapy and no surgery",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "onset_date": {
+          "status": "known",
+          "value": "2026-08-20"
+        },
+        "injury_location": {
+          "status": "known",
+          "value": "proximal biceps femoris"
+        },
+        "severity": {
+          "status": "known",
+          "value": "grade 1"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true
+          }
+        },
+        "functional_limitations": {
+          "status": "known",
+          "value": [
+            "running"
+          ]
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 2
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "intended_activity": {
+          "status": "known",
+          "value": [
+            "recreational running"
+          ]
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": [
+            "palpable gap, inability to walk"
+          ]
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "age": {
+          "status": "known",
+          "value": 34,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "Concerning",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "hs-07-surgically-treated",
+    "family": "hamstring_strain",
+    "narrative": "Hamstring strain with proximal avulsion, repaired surgically",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "onset_date": {
+          "status": "known",
+          "value": "2026-08-20"
+        },
+        "injury_location": {
+          "status": "known",
+          "value": "proximal biceps femoris"
+        },
+        "severity": {
+          "status": "known",
+          "value": "grade 1"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true
+          }
+        },
+        "functional_limitations": {
+          "status": "known",
+          "value": [
+            "running"
+          ]
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 2
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "intended_activity": {
+          "status": "known",
+          "value": [
+            "recreational running"
+          ]
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "procedure": {
+          "status": "known",
+          "value": "proximal hamstring repair"
+        },
+        "age": {
+          "status": "known",
+          "value": 34,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "own approved protocol",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "hs-08-worsening",
+    "family": "hamstring_strain",
+    "narrative": "Patient with a hamstring pull, treated with physical therapy and no surgery",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "onset_date": {
+          "status": "known",
+          "value": "2026-08-20"
+        },
+        "injury_location": {
+          "status": "known",
+          "value": "proximal biceps femoris"
+        },
+        "severity": {
+          "status": "known",
+          "value": "grade 1"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true
+          }
+        },
+        "functional_limitations": {
+          "status": "known",
+          "value": [
+            "running"
+          ]
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 2
+        },
+        "prior_session_response": {
+          "status": "known",
+          "value": "worse"
+        },
+        "intended_activity": {
+          "status": "known",
+          "value": [
+            "recreational running"
+          ]
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "age": {
+          "status": "known",
+          "value": 34,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "Worsen",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "hs-09-return-to-run-by-calendar",
+    "family": "hamstring_strain",
+    "narrative": "Patient with a hamstring pull, treated with physical therapy and no surgery, week 6",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "onset_date": {
+          "status": "known",
+          "value": "2026-07-20"
+        },
+        "injury_location": {
+          "status": "known",
+          "value": "proximal biceps femoris"
+        },
+        "severity": {
+          "status": "known",
+          "value": "grade 1"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true
+          }
+        },
+        "functional_limitations": {
+          "status": "known",
+          "value": [
+            "running"
+          ]
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 2
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "intended_activity": {
+          "status": "known",
+          "value": [
+            "recreational running"
+          ]
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "age": {
+          "status": "known",
+          "value": 34,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "no_approved_pathway",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": "scheduled week cannot override unmet criteria"
+  },
+  {
+    "id": "hs-10-missing-goals",
+    "family": "hamstring_strain",
+    "narrative": "Patient with a hamstring pull, treated with physical therapy and no surgery",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "onset_date": {
+          "status": "known",
+          "value": "2026-08-20"
+        },
+        "injury_location": {
+          "status": "known",
+          "value": "proximal biceps femoris"
+        },
+        "severity": {
+          "status": "known",
+          "value": "grade 1"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true
+          }
+        },
+        "functional_limitations": {
+          "status": "known",
+          "value": [
+            "running"
+          ]
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 2
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "age": {
+          "status": "known",
+          "value": 34,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "needs_assessment",
+      "missing_fields_include": [
+        "intended_activity"
+      ],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "hs-11-demographic-variation",
+    "family": "hamstring_strain",
+    "narrative": "Patient with a hamstring pull, treated with physical therapy and no surgery",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "right"
+        },
+        "onset_date": {
+          "status": "known",
+          "value": "2026-08-20"
+        },
+        "injury_location": {
+          "status": "known",
+          "value": "proximal biceps femoris"
+        },
+        "severity": {
+          "status": "known",
+          "value": "grade 1"
+        },
+        "diagnosis_confirmation": {
+          "status": "known",
+          "value": {
+            "confirmed": true
+          }
+        },
+        "functional_limitations": {
+          "status": "known",
+          "value": [
+            "running"
+          ]
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 2
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "intended_activity": {
+          "status": "known",
+          "value": [
+            "recreational running"
+          ]
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "procedure": {
+          "status": "known",
+          "value": "none"
+        },
+        "age": {
+          "status": "known",
+          "value": 58,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        },
+        "sex": {
+          "status": "known",
+          "value": "female"
+        },
+        "height": {
+          "status": "known",
+          "value": 1.65,
+          "unit": "m"
+        },
+        "weight": {
+          "status": "known",
+          "value": 60,
+          "unit": "kg"
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "no_approved_pathway",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  }
+]

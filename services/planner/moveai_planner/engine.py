@@ -70,7 +70,8 @@ def evaluate_rules(protocols: list[LoadedProtocol], intake: Intake) -> dict[str,
             if act.type == "require_field":
                 if ev.result is not Tri.TRUE:
                     for f in ([act.field] if act.field else act.fields):
-                        if f and f not in missing and not intake.known(f):
+                        # a field is "addressed" when known or explicitly not applicable; unknown/not_assessed are not
+                        if f and f not in missing and intake.status(f) not in (FieldStatus.known, FieldStatus.not_applicable):
                             missing[f] = MissingField(field=f, reason=act.reason or f"required by {r.name}", required_by=r.name)
                 continue
             if r.severity == "block" and act.type == "block_for_review":

@@ -1,0 +1,815 @@
+[
+  {
+    "id": "mcl-01-sparse",
+    "family": "mcl_repair",
+    "narrative": "Patient recovering after surgical MCL repair",
+    "intake": {
+      "fields": {}
+    },
+    "expected": {
+      "status": "needs_assessment",
+      "missing_fields_include": [
+        "affected_side",
+        "procedure_type",
+        "surgeon_restrictions",
+        "concerning_findings"
+      ],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "mcl-02-complete-isolated-repair",
+    "family": "mcl_repair",
+    "narrative": "Patient recovering after surgical MCL repair",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "MCL repair"
+        },
+        "procedure_date": {
+          "status": "known",
+          "value": "2026-08-01"
+        },
+        "procedure_type": {
+          "status": "known",
+          "value": "repair"
+        },
+        "associated_procedures": {
+          "status": "known",
+          "value": []
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "hinged brace, PWB"
+        },
+        "brace_restrictions": {
+          "status": "known",
+          "value": "hinged brace 0-90"
+        },
+        "weight_bearing_restrictions": {
+          "status": "known",
+          "value": "partial"
+        },
+        "rom_restrictions": {
+          "status": "known",
+          "value": "0-90"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 70
+          },
+          "unit": "deg"
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 3
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 28,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "no_approved_pathway",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "mcl-03-unknown-side",
+    "family": "mcl_repair",
+    "narrative": "Patient recovering after surgical MCL repair",
+    "intake": {
+      "fields": {
+        "procedure": {
+          "status": "known",
+          "value": "MCL repair"
+        },
+        "procedure_date": {
+          "status": "known",
+          "value": "2026-08-01"
+        },
+        "procedure_type": {
+          "status": "known",
+          "value": "repair"
+        },
+        "associated_procedures": {
+          "status": "known",
+          "value": []
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "hinged brace, PWB"
+        },
+        "brace_restrictions": {
+          "status": "known",
+          "value": "hinged brace 0-90"
+        },
+        "weight_bearing_restrictions": {
+          "status": "known",
+          "value": "partial"
+        },
+        "rom_restrictions": {
+          "status": "known",
+          "value": "0-90"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 70
+          },
+          "unit": "deg"
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 3
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 28,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "needs_assessment",
+      "missing_fields_include": [
+        "affected_side"
+      ],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "mcl-04-missing-surgeon-restrictions",
+    "family": "mcl_repair",
+    "narrative": "Patient recovering after surgical MCL repair",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "MCL repair"
+        },
+        "procedure_date": {
+          "status": "known",
+          "value": "2026-08-01"
+        },
+        "procedure_type": {
+          "status": "known",
+          "value": "repair"
+        },
+        "associated_procedures": {
+          "status": "known",
+          "value": []
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 70
+          },
+          "unit": "deg"
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 3
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 28,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "needs_assessment",
+      "missing_fields_include": [
+        "surgeon_restrictions",
+        "brace_restrictions",
+        "weight_bearing_restrictions",
+        "rom_restrictions"
+      ],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "mcl-05-repair-vs-reconstruction-ambiguous",
+    "family": "mcl_repair",
+    "narrative": "Patient recovering after surgical MCL repair (op note says ligament surgery)",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "MCL repair"
+        },
+        "procedure_date": {
+          "status": "known",
+          "value": "2026-08-01"
+        },
+        "procedure_type": {
+          "status": "unknown"
+        },
+        "associated_procedures": {
+          "status": "known",
+          "value": []
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "hinged brace, PWB"
+        },
+        "brace_restrictions": {
+          "status": "known",
+          "value": "hinged brace 0-90"
+        },
+        "weight_bearing_restrictions": {
+          "status": "known",
+          "value": "partial"
+        },
+        "rom_restrictions": {
+          "status": "known",
+          "value": "0-90"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 70
+          },
+          "unit": "deg"
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 3
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 28,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "needs_assessment",
+      "missing_fields_include": [
+        "procedure_type"
+      ],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "mcl-06-reconstruction",
+    "family": "mcl_repair",
+    "narrative": "Patient after MCL reconstruction",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "MCL repair"
+        },
+        "procedure_date": {
+          "status": "known",
+          "value": "2026-08-01"
+        },
+        "procedure_type": {
+          "status": "known",
+          "value": "reconstruction"
+        },
+        "associated_procedures": {
+          "status": "known",
+          "value": []
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "hinged brace, PWB"
+        },
+        "brace_restrictions": {
+          "status": "known",
+          "value": "hinged brace 0-90"
+        },
+        "weight_bearing_restrictions": {
+          "status": "known",
+          "value": "partial"
+        },
+        "rom_restrictions": {
+          "status": "known",
+          "value": "0-90"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 70
+          },
+          "unit": "deg"
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 3
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 28,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "Reconstruction",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "mcl-07-associated-meniscal-repair",
+    "family": "mcl_repair",
+    "narrative": "Patient recovering after surgical MCL repair with meniscal repair",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "MCL repair"
+        },
+        "procedure_date": {
+          "status": "known",
+          "value": "2026-08-01"
+        },
+        "procedure_type": {
+          "status": "known",
+          "value": "repair"
+        },
+        "associated_procedures": {
+          "status": "known",
+          "value": [
+            "meniscal repair"
+          ]
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "hinged brace, PWB"
+        },
+        "brace_restrictions": {
+          "status": "known",
+          "value": "hinged brace 0-90"
+        },
+        "weight_bearing_restrictions": {
+          "status": "known",
+          "value": "partial"
+        },
+        "rom_restrictions": {
+          "status": "known",
+          "value": "0-90"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 70
+          },
+          "unit": "deg"
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 3
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 28,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "Combined",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "mcl-08-concerning-findings",
+    "family": "mcl_repair",
+    "narrative": "Patient recovering after surgical MCL repair",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "MCL repair"
+        },
+        "procedure_date": {
+          "status": "known",
+          "value": "2026-08-01"
+        },
+        "procedure_type": {
+          "status": "known",
+          "value": "repair"
+        },
+        "associated_procedures": {
+          "status": "known",
+          "value": []
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "hinged brace, PWB"
+        },
+        "brace_restrictions": {
+          "status": "known",
+          "value": "hinged brace 0-90"
+        },
+        "weight_bearing_restrictions": {
+          "status": "known",
+          "value": "partial"
+        },
+        "rom_restrictions": {
+          "status": "known",
+          "value": "0-90"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 70
+          },
+          "unit": "deg"
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 3
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": [
+            "calf swelling and warmth"
+          ]
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 28,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "Concerning",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "mcl-09-worsening",
+    "family": "mcl_repair",
+    "narrative": "Patient recovering after surgical MCL repair",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "MCL repair"
+        },
+        "procedure_date": {
+          "status": "known",
+          "value": "2026-08-01"
+        },
+        "procedure_type": {
+          "status": "known",
+          "value": "repair"
+        },
+        "associated_procedures": {
+          "status": "known",
+          "value": []
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "hinged brace, PWB"
+        },
+        "brace_restrictions": {
+          "status": "known",
+          "value": "hinged brace 0-90"
+        },
+        "weight_bearing_restrictions": {
+          "status": "known",
+          "value": "partial"
+        },
+        "rom_restrictions": {
+          "status": "known",
+          "value": "0-90"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 70
+          },
+          "unit": "deg"
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 3
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "prior_session_response": {
+          "status": "known",
+          "value": "worse"
+        },
+        "age": {
+          "status": "known",
+          "value": 28,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "Worsen",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "mcl-10-elapsed-time-criteria-unmet",
+    "family": "mcl_repair",
+    "narrative": "Patient recovering after surgical MCL repair, 10 weeks post-op",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "MCL repair"
+        },
+        "procedure_date": {
+          "status": "known",
+          "value": "2026-06-01"
+        },
+        "procedure_type": {
+          "status": "known",
+          "value": "repair"
+        },
+        "associated_procedures": {
+          "status": "known",
+          "value": []
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "hinged brace, PWB"
+        },
+        "brace_restrictions": {
+          "status": "known",
+          "value": "hinged brace 0-90"
+        },
+        "weight_bearing_restrictions": {
+          "status": "known",
+          "value": "partial"
+        },
+        "rom_restrictions": {
+          "status": "known",
+          "value": "0-90"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 70
+          },
+          "unit": "deg"
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 3
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 28,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "no_approved_pathway",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": "a later calendar week never advances a phase"
+  },
+  {
+    "id": "mcl-11-demographic-variation",
+    "family": "mcl_repair",
+    "narrative": "Patient recovering after surgical MCL repair",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "procedure": {
+          "status": "known",
+          "value": "MCL repair"
+        },
+        "procedure_date": {
+          "status": "known",
+          "value": "2026-08-01"
+        },
+        "procedure_type": {
+          "status": "known",
+          "value": "repair"
+        },
+        "associated_procedures": {
+          "status": "known",
+          "value": []
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "hinged brace, PWB"
+        },
+        "brace_restrictions": {
+          "status": "known",
+          "value": "hinged brace 0-90"
+        },
+        "weight_bearing_restrictions": {
+          "status": "known",
+          "value": "partial"
+        },
+        "rom_restrictions": {
+          "status": "known",
+          "value": "0-90"
+        },
+        "rom_active": {
+          "status": "known",
+          "value": {
+            "flexion": 70
+          },
+          "unit": "deg"
+        },
+        "pain_movement": {
+          "status": "known",
+          "value": 3
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 62,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        },
+        "height": {
+          "status": "known",
+          "value": 1.6,
+          "unit": "m"
+        },
+        "weight": {
+          "status": "known",
+          "value": 98,
+          "unit": "kg"
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "no_approved_pathway",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": "BMI class recorded; no modifier"
+  }
+]
