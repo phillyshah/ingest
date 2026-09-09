@@ -73,7 +73,11 @@ def install_pack(conn: psycopg.Connection, pack: ContentPack, *, author_id: Any 
             (concept.preferred_name, concept.aliases, concept.body_region, concept.movement_purpose)).fetchone()
         for v in concept.variants:
             vstate = v.approval_state.value if approved else state
-            src_ref = None
+            # every variant carries a visible provenance reference: the cited source, or the pack itself for
+            # clinician-authored placeholder content (never anonymous)
+            src_ref: dict[str, Any] | None = {"url": None, "publisher": f"content pack {pack.pack} v{pack.version}", "title": pack.label,
+                                              "document_version": pack.version, "locator": {"pack_variant_key": v.key},
+                                              "source_exercise_name": v.name, "kind": "clinician_authored" if approved else "unsigned_placeholder"}
             if v.source_reference:
                 s = ids["sources"][v.source_reference["source"]]["meta"]
                 src_ref = {"url": s.url, "publisher": s.publisher, "title": s.title, "document_version": s.document_version,
@@ -88,7 +92,7 @@ def install_pack(conn: psycopg.Connection, pack: ContentPack, *, author_id: Any 
                  v.starting_position, v.assistance.value, v.chain if hasattr(v, "chain") else None, v.load_mode, v.side_behavior,
                  v.equipment, v.balance_demand, v.setting,
                  J([{"step": i + 1, "text": s} for i, s in enumerate(v.step_sequence)]), v.cues, v.common_errors,
-                 J({"tags": v.tags, "requires_starting_position": v.requires_starting_position}), J(src_ref) if src_ref else None,
+                 J({"tags": v.tags, "requires_starting_position": v.requires_starting_position, "pack_key": v.key}), J(src_ref) if src_ref else None,
                  vstate, approver_id if approved else None, "now()" if approved else None, author_id)).fetchone()
             if v.media_state != "not_requested":
                 conn.execute(

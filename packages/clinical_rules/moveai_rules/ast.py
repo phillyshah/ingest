@@ -9,8 +9,9 @@ Grammar (JSON):
   {"op": "between", "field": F, "min": N, "max": N, "min_inclusive"?: bool, "max_inclusive"?: bool, "unit"?: U}
   {"op": "true"} | {"op": "false"}
 
-Three-valued semantics: a comparison on a field that is not known evaluates to UNKNOWN. and/or/not follow Kleene logic.
-`known`/`status` are always definite. Anything outside this grammar fails validation and cannot be saved as executable.
+Three-valued semantics: a comparison on a field whose status is unknown/not_assessed evaluates to UNKNOWN; a field
+marked not_applicable (the attribute cannot exist for this case, e.g. "prior session response" on a first visit)
+evaluates comparisons to FALSE. and/or/not follow Kleene logic. `known`/`status` are always definite. Anything outside this grammar fails validation and cannot be saved as executable.
 """
 from __future__ import annotations
 
@@ -154,6 +155,8 @@ def evaluate(expr: Expr, intake: Intake) -> Evaluation:
         if e.op == "status":
             return Trace(op="status", field=e.field, result=Tri.TRUE if f.status == e.is_ else Tri.FALSE,
                          detail=f"status={f.status}")
+        if f.status == FieldStatus.not_applicable:
+            return Trace(op=e.op, field=e.field, result=Tri.FALSE, detail="not_applicable: attribute cannot be present")
         if not f.is_known:
             unknown.append(e.field or "")
             return Trace(op=e.op, field=e.field, result=Tri.UNKNOWN, detail=f"field status {f.status}")

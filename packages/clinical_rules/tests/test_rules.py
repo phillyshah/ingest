@@ -67,3 +67,11 @@ def test_unit_conversion():
     assert abs(compute_bmi(h, w) - 28.69) < 0.01
     with pytest.raises(ValueError):
         to_kg(1, "stone")
+
+
+def test_not_applicable_is_definite_false_not_unknown():
+    e = parse_expr({"op": "eq", "field": "prior_session_response", "value": "worse"})
+    r = evaluate(e, intake(prior_session_response=IntakeField(status="not_applicable")))
+    assert r.result is Tri.FALSE and r.unknown_fields == []
+    r = evaluate(e, intake(prior_session_response=IntakeField(status="not_assessed")))
+    assert r.result is Tri.UNKNOWN
