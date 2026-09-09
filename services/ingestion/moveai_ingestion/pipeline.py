@@ -197,6 +197,13 @@ def run_job(conn: psycopg.Connection, job: dict, *, model: ExtractionModel | Non
         except Exception as e:  # unexpected: retry with backoff
             with conn.transaction():
                 state = q.fail(conn, job["id"], "unexpected", f"{type(e).__name__}: {e}")
+        if job.get("campaign_id"):
+            conn.execute("insert into campaign_event(campaign_id, run_id, event, detail) values (%s,%s,'job',%s)",
+                         (job["campaign_id"], job["campaign_run_id"], J({"job_id": str(job["id"]), "stage": job["stage"], "state": state})))
+            if job.get("campaign_run_id"):
+                from .campaigns import reconcile_run
+
+                reconcile_run(conn, job["campaign_run_id"])
     finally:
         if commit:
             conn.commit()

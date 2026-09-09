@@ -44,6 +44,7 @@ def claim(conn: psycopg.Connection, worker_id: str, stages: tuple[str, ...] = ST
         """with c as (
              select id from ingestion_job
               where state = 'queued' and run_after <= now() and stage = any(%s)
+                and (campaign_run_id is null or campaign_run_id in (select id from campaign_run where state = 'running'))
               order by priority, run_after
               for update skip locked limit 1)
            update ingestion_job j set state='running', attempts = attempts + 1, worker_id = %s,
