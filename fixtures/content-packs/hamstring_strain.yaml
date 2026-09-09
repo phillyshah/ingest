@@ -1,0 +1,273 @@
+pack: hamstring_strain
+version: 0.1.0
+family: hamstring_strain
+approval_state: unsigned_placeholder
+label: "Nonoperative hamstring strain — UNSIGNED PLACEHOLDER, not a treatment protocol"
+condition:
+  internal_code: hamstring_strain_nonoperative
+  preferred_name: Hamstring strain, nonoperative
+  synonyms: [hamstring pull, pulled hamstring, hamstring strain, hamstring injury]
+  body_region: thigh
+  ambiguity_flags: [laterality_required, grade_not_inferable, location_not_inferable, "pull normalizes to candidate strain only"]
+  icd10cm:
+    - {code: S76.311A, relationship: exact, laterality: right}
+    - {code: S76.312A, relationship: exact, laterality: left}
+    - {code: S76.319A, relationship: exact, laterality: unspecified}
+sources: []
+claims: []
+concepts:
+  - key: hamstring_isometric
+    preferred_name: Hamstring isometric
+    aliases: [isometric hamstring contraction, bridge hold]
+    body_region: thigh
+    movement_purpose: pain-tolerated hamstring activation without lengthening
+    variants:
+      - key: hamstring_isometric_supine
+        name: Hamstring isometric (supine, heel dig)
+        assistance: active
+        region: thigh
+        joint: hip_knee
+        starting_position: lying on the back with the knee bent, heel on the floor
+        side_behavior: unilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with the injured-side knee bent and heel on the floor.
+          - Press the heel down into the floor to tighten the back of the thigh, without moving the leg.
+          - Hold as instructed within tolerated symptoms, then relax.
+        target_impairment: [hamstring inhibition]
+        functional_goal: [walking]
+        tags: [requires_supine, isometric]
+        requires_starting_position: true
+        source_reference: null
+  - key: hamstring_bridge
+    preferred_name: Bridge
+    aliases: [glute bridge, hip bridge]
+    body_region: thigh
+    movement_purpose: hip extension loading
+    variants:
+      - key: bridge_bilateral_active
+        name: Bridge (bilateral, active)
+        assistance: active
+        region: thigh
+        joint: hip
+        chain: closed
+        starting_position: lying on the back, knees bent, feet flat
+        side_behavior: bilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with knees bent and feet flat.
+          - Lift the hips until the trunk and thighs are in line, within tolerated symptoms.
+          - Lower slowly.
+        target_impairment: [hip extension weakness]
+        functional_goal: [walking, running]
+        tags: [requires_supine]
+        requires_starting_position: true
+        source_reference: null
+  - key: nordic_hamstring
+    preferred_name: Nordic hamstring exercise
+    aliases: [Nordic curl, Nordic hamstring lower]
+    body_region: thigh
+    movement_purpose: eccentric hamstring loading
+    variants:
+      - key: nordic_eccentric
+        name: Nordic hamstring exercise (kneeling, eccentric, partner or anchor held)
+        assistance: resisted
+        region: thigh
+        joint: knee
+        load_mode: body_weight_eccentric
+        starting_position: kneeling with ankles held by a partner or anchor
+        side_behavior: bilateral
+        equipment: [anchor or partner, pad]
+        setting: [supervised]
+        step_sequence:
+          - Kneel on a pad with the ankles held.
+          - Lower the trunk forward slowly, resisting with the back of the thighs, as far as control allows.
+          - Use the hands to catch and push back to the start.
+        target_impairment: [eccentric hamstring strength]
+        functional_goal: [running, sprinting]
+        tags: [strengthening, high_load, requires_partner_or_anchor]
+        source_reference: null
+  - key: running_progression
+    preferred_name: Graded running progression
+    aliases: [return to running]
+    body_region: thigh
+    movement_purpose: graded exposure to running demands
+    variants:
+      - key: running_graded
+        name: Graded running progression (supervised criteria)
+        assistance: active
+        region: thigh
+        joint: hip_knee
+        starting_position: standing, on a track or treadmill
+        side_behavior: bilateral
+        equipment: [track or treadmill]
+        setting: [supervised]
+        step_sequence:
+          - Follow the running stage your therapist sets for this session.
+          - Stop if symptoms exceed the limit your therapist set.
+        target_impairment: [running tolerance]
+        functional_goal: [return to sport]
+        tags: [return_to_sport]
+        source_reference: null
+clinical_uses:
+  - key: cu_isometric_acute
+    variant: hamstring_isometric_supine
+    phase: acute_tolerated_activity
+    indication: Pain-tolerated activation once assessed.
+    goals: [tolerated activation]
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+      hold_seconds: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: []
+    directness: unknown
+    support_category: insufficient_support
+  - key: cu_bridge_acute
+    variant: bridge_bilateral_active
+    phase: acute_tolerated_activity
+    goals: [hip extension loading within tolerance]
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: []
+    directness: unknown
+    support_category: insufficient_support
+  - key: cu_nordic_loading
+    variant: nordic_eccentric
+    phase: progressive_loading
+    indication: Progressive eccentric loading when PT criteria are met.
+    goals: [eccentric strength]
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: []
+    directness: unknown
+    support_category: insufficient_support
+  - key: cu_running_return
+    variant: running_graded
+    phase: functional_return
+    indication: Return to running only against applicable criteria and PT approval.
+    goals: [return to running, return to sport]
+    dose_envelope:
+      session_minutes: {null_reason: "Stage-dependent; per PT", provenance: unknown}
+    supporting_claims: []
+    directness: unknown
+    support_category: insufficient_support
+rules:
+  - key: req_side
+    name: Injured side must be established
+    kind: required_input
+    expression: {op: known, field: affected_side}
+    action: {type: require_field, field: affected_side, reason: Laterality is not established}
+    severity: block
+  - key: req_injury
+    name: Injury date and location are required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: onset_date}, {op: known, field: injury_location}]}
+    action: {type: require_field, fields: [onset_date, injury_location], reason: Injury date and anatomical location are required}
+    severity: block
+  - key: req_severity
+    name: Assessed severity and diagnosis are required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: severity}, {op: known, field: diagnosis_confirmation}]}
+    action: {type: require_field, fields: [severity, diagnosis_confirmation], reason: A "pull" is a candidate strain only until confirmed and graded}
+    severity: block
+  - key: req_function
+    name: Functional deficit, symptoms and prior response are required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: functional_limitations}, {op: known, field: pain_movement}, {op: known, field: prior_session_response}]}
+    action: {type: require_field, fields: [functional_limitations, pain_movement, prior_session_response], reason: "Functional deficit, symptoms and prior response guide progression"}
+    severity: block
+  - key: req_goals
+    name: Intended activity goals are required
+    kind: required_input
+    expression: {op: known, field: intended_activity}
+    action: {type: require_field, field: intended_activity, reason: Return-to-activity target drives the functional phase}
+    severity: block
+  - key: req_concern_screen
+    name: Assessment exclusions must be screened
+    kind: required_input
+    expression: {op: known, field: concerning_findings}
+    action: {type: require_field, field: concerning_findings, reason: Relevant assessment exclusions must be screened}
+    severity: block
+  - key: concern_findings_present
+    name: Concerning or uncertain presentation
+    kind: concern_screen
+    expression: {op: and, args: [{op: known, field: concerning_findings}, {op: ne, field: concerning_findings, value: []}]}
+    action: {type: block_for_review, message: "Concerning or uncertain presentation follows the approved assessment/referral rule (unsigned)."}
+    severity: block
+  - key: surgical_not_this_pathway
+    name: Surgically treated hamstring is a different pathway
+    kind: restriction
+    expression: {op: and, args: [{op: known, field: procedure}, {op: ne, field: procedure, value: none}]}
+    action: {type: block_for_review, message: "A surgically treated hamstring injury needs its own approved protocol."}
+    severity: block
+  - key: worsening_response
+    name: Worsening response after prior session
+    kind: next_day_response
+    expression: {op: eq, field: prior_session_response, value: worse}
+    action: {type: block_for_review, message: "Worsened response; routing requires an approved rule."}
+    severity: block
+  - key: branch_nonoperative
+    name: Nonoperative, confirmed strain
+    kind: eligibility
+    expression: {op: and, args: [{op: eq, field: procedure, value: none}, {op: known, field: severity}]}
+    action: {type: inform, message: nonoperative pathway}
+  - key: return_to_run_criteria_slot
+    name: Return-to-running criteria (RULE SLOT — unsigned)
+    kind: progression
+    expression: {op: eq, field: functional_criteria_met, value: true}
+    action: {type: inform, message: "Return to running requires applicable criteria and PT approval, not a scheduled week."}
+protocols:
+  - key: hs_nonoperative
+    name: Nonoperative hamstring strain — exercise-based pathway (structure only)
+    population_description: Adults with clinically confirmed, graded hamstring strain treated without surgery
+    branch_conditions: [procedure = none, severity assessed]
+    eligibility_rules: [branch_nonoperative]
+    required_inputs: [affected_side, onset_date, injury_location, severity, diagnosis_confirmation, functional_limitations, pain_movement, prior_session_response, intended_activity, concerning_findings]
+    phases:
+      - key: p_acute
+        name: Tolerated activity
+        goals: [pain-tolerated activation, walking]
+        window: {anchor: onset, start: 0, end: null, unit: weeks, provisional: true, text: "Not supplied", provenance: unknown}
+        items: [cu_isometric_acute, cu_bridge_acute]
+        review_checkpoint: PT reassesses symptoms, strength and gait
+        advance_criteria: [PT-confirmed criteria]
+        hold_criteria: [symptoms unchanged]
+        regress_criteria: [worsening]
+        gaps: [dose not supplied, criteria not signed]
+      - key: p_loading
+        name: Progressive loading
+        goals: [eccentric strength]
+        window: {anchor: onset, start: null, end: null, unit: weeks, provisional: true, text: "Not supplied", provenance: unknown}
+        items: [cu_nordic_loading]
+        entry_rules: [return_to_run_criteria_slot]
+        review_checkpoint: PT confirms criteria
+        advance_criteria: [PT-confirmed criteria]
+        gaps: [criteria not signed]
+      - key: p_functional
+        name: Functional / sport return
+        goals: [return to running, return to sport]
+        window: {anchor: onset, start: null, end: null, unit: weeks, provisional: true, text: "Not supplied", provenance: unknown}
+        items: [cu_running_return]
+        entry_rules: [return_to_run_criteria_slot]
+        review_checkpoint: PT confirms return-to-running criteria
+        gaps: [criteria not signed]
+    monitoring: [pain, strength symmetry, running tolerance]
+    reassessment: {timing: "per PT", provenance: unknown}
+    recovery_horizon: {text: "Return-to-sport horizon depends on severity and criteria; not supplied", provenance: unknown}
+    provenance: {kind: structure_only, refs: []}
+applicability: []
+intake_prompts:
+  affected_side: Laterality is not established
+  onset_date: Injury date is required
+  injury_location: Anatomical location is required
+  severity: Assessed severity/grade is required
+  diagnosis_confirmation: A "pull" is a candidate strain only until confirmed
+  functional_limitations: Functional deficit is required
+  pain_movement: Symptoms are required
+  prior_session_response: Prior response guides progression
+  intended_activity: Intended activity goals are required
+  concerning_findings: Relevant assessment exclusions must be screened

@@ -1,0 +1,413 @@
+pack: frozen_shoulder
+version: 0.1.0
+family: frozen_shoulder
+approval_state: unsigned_placeholder
+label: "Adhesive capsulitis (frozen shoulder) — UNSIGNED PLACEHOLDER, not a treatment protocol"
+condition:
+  internal_code: adhesive_capsulitis
+  preferred_name: Adhesive capsulitis (frozen shoulder)
+  synonyms: [frozen shoulder, adhesive capsulitis, capsulitis of shoulder, stiff shoulder]
+  body_region: shoulder
+  ambiguity_flags: [laterality_required, stage_not_inferable_from_onset_alone]
+  icd10cm:
+    - {code: M75.00, relationship: exact, laterality: unspecified}
+    - {code: M75.01, relationship: exact, laterality: right}
+    - {code: M75.02, relationship: exact, laterality: left}
+sources:
+  - key: S1
+    url: https://medicine.osu.edu/-/media/files/medicine/departments/sports-medicine/medical-professionals/shoulder-and-elbow/adhesive-capsulitis-2020.pdf
+    publisher: Ohio State University Wexner Medical Center
+    title: Adhesive Capsulitis / Frozen Shoulder Clinical Practice Guideline
+    document_version: revision October 2020
+    source_type: pdf
+    rights: {can_fetch: unknown, can_store_fulltext: denied, can_store_excerpt: unknown, can_process_with_model: unknown,
+             can_display_to_clinician: unknown, can_display_to_patient: denied, can_redistribute: denied, can_train_model: denied}
+    rights_evidence: {kind: note, text: "Document carries an explicit licensing notice (spec §4/§17 [S1]). Reference discovery only until cleared."}
+    notes: reference-only
+claims:
+  - key: S1_irritability
+    source: S1
+    locator: {section: "exercise selection", note: "locator to be confirmed by clinical lead against the document"}
+    claim_type: protocol_phase
+    paraphrase: Guidance describes matching stretching intensity to the patient's irritability level.
+    recommendation_strength_as_reported: as stated in source; not re-graded here
+    limitations: Reference only; rights unresolved; exact locator pending.
+  - key: S1_dose_uncertainty
+    source: S1
+    locator: {section: "dosage", note: "locator to be confirmed by clinical lead"}
+    claim_type: dose
+    paraphrase: Guidance acknowledges uncertainty about optimal stretching dosage.
+    limitations: Supports leaving dose fields null rather than generating numbers.
+concepts:
+  - key: table_slide_elevation
+    preferred_name: Supported table-slide elevation
+    aliases: [table slide, towel slide on table]
+    body_region: shoulder
+    movement_purpose: shoulder elevation mobility with body-weight support
+    variants:
+      - key: table_slide_assisted
+        name: Supported table-slide elevation (active-assisted, seated)
+        assistance: active_assisted
+        region: shoulder
+        joint: glenohumeral
+        movement_plane: scapular plane elevation
+        starting_position: seated at a table, forearm resting on a towel on the table surface
+        side_behavior: unilateral
+        equipment: [table, towel]
+        setting: [home, supervised]
+        step_sequence:
+          - Sit facing the table with the forearm of the affected arm resting on a towel.
+          - Slide the forearm forward along the table by leaning the trunk forward, letting the table support the arm's weight.
+          - Move only within the range that stays inside the symptom limit set by your therapist.
+          - Return slowly to the start.
+        cues: [keep the shoulder relaxed, let the table carry the arm]
+        common_errors: [shrugging the shoulder, pushing into sharp pain]
+        target_impairment: [limited elevation]
+        functional_goal: [reach forward]
+        tags: [requires_seated_at_table]
+        requires_starting_position: true
+        source_reference: {source: S1, locator: {note: "concept named in spec §9 as a candidate for review"}, source_exercise_name: null}
+  - key: external_rotation
+    preferred_name: Shoulder external rotation
+    aliases: [ER, external rotation stretch, external rotation with cane]
+    body_region: shoulder
+    movement_purpose: restore external rotation range
+    variants:
+      - key: er_passive_cane
+        name: External rotation — passive with cane (supine)
+        assistance: passive
+        region: shoulder
+        joint: glenohumeral
+        movement_plane: rotation
+        starting_position: lying on the back, elbow bent to 90 degrees and tucked at the side, holding a cane with both hands
+        side_behavior: unilateral
+        equipment: [cane]
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with the affected elbow bent and tucked at your side, holding a cane in both hands.
+          - Use the unaffected arm to push the cane so the affected forearm rotates outward.
+          - Stop at the symptom limit set by your therapist; hold as instructed.
+          - Return slowly.
+        target_impairment: [limited external rotation]
+        functional_goal: [reach behind head]
+        tags: [requires_supine]
+        requires_starting_position: true
+        source_reference: {source: S1, locator: {note: "concept named in spec §9"}, source_exercise_name: null}
+      - key: er_assisted_cane
+        name: External rotation — active-assisted with cane (supine)
+        assistance: active_assisted
+        region: shoulder
+        joint: glenohumeral
+        movement_plane: rotation
+        starting_position: lying on the back, elbow bent to 90 degrees and tucked at the side, holding a cane with both hands
+        side_behavior: unilateral
+        equipment: [cane]
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back holding a cane in both hands, affected elbow tucked at your side.
+          - Rotate the affected forearm outward using its own muscles, with the cane and other arm assisting only as needed.
+          - Stay inside the symptom limit set by your therapist.
+        target_impairment: [limited external rotation]
+        functional_goal: [reach behind head]
+        tags: [requires_supine]
+        requires_starting_position: true
+        source_reference: {source: S1, locator: {note: "concept named in spec §9"}, source_exercise_name: null}
+      - key: er_resisted_band
+        name: External rotation — resisted with elastic band (standing)
+        assistance: resisted
+        region: shoulder
+        joint: glenohumeral
+        movement_plane: rotation
+        starting_position: standing, elbow bent to 90 degrees and tucked at the side, band anchored at elbow height
+        load_mode: elastic_resistance
+        side_behavior: unilateral
+        equipment: [elastic band, anchor]
+        setting: [home, supervised]
+        step_sequence:
+          - Stand side-on to the anchor holding the band with the affected hand, elbow tucked at your side.
+          - Rotate the forearm outward against the band, keeping the elbow at your side.
+          - Return slowly with control.
+        target_impairment: [external rotation weakness]
+        functional_goal: [overhead function]
+        tags: [strengthening]
+        source_reference: {source: S1, locator: {note: "concept named in spec §9"}, source_exercise_name: null}
+  - key: scapular_control
+    preferred_name: Scapular control activity
+    aliases: [scapular setting, scapular retraction]
+    body_region: shoulder
+    movement_purpose: scapular positioning and control
+    variants:
+      - key: scapular_retraction_active
+        name: Scapular retraction — active (seated)
+        assistance: active
+        region: shoulder
+        joint: scapulothoracic
+        starting_position: seated upright, arms relaxed at the sides
+        side_behavior: bilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Sit tall with arms relaxed.
+          - Draw the shoulder blades gently back and down without shrugging.
+          - Hold as instructed, then relax.
+        target_impairment: [scapular control]
+        functional_goal: [posture during reaching]
+        source_reference: {source: S1, locator: {note: "concept named in spec §9"}, source_exercise_name: null}
+clinical_uses:
+  - key: cu_table_slide_symptom_limited
+    variant: table_slide_assisted
+    phase: symptom_limited_mobility
+    indication: Higher irritability presentations where mobility work must stay within symptom limits.
+    goals: [maintain or gently improve elevation within symptom limits]
+    presentation: {irritability: high}
+    dose_envelope:
+      sets: {null_reason: "Not supplied: clinical lead must author or cite a source", provenance: unknown}
+      repetitions: {null_reason: "Not supplied: clinical lead must author or cite a source", provenance: unknown}
+      hold_seconds: {null_reason: "Not supplied: clinical lead must author or cite a source", provenance: unknown}
+      sessions_per_day: {null_reason: "Not supplied", provenance: unknown}
+      days_per_week: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: [S1_irritability, S1_dose_uncertainty]
+    directness: indirect
+    support_category: insufficient_support
+    session_minutes_estimate: null
+  - key: cu_er_passive_symptom_limited
+    variant: er_passive_cane
+    phase: symptom_limited_mobility
+    indication: Higher irritability; passive range within symptom limits.
+    goals: [maintain external rotation within symptom limits]
+    presentation: {irritability: high}
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+      hold_seconds: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: [S1_irritability]
+    directness: indirect
+    support_category: insufficient_support
+  - key: cu_er_assisted_mobility
+    variant: er_assisted_cane
+    phase: mobility_restoration
+    indication: Lower irritability with major stiffness.
+    goals: [restore external rotation]
+    presentation: {irritability: low_or_moderate}
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+      hold_seconds: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: [S1_irritability]
+    directness: indirect
+    support_category: insufficient_support
+  - key: cu_table_slide_mobility
+    variant: table_slide_assisted
+    phase: mobility_restoration
+    indication: Lower irritability with major stiffness.
+    goals: [restore elevation]
+    presentation: {irritability: low_or_moderate}
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: [S1_irritability]
+    directness: indirect
+    support_category: insufficient_support
+  - key: cu_scapular_mobility
+    variant: scapular_retraction_active
+    phase: mobility_restoration
+    goals: [scapular control during reaching]
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: []
+    directness: unknown
+    support_category: insufficient_support
+  - key: cu_er_resisted_functional
+    variant: er_resisted_band
+    phase: functional_strengthening
+    indication: Later phase, when mobility criteria defined by the clinical lead are met.
+    goals: [overhead function, rotator cuff strength]
+    presentation: {irritability: low}
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+      load_value: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: []
+    directness: unknown
+    support_category: insufficient_support
+rules:
+  - key: req_side
+    name: Affected side must be established
+    kind: required_input
+    expression: {op: known, field: affected_side}
+    action: {type: require_field, field: affected_side, reason: Laterality is not established}
+    severity: block
+  - key: req_confirmation
+    name: Diagnosis must be clinically confirmed
+    kind: required_input
+    expression: {op: known, field: diagnosis_confirmation}
+    action: {type: require_field, field: diagnosis_confirmation, reason: Clinical confirmation of adhesive capsulitis is required}
+    severity: block
+  - key: req_irritability
+    name: Irritability must be assessed
+    kind: required_input
+    expression: {op: known, field: irritability}
+    action: {type: require_field, field: irritability, reason: Required by pathway eligibility rules}
+    severity: block
+  - key: req_rom
+    name: Motion limitation must be measured
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: rom_active}, {op: known, field: rom_passive}]}
+    action: {type: require_field, fields: [rom_active, rom_passive], reason: Active and passive ROM with units and context are required}
+    severity: block
+  - key: req_restrictions
+    name: Restrictions and procedures must be known
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: surgeon_restrictions}, {op: known, field: procedure}]}
+    action: {type: require_field, fields: [surgeon_restrictions, procedure], reason: Unknown is not equivalent to no restrictions}
+    severity: block
+  - key: req_goals
+    name: Functional goals must be stated
+    kind: required_input
+    expression: {op: known, field: goals}
+    action: {type: require_field, field: goals, reason: Functional goals drive branch selection}
+    severity: block
+  - key: req_prior_treatment
+    name: Relevant prior treatment must be recorded
+    kind: required_input
+    expression: {op: known, field: prior_interventions}
+    action: {type: require_field, field: prior_interventions, reason: Prior injection or procedure is contextual data required by the pathway}
+    severity: block
+  - key: req_concern_screen
+    name: Concern screen must be completed
+    kind: required_input
+    expression: {op: known, field: concerning_findings}
+    action: {type: require_field, field: concerning_findings, reason: A missing symptom report is not a negative finding}
+    severity: block
+  - key: concern_findings_present
+    name: Concerning neurologic or systemic findings reported
+    kind: concern_screen
+    expression: {op: and, args: [{op: known, field: concerning_findings}, {op: ne, field: concerning_findings, value: []}]}
+    action: {type: block_for_review, message: "Concerning findings reported. Routing per approved clinical-lead rule (not yet signed): clinician review before any exercise prescription."}
+    severity: block
+  - key: postop_needs_own_protocol
+    name: Surgically treated shoulder requires its own approved protocol
+    kind: restriction
+    expression: {op: and, args: [{op: known, field: procedure}, {op: ne, field: procedure, value: none}]}
+    action: {type: block_for_review, message: "A surgically treated variant needs its own approved protocol; none is published for this procedure."}
+    severity: block
+  - key: worsening_response
+    name: Worsening response after prior session
+    kind: next_day_response
+    expression: {op: eq, field: prior_session_response, value: worse}
+    action: {type: block_for_review, message: "Worsened response after a prior session. Routing must follow an approved rule; clinical lead has not signed thresholds."}
+    severity: block
+  - key: branch_high_irritability
+    name: High irritability branch
+    kind: eligibility
+    expression: {op: eq, field: irritability, value: high}
+    action: {type: inform, message: symptom-limited mobility branch}
+  - key: branch_lower_irritability
+    name: Lower irritability with stiffness branch
+    kind: eligibility
+    expression: {op: in, field: irritability, value: [low, moderate]}
+    action: {type: inform, message: mobility restoration branch}
+  - key: branch_functional
+    name: Functional strengthening branch (criteria met)
+    kind: eligibility
+    expression: {op: and, args: [{op: eq, field: irritability, value: low}, {op: eq, field: functional_criteria_met, value: true}]}
+    action: {type: inform, message: functional strengthening branch}
+  - key: starting_position_slot
+    name: Cannot assume required starting position (RULE SLOT — unsigned)
+    kind: restriction
+    expression: {op: eq, field: can_assume_starting_position, value: false}
+    action: {type: exclude_variant, tags: [requires_supine, requires_seated_at_table]}
+    severity: warning
+    rationale: Placeholder slot. Only executable once a clinical lead signs it (spec §19 action_type).
+protocols:
+  - key: fs_symptom_limited
+    name: Frozen shoulder — symptom-limited mobility branch
+    population_description: Adults with clinically confirmed adhesive capsulitis and high irritability
+    branch_conditions: [irritability = high]
+    eligibility_rules: [branch_high_irritability]
+    required_inputs: [affected_side, diagnosis_confirmation, irritability, rom_active, rom_passive, surgeon_restrictions, procedure, goals, prior_interventions, concerning_findings]
+    phases:
+      - key: p_symptom_limited
+        name: Symptom-limited mobility
+        goals: [reduce irritability, maintain motion within symptom limits]
+        window: {anchor: assessment, start: 0, end: null, unit: weeks, provisional: true,
+                 text: "Duration depends on symptom response; source guidance gives no fixed duration", provenance: unknown}
+        items: [cu_table_slide_symptom_limited, cu_er_passive_symptom_limited]
+        review_checkpoint: Reassess pain, irritability and ROM at the next PT visit (interval set by the PT)
+        advance_criteria: [irritability reduced to a level the PT judges appropriate for mobility restoration]
+        hold_criteria: [symptoms unchanged]
+        regress_criteria: [worsening response after sessions]
+        restrictions: []
+        basis: [S1_irritability]
+        gaps: [dose not supplied, timing not supplied]
+    monitoring: [pain at rest/movement/night, next-day response, ROM]
+    reassessment: {timing: "per PT; not fixed by source", provenance: unknown}
+    recovery_horizon: {text: "Recovery timeline varies widely; no fixed number of weeks is promised", provenance: unknown}
+    provenance: {kind: source_family, refs: [S1]}
+  - key: fs_mobility_restoration
+    name: Frozen shoulder — mobility restoration branch
+    population_description: Adults with lower irritability and major stiffness
+    branch_conditions: [irritability = low or moderate]
+    eligibility_rules: [branch_lower_irritability]
+    required_inputs: [affected_side, diagnosis_confirmation, irritability, rom_active, rom_passive, surgeon_restrictions, procedure, goals, prior_interventions, concerning_findings]
+    phases:
+      - key: p_mobility
+        name: Mobility restoration
+        goals: [restore elevation and external rotation]
+        window: {anchor: assessment, start: 0, end: null, unit: weeks, provisional: true,
+                 text: "Duration depends on measured progress", provenance: unknown}
+        items: [cu_table_slide_mobility, cu_er_assisted_mobility, cu_scapular_mobility]
+        review_checkpoint: Reassess ROM and symptom response at each visit
+        advance_criteria: [functional criteria defined by the PT are met]
+        hold_criteria: [ROM unchanged without symptom increase]
+        regress_criteria: [irritability increases]
+        basis: [S1_irritability]
+        gaps: [dose not supplied, timing not supplied]
+      - key: p_functional
+        name: Functional strengthening (when criteria met)
+        goals: [overhead function]
+        window: {anchor: assessment, start: null, end: null, unit: weeks, provisional: true,
+                 text: "Begins only when functional criteria are met; not a scheduled week", provenance: unknown}
+        items: [cu_er_resisted_functional]
+        entry_rules: [branch_functional]
+        review_checkpoint: PT confirms criteria before this phase starts
+        advance_criteria: []
+        hold_criteria: []
+        regress_criteria: [irritability increases]
+        basis: []
+        gaps: [no source claim linked, dose not supplied]
+    monitoring: [pain, ROM, next-day response]
+    reassessment: {timing: "per PT", provenance: unknown}
+    recovery_horizon: {text: "Recovery timeline varies widely; no fixed number of weeks is promised", provenance: unknown}
+    provenance: {kind: source_family, refs: [S1]}
+applicability:
+  - key: app_age_sex_context
+    target: fs_mobility_restoration
+    target_type: protocol
+    relationship_type: insufficient_evidence
+    predicates:
+      - {dimension: age, operator: gte, value: 40, unit: years}
+    predicate_logic: and
+    action_type: inform_only
+    generalizability_limits: "Epidemiologic association with age/sex is not a dosing rule (spec §9)."
+    evidence_claims: []
+  - key: app_bmi_context
+    target: fs_mobility_restoration
+    target_type: protocol
+    relationship_type: insufficient_evidence
+    predicates:
+      - {dimension: bmi, operator: gte, value: 30, unit: kg/m2}
+    action_type: inform_only
+    generalizability_limits: "BMI class alone does not establish exercise tolerance or mandate dose reduction (spec §19)."
+intake_prompts:
+  affected_side: Laterality is not established
+  diagnosis_confirmation: Clinical confirmation and assessor are required
+  irritability: Required by pathway eligibility rules
+  surgeon_restrictions: Unknown is not equivalent to no restrictions
+  procedure: Prior procedures determine whether a surgical pathway applies
+  rom_active: Active ROM with units and measurement context
+  rom_passive: Passive ROM with units and measurement context
+  goals: Functional goals drive branch selection
+  prior_interventions: Prior injection or procedure is contextual data
+  concerning_findings: Concern screen must be completed; a missing report is not a negative finding

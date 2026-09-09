@@ -1,0 +1,4 @@
+{"exercises": [{"source_exercise_name": "Movement G (active)", "assistance": "active", "locator": {"anchor": "#ex-g"}, "steps": ["Step one."], "phase": null, "setting": [],
+  "graphics": [{"src": "https://example.invalid/third-party-graphic.png", "locator": {"anchor": "#graphic-g"}, "third_party": true}],
+  "dose": {"sets": {"value": 2, "locator": {"table": "#table-g", "row": 1, "col": "Sets"}}, "repetitions": {"value": 6, "locator": {"table": "#table-g", "row": 1, "col": "Reps"}}}}],
+ "clinician_only": [], "contraindications": [], "phases": [], "conflicts": [], "unreadable": [], "declared_publication_date": null, "document_identity": "Rights-restricted graphic fixture"}

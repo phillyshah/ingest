@@ -1,0 +1,5 @@
+{"pages": [{"page": 1, "blocks": [
+  {"text": "Movement C (passive)", "confidence": 0.97, "bbox": [50, 40, 300, 60]},
+  {"text": "Sets: 3", "confidence": 0.95, "bbox": [50, 80, 120, 100]},
+  {"text": "Reps: 1-2", "confidence": 0.61, "bbox": [50, 110, 120, 130], "alternatives": ["Reps: 12", "Reps: 1–2"]}
+]}]}

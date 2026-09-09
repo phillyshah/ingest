@@ -1,0 +1,12 @@
+- system: ICD-10-CM
+  release_id: FY26
+  effective_start: 2025-10-01
+  effective_end: 2026-09-30
+  source_url: https://www.cdc.gov/nchs/icd/icd-10-cm/files.html
+  file: icd10cm_order_sample_FY26.txt
+- system: ICD-10-CM
+  release_id: FY27
+  effective_start: 2026-10-01
+  effective_end: null
+  source_url: https://www.cdc.gov/nchs/icd/icd-10-cm/files.html
+  file: icd10cm_order_sample_FY27.txt

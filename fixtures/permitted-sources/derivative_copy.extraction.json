@@ -1,0 +1,22 @@
+{
+  "exercises": [
+    {"source_exercise_name": "Demo movement A (active)", "assistance": "active", "locator": {"anchor": "#demo-exercise-a"},
+     "steps": ["Demo step one.", "Demo step two."], "phase": "Phase 1 — Demo phase 1", "setting": ["home"],
+     "dose": {"sets": {"value": 2, "locator": {"table": "#dose-table-1", "row": 1, "col": "Sets"}},
+              "repetitions": {"value": 8, "locator": {"table": "#dose-table-1", "row": 1, "col": "Reps"}},
+              "hold_seconds": {"value": 3, "unit": "seconds", "locator": {"table": "#dose-table-1", "row": 1, "col": "Hold (s)"}},
+              "sessions_per_day": {"value": 1, "locator": {"table": "#dose-table-1", "row": 1, "col": "Sessions/day"}},
+              "days_per_week": {"value": 5, "locator": {"table": "#dose-table-1", "row": 1, "col": "Days/week"}}}},
+    {"source_exercise_name": "Demo movement B (resisted)", "assistance": "resisted", "locator": {"anchor": "#demo-exercise-b"},
+     "steps": ["Demo step one.", "Demo step two."], "phase": "Phase 2 — Demo phase 2", "setting": ["home"], "equipment": ["elastic band"],
+     "dose": {"sets": {"value": 3, "locator": {"table": "#dose-table-2", "row": 1, "col": "Sets"}},
+              "repetitions": {"value": 10, "locator": {"table": "#dose-table-2", "row": 1, "col": "Reps"}},
+              "hold_seconds": {"value": 0, "unit": "seconds", "locator": {"table": "#dose-table-2", "row": 1, "col": "Hold (s)"}},
+              "sessions_per_day": {"value": 1, "locator": {"table": "#dose-table-2", "row": 1, "col": "Sessions/day"}},
+              "days_per_week": {"value": 3, "locator": {"table": "#dose-table-2", "row": 1, "col": "Days/week"}}}}
+  ],
+  "clinician_only": [{"text": "Demo manual technique — performed by the clinician only.", "locator": {"anchor": "#clinician-only"}}],
+  "contraindications": [],
+  "phases": [{"name": "Phase 1 — Demo phase 1", "locator": {"anchor": "#phase-1"}}, {"name": "Phase 2 — Demo phase 2", "locator": {"anchor": "#phase-2"}}],
+  "conflicts": [], "unreadable": [], "declared_publication_date": "2026-09-01", "document_identity": "Owned demo protocol (synthetic) — v1"
+}

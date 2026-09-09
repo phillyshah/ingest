@@ -1,0 +1,201 @@
+pack: demo_synthetic
+version: 0.1.0
+family: demo
+approval_state: approved
+label: "DEMO SYNTHETIC — non-clinical numbers for exercising the approval path. Never use for care."
+clinical_lead_signature: "DEMO-SYNTHETIC-NOT-A-CLINICAL-SIGNATURE"
+condition:
+  internal_code: demo_synthetic
+  preferred_name: Demo synthetic condition (non-clinical)
+  synonyms: [demo condition]
+  body_region: demo
+  ambiguity_flags: []
+  icd10cm: []
+sources:
+  - key: DEMO
+    url: file://fixtures/permitted-sources/owned_demo_protocol.html
+    publisher: MoveAI (owned synthetic fixture)
+    title: Owned demo protocol (synthetic)
+    document_version: v1
+    source_type: html
+    rights: {can_fetch: allowed, can_store_fulltext: allowed, can_store_excerpt: allowed, can_embed_for_search: allowed,
+             can_process_with_model: allowed, can_store_transcript: allowed, can_download_media: allowed,
+             can_display_to_clinician: allowed, can_display_to_patient: allowed, can_redistribute: allowed,
+             can_transform: allowed, can_train_model: denied}
+    rights_evidence: {kind: ownership, text: "Owned synthetic fixture created for this repository."}
+claims:
+  - key: DEMO_dose_a
+    source: DEMO
+    locator: {anchor: "#demo-exercise-a", table: "dose-table", row: 1}
+    claim_type: dose
+    paraphrase: Demo exercise A dose row (synthetic).
+  - key: DEMO_dose_b
+    source: DEMO
+    locator: {anchor: "#demo-exercise-b", table: "dose-table", row: 2}
+    claim_type: dose
+    paraphrase: Demo exercise B dose row (synthetic).
+concepts:
+  - key: demo_a
+    preferred_name: Demo movement A
+    body_region: demo
+    variants:
+      - key: demo_a_active
+        name: Demo movement A (active)
+        assistance: active
+        region: demo
+        starting_position: seated
+        side_behavior: unilateral
+        equipment: []
+        setting: [home]
+        step_sequence: [Demo step one., Demo step two.]
+        tags: []
+        media_state: reference_only
+        approval_state: approved
+        source_reference: {source: DEMO, locator: {anchor: "#demo-exercise-a"}, source_exercise_name: "Demo A"}
+  - key: demo_b
+    preferred_name: Demo movement B
+    body_region: demo
+    variants:
+      - key: demo_b_resisted
+        name: Demo movement B (resisted)
+        assistance: resisted
+        region: demo
+        starting_position: standing
+        load_mode: elastic_resistance
+        side_behavior: bilateral
+        equipment: [elastic band]
+        setting: [home]
+        step_sequence: [Demo step one., Demo step two.]
+        tags: [strengthening]
+        media_state: rights_hold
+        approval_state: approved
+        source_reference: {source: DEMO, locator: {anchor: "#demo-exercise-b"}, source_exercise_name: "Demo B"}
+clinical_uses:
+  - key: cu_demo_a
+    variant: demo_a_active
+    phase: demo_phase_1
+    goals: [demo goal]
+    dose_envelope:
+      sets: {value: 2, provenance: source_explicit, claim_id: DEMO_dose_a}
+      repetitions: {value: 8, provenance: source_explicit, claim_id: DEMO_dose_a}
+      hold_seconds: {value: 3, unit: seconds, provenance: source_explicit, claim_id: DEMO_dose_a}
+      sessions_per_day: {value: 1, provenance: source_explicit, claim_id: DEMO_dose_a}
+      days_per_week: {value: 5, provenance: source_explicit, claim_id: DEMO_dose_a}
+    supporting_claims: [DEMO_dose_a]
+    directness: direct
+    support_category: local_clinical_consensus
+    session_minutes_estimate: 5
+    approval_state: approved
+  - key: cu_demo_b
+    variant: demo_b_resisted
+    phase: demo_phase_2
+    goals: [demo strength goal]
+    dose_envelope:
+      sets: {value: 3, provenance: source_explicit, claim_id: DEMO_dose_b}
+      repetitions: {value: 10, provenance: source_explicit, claim_id: DEMO_dose_b}
+      hold_seconds: {value: 0, unit: seconds, provenance: source_explicit, claim_id: DEMO_dose_b}
+      sessions_per_day: {value: 1, provenance: source_explicit, claim_id: DEMO_dose_b}
+      days_per_week: {value: 3, provenance: source_explicit, claim_id: DEMO_dose_b}
+    supporting_claims: [DEMO_dose_b]
+    directness: direct
+    support_category: local_clinical_consensus
+    session_minutes_estimate: 8
+    approval_state: approved
+rules:
+  - key: req_side
+    name: Affected side must be established
+    kind: required_input
+    expression: {op: known, field: affected_side}
+    action: {type: require_field, field: affected_side, reason: Laterality is not established}
+    severity: block
+    approval_state: approved
+  - key: req_concern_screen
+    name: Concern screen
+    kind: required_input
+    expression: {op: known, field: concerning_findings}
+    action: {type: require_field, field: concerning_findings, reason: Concern screen must be completed}
+    severity: block
+    approval_state: approved
+  - key: req_restrictions
+    name: Restrictions must be known
+    kind: required_input
+    expression: {op: known, field: surgeon_restrictions}
+    action: {type: require_field, field: surgeon_restrictions, reason: Unknown is not equivalent to no restrictions}
+    severity: block
+    approval_state: approved
+  - key: concern_findings_present
+    name: Concerning findings reported
+    kind: concern_screen
+    expression: {op: and, args: [{op: known, field: concerning_findings}, {op: ne, field: concerning_findings, value: []}]}
+    action: {type: block_for_review, message: "Demo concern rule fired: clinician review required."}
+    severity: block
+    approval_state: approved
+  - key: worsening_response
+    name: Worsening response
+    kind: next_day_response
+    expression: {op: eq, field: prior_session_response, value: worse}
+    action: {type: block_for_review, message: "Demo: worsened response routes to clinician review."}
+    severity: block
+    approval_state: approved
+  - key: branch_demo
+    name: Demo branch
+    kind: eligibility
+    expression: {op: known, field: affected_side}
+    action: {type: inform, message: demo branch}
+    approval_state: approved
+  - key: demo_no_band_excludes_resisted
+    name: No elastic band available
+    kind: restriction
+    expression: {op: and, args: [{op: known, field: equipment}, {op: not, arg: {op: contains, field: equipment, value: elastic band}}]}
+    action: {type: exclude_variant, variant_keys: [demo_b_resisted]}
+    severity: warning
+    approval_state: approved
+  - key: demo_phase2_criteria
+    name: Demo phase 2 entry criteria
+    kind: progression
+    expression: {op: eq, field: functional_criteria_met, value: true}
+    action: {type: inform, message: "Phase 2 only when criteria met"}
+    approval_state: approved
+protocols:
+  - key: demo_protocol
+    name: Demo synthetic protocol
+    population_description: synthetic
+    branch_conditions: [demo]
+    eligibility_rules: [branch_demo]
+    required_inputs: [affected_side, concerning_findings, surgeon_restrictions]
+    phases:
+      - key: d1
+        name: Demo phase 1
+        goals: [demo goal]
+        window: {anchor: assessment, start: 0, end: 2, unit: weeks, provisional: false, text: "Demo window (synthetic)", provenance: demo_synthetic}
+        items: [cu_demo_a]
+        review_checkpoint: Demo checkpoint
+        advance_criteria: [demo criteria confirmed by PT]
+        basis: [DEMO_dose_a]
+      - key: d2
+        name: Demo phase 2
+        goals: [demo strength goal]
+        window: {anchor: assessment, start: 2, end: 4, unit: weeks, provisional: true, text: "Demo window (synthetic)", provenance: demo_synthetic}
+        items: [cu_demo_b]
+        entry_rules: [demo_phase2_criteria]
+        review_checkpoint: Demo checkpoint 2
+        basis: [DEMO_dose_b]
+    monitoring: [demo monitoring]
+    reassessment: {timing: "2 weeks (demo)", provenance: demo_synthetic}
+    recovery_horizon: {text: "Demo horizon (synthetic)", provenance: demo_synthetic}
+    provenance: {kind: demo_synthetic, refs: [DEMO]}
+    approval_state: approved
+applicability:
+  - key: app_demo_bmi
+    target: cu_demo_a
+    target_type: clinical_use
+    relationship_type: studied_population
+    predicates:
+      - {dimension: bmi, operator: between, min: 18.5, max: 35, min_inclusive: true, max_inclusive: false, unit: kg/m2}
+    action_type: inform_only
+    generalizability_limits: "Demo: studied population tag; not an exclusion."
+    approval_state: approved
+intake_prompts:
+  affected_side: Laterality is not established
+  concerning_findings: Concern screen must be completed
+  surgeon_restrictions: Unknown is not equivalent to no restrictions

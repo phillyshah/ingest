@@ -1,0 +1,7 @@
+{"exercises": [
+  {"source_exercise_name": "Movement A (active-assisted)", "assistance": "active_assisted", "locator": {"anchor": "#ex-a"}, "steps": ["Step."], "phase": "Phase A", "setting": [],
+   "dose": {"sets": {"value": 1, "locator": {"table": "#table-a", "row": 1, "col": "Sets"}}, "repetitions": {"value": 5, "locator": {"table": "#table-a", "row": 1, "col": "Reps"}}}},
+  {"source_exercise_name": "Movement B (resisted)", "assistance": "resisted", "locator": {"anchor": "#ex-b"}, "steps": ["Step."], "phase": null, "setting": [],
+   "dose": {"sets": {"value": 4, "locator": {"table": "#table-b", "row": 1, "col": "Sets"}}, "repetitions": {"value": 12, "locator": {"table": "#table-b", "row": 1, "col": "Reps"}}}}],
+ "clinician_only": [], "contraindications": [], "phases": [{"name": "Phase A", "locator": {"anchor": "#phase-a"}}], "conflicts": [], "unreadable": [],
+ "declared_publication_date": null, "document_identity": "Headingless dose table fixture"}

@@ -1,0 +1,12 @@
+00001 M750    0 Adhesive capsulitis of shoulder                              Adhesive capsulitis of shoulder
+00002 M7500   1 Adhesive capsulitis of unspecified shoulder                  Adhesive capsulitis of unspecified shoulder
+00003 M7501   1 Adhesive capsulitis of right shoulder                        Adhesive capsulitis of right shoulder
+00004 M7502   1 Adhesive capsulitis of left shoulder                         Adhesive capsulitis of left shoulder
+00005 S8341   0 Sprain of medial collateral ligament of knee                 Sprain of medial collateral ligament of knee
+00006 S83411A 1 Sprain of medial collateral ligament of right knee, init     Sprain of medial collateral ligament of right knee, initial encounter
+00007 S83412A 1 Sprain of medial collateral ligament of left knee, init      Sprain of medial collateral ligament of left knee, initial encounter
+00008 S83419A 1 Sprain of medial collateral ligament of unsp knee, init      Sprain of medial collateral ligament of unspecified knee, initial encounter
+00009 S7631   0 Strain of musc/fasc/tend the posterior musc grp at thi lv    Strain of muscle, fascia and tendon of the posterior muscle group at thigh level
+00010 S76311A 1 Strain of musc/fasc/tend post grp at thi lv, right thigh, init Strain of muscle, fascia and tendon of the posterior muscle group at thigh level, right thigh, initial encounter
+00011 S76312A 1 Strain of musc/fasc/tend post grp at thi lv, left thigh, init Strain of muscle, fascia and tendon of the posterior muscle group at thigh level, left thigh, initial encounter
+00012 S76319A 1 Strain of musc/fasc/tend post grp at thi lv, unsp thigh, init Strain of muscle, fascia and tendon of the posterior muscle group at thigh level, unspecified thigh, initial encounter

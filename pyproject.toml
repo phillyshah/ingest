@@ -22,6 +22,7 @@ dev = [
   "mypy>=1.11",
   "pyyaml>=6.0",
   "types-PyYAML",
+  "reportlab>=5.0.1",
 ]
 
 [tool.uv.workspace]
