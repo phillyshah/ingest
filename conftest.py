@@ -19,10 +19,30 @@ def pytest_configure(config: pytest.Config) -> None:
     os.environ.setdefault("PLAN_SIGNING_SECRET", "test-secret-not-for-production")
 
 
+def _test_url() -> str:
+    """Tests never run against the development database: derive `<db>_test` (or TEST_DATABASE_URL) and reset it."""
+    if os.environ.get("TEST_DATABASE_URL"):
+        return os.environ["TEST_DATABASE_URL"]
+    base = os.environ["DATABASE_URL"]
+    head, _, db = base.rpartition("/")
+    name, _, query = db.partition("?")
+    return f"{head}/{name}_test" + (f"?{query}" if query else "")
+
+
 @pytest.fixture(scope="session")
 def migrated_db() -> str:
-    subprocess.run(["python", str(ROOT / "scripts" / "migrate.py")], check=True, env=os.environ, capture_output=True)
-    return os.environ["DATABASE_URL"]
+    import psycopg
+
+    url = _test_url()
+    head, _, db = url.rpartition("/")
+    name = db.partition("?")[0]
+    with psycopg.connect(f"{head}/postgres", autocommit=True) as admin:
+        if not admin.execute("select 1 from pg_database where datname=%s", (name,)).fetchone():
+            admin.execute(f'create database "{name}"')
+    env = {**os.environ, "DATABASE_URL": url}
+    subprocess.run(["python", str(ROOT / "scripts" / "migrate.py"), "--reset"], check=True, env=env, capture_output=True)
+    os.environ["DATABASE_URL"] = url
+    return url
 
 
 @pytest.fixture()

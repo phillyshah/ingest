@@ -1,0 +1,16 @@
+FROM python:3.11-slim AS base
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 UV_SYSTEM_PYTHON=1
+RUN pip install --no-cache-dir uv==0.8.17
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+COPY packages ./packages
+COPY services ./services
+COPY adapters ./adapters
+COPY db ./db
+COPY scripts ./scripts
+COPY fixtures ./fixtures
+RUN uv sync --frozen --no-dev --all-packages
+RUN useradd -r -u 10001 moveai && chown -R moveai /app
+USER moveai
+EXPOSE 8000
+CMD ["uv", "run", "--no-sync", "uvicorn", "moveai_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]

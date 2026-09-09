@@ -1,0 +1,15 @@
+FROM python:3.11-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+RUN pip install --no-cache-dir uv==0.8.17
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+COPY packages ./packages
+COPY services ./services
+COPY adapters ./adapters
+COPY db ./db
+COPY scripts ./scripts
+COPY fixtures ./fixtures
+RUN uv sync --frozen --no-dev --all-packages
+RUN useradd -r -u 10002 moveai-worker && chown -R moveai-worker /app
+USER moveai-worker
+CMD ["uv", "run", "--no-sync", "python", "-m", "moveai_ingestion.worker"]

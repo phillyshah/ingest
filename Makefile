@@ -16,7 +16,7 @@ reset:            ## drop + recreate schema (dev only)
 seed: migrate     ## load fixtures + content packs
 	@uv run python scripts/seed.py
 
-test: migrate     ## run python test suite against local postgres
+test: db-up       ## run python test suite against a dedicated <db>_test database (reset each run)
 	@uv run pytest -q
 
 lint:

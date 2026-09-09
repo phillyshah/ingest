@@ -23,6 +23,18 @@ signed clinical content packs. The packs shipped here are `unsigned_placeholder`
 | `infra/` | compose, Caddy snippet, systemd units, env template |
 | `docs/adr/`, `docs/runbooks/` | Decisions and operations |
 
+## Status (sprint 1)
+
+Working: schema + DB-enforced invariants, ingestion pipeline (HTML, text PDF, OCR stub) with rights gates and
+provenance, content-pack installer, deterministic planner (`needs_assessment` / `blocked_for_clinical_review` /
+`draft_ready`) with population segmentation, PT approval with signed revisions, withdrawal propagation, immutable
+catalog releases, `/v1` API with campaign board endpoints and SSE, mock MoveAI adapter, reviewer app (Kanban,
+campaign detail, extraction review, catalog, plan options), 126 Python tests, 6 UI unit tests, a Playwright smoke,
+and `make demo`. Deployment files target the owner's VPS + Supabase (spec §22) but nothing has been deployed.
+
+Not yet: Supabase Auth verification (header shim only), a real OCR engine, live crawling of allowlisted domains
+beyond fixtures, signed clinical content (all packs are `unsigned_placeholder`).
+
 ## Quick start
 
 ```bash
@@ -34,6 +46,25 @@ make demo         # end-to-end acceptance demonstration (text-only, no media)
 make api          # http://127.0.0.1:8000/v1  (docs at /v1/docs)
 pnpm -C apps/reviewer install && make ui
 ```
+
+### Reviewer app and end-to-end smoke
+
+```bash
+pnpm -C apps/reviewer install
+make api                              # terminal 1
+make ui                               # terminal 2 -> http://127.0.0.1:5173 (proxies /api/v1 to the API)
+make seed                             # prints user IDs; also writes .demo-out/e2e.env
+PW_CHROMIUM=/path/to/chromium pnpm -C apps/reviewer test:e2e   # or let Playwright download its browser
+```
+
+Sign in with a user ID from `make seed` and the role you want to exercise. The board, detail tabs, review screen,
+and plan options are all live against the API.
+
+### Deployment target
+
+`infra/` holds the env template, Dockerfiles, compose file, reverse-proxy snippets (Caddy and nginx) for
+`ingest.phillyshah.com`, and a systemd unit. See `docs/runbooks/` for operations. Confirm the Supabase project,
+VPS capacity, and DNS before applying anything (spec §22 D/E).
 
 Auth in development is a header shim (`X-Role`, `X-Tenant-Id`, `X-User-Id`). Supabase Auth replaces the
 shim behind the same interface (`moveai_api.auth`). Production target: `https://ingest.phillyshah.com`.
