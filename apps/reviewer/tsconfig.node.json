@@ -1,0 +1,1 @@
+{ "compilerOptions": { "composite": true, "module": "ESNext", "moduleResolution": "bundler", "skipLibCheck": true, "types": ["node"] }, "include": ["vite.config.ts", "playwright.config.ts"] }

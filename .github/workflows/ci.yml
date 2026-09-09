@@ -1,0 +1,40 @@
+name: ci
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: postgres, POSTGRES_DB: moveai }
+        ports: ["55432:5432"]
+        options: --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:55432/moveai
+      PLAN_SIGNING_SECRET: ci-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with: { version: "0.8.17" }
+      - run: uv sync --all-packages
+      - run: uv run ruff check . && uv run ruff format --check .
+      - run: uv run python scripts/migrate.py
+      - run: uv run python scripts/export_openapi.py --check
+      - run: uv run pytest -q
+      - run: uv run python scripts/seed.py && uv run python scripts/demo.py
+  reviewer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        # No version input: the pnpm version comes from "packageManager" in the root package.json.
+      - uses: actions/setup-node@v4
+        # The pnpm workspace root holds the lockfile (pnpm-workspace.yaml + package.json at the repo root).
+        with: { node-version: 22, cache: pnpm, cache-dependency-path: pnpm-lock.yaml }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -C apps/reviewer lint
+      - run: pnpm -C apps/reviewer test
+      - run: pnpm -C apps/reviewer build

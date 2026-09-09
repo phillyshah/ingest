@@ -1,0 +1,301 @@
+[
+  {
+    "id": "demo-01-draft-ready",
+    "family": "demo",
+    "narrative": "demo condition",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "equipment": {
+          "status": "known",
+          "value": [
+            "elastic band"
+          ]
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "draft_ready",
+      "missing_fields_include": [],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": "non-clinical synthetic pack"
+  },
+  {
+    "id": "demo-02-unavailable-graphic",
+    "family": "demo",
+    "narrative": "demo condition",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "equipment": {
+          "status": "known",
+          "value": [
+            "elastic band"
+          ]
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": true
+        }
+      }
+    },
+    "expected": {
+      "status": "draft_ready",
+      "missing_fields_include": [],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": "phase 2 variant has media rights_hold; text-only draft still valid"
+  },
+  {
+    "id": "demo-03-source-conflict-blocked",
+    "family": "demo",
+    "narrative": "demo condition",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": [
+            "x"
+          ]
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "equipment": {
+          "status": "known",
+          "value": [
+            "elastic band"
+          ]
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "Demo concern",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "demo-04-worsening",
+    "family": "demo",
+    "narrative": "demo condition",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "equipment": {
+          "status": "known",
+          "value": [
+            "elastic band"
+          ]
+        },
+        "prior_session_response": {
+          "status": "known",
+          "value": "worse"
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        }
+      }
+    },
+    "expected": {
+      "status": "blocked_for_clinical_review",
+      "missing_fields_include": [],
+      "blocked_rule_contains": "Worsening",
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  },
+  {
+    "id": "demo-05-paired-bmi-a",
+    "family": "demo",
+    "narrative": "demo condition",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "equipment": {
+          "status": "known",
+          "value": [
+            "elastic band"
+          ]
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        },
+        "height": {
+          "status": "known",
+          "value": 1.7,
+          "unit": "m"
+        },
+        "weight": {
+          "status": "known",
+          "value": 95,
+          "unit": "kg"
+        }
+      }
+    },
+    "expected": {
+      "status": "draft_ready",
+      "missing_fields_include": [],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": "pair with 06: same eligibility"
+  },
+  {
+    "id": "demo-06-paired-bmi-b",
+    "family": "demo",
+    "narrative": "demo condition",
+    "intake": {
+      "fields": {
+        "affected_side": {
+          "status": "known",
+          "value": "left"
+        },
+        "concerning_findings": {
+          "status": "known",
+          "value": []
+        },
+        "surgeon_restrictions": {
+          "status": "known",
+          "value": "none"
+        },
+        "equipment": {
+          "status": "known",
+          "value": [
+            "elastic band"
+          ]
+        },
+        "prior_session_response": {
+          "status": "not_applicable"
+        },
+        "age": {
+          "status": "known",
+          "value": 55,
+          "unit": "years"
+        },
+        "functional_criteria_met": {
+          "status": "known",
+          "value": false
+        },
+        "height": {
+          "status": "known",
+          "value": 1.7,
+          "unit": "m"
+        },
+        "weight": {
+          "status": "known",
+          "value": 65,
+          "unit": "kg"
+        }
+      }
+    },
+    "expected": {
+      "status": "draft_ready",
+      "missing_fields_include": [],
+      "blocked_rule_contains": null,
+      "review": "pending_clinical_lead_confirmation"
+    },
+    "note": null
+  }
+]

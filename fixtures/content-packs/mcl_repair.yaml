@@ -1,0 +1,303 @@
+pack: mcl_repair
+version: 0.1.0
+family: mcl_repair
+approval_state: unsigned_placeholder
+label: "Surgically repaired MCL tear — UNSIGNED PLACEHOLDER, not a treatment protocol"
+condition:
+  internal_code: mcl_tear_surgical_repair
+  preferred_name: Medial collateral ligament tear, surgically repaired
+  synonyms: [MCL repair, MCL tear surgery, medial collateral ligament repair, repaired MCL, MCL reconstruction, MCL tear, medial collateral ligament]
+  body_region: knee
+  ambiguity_flags: [laterality_required, repair_vs_reconstruction, associated_procedures, surgeon_protocol_required]
+  icd10cm:
+    - {code: S83.411A, relationship: broader, laterality: right}
+    - {code: S83.412A, relationship: broader, laterality: left}
+    - {code: S83.419A, relationship: broader, laterality: unspecified}
+sources:
+  - key: S6
+    url: https://www.massgeneralbrigham.org/content/dam/unified-xwalk/pdf/patient-education/english/rehabilitation-protocol-for-posterior-bankart.pdf
+    publisher: Massachusetts General Brigham
+    title: Rehabilitation Protocol for Posterior Bankart Repair
+    document_version: revised October 2021
+    source_type: pdf
+    rights: {can_fetch: unknown, can_store_fulltext: denied, can_process_with_model: unknown, can_display_to_patient: denied, can_redistribute: denied, can_train_model: denied}
+    rights_evidence: {kind: note, text: "Illustrates time+criteria postoperative structure only (spec §17 [S6]). Not an MCL protocol; not reuse authorization."}
+    notes: structural reference only — not MCL evidence
+claims:
+  - key: S6_structure
+    source: S6
+    locator: {note: "structural illustration; not condition evidence"}
+    claim_type: protocol_phase
+    paraphrase: Postoperative pathways can combine time windows with criteria and depend on procedure-specific restrictions.
+    limitations: Not MCL-specific. Cited only for structure.
+concepts:
+  - key: quad_set
+    preferred_name: Quadriceps setting
+    aliases: [quad set, static quad contraction]
+    body_region: knee
+    movement_purpose: quadriceps activation without knee motion
+    variants:
+      - key: quad_set_supine
+        name: Quadriceps set (supine, knee straight)
+        assistance: active
+        region: knee
+        joint: tibiofemoral
+        starting_position: lying on the back with the leg straight
+        side_behavior: unilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with the leg straight.
+          - Tighten the thigh muscle to press the back of the knee toward the surface.
+          - Hold as instructed, then relax.
+        target_impairment: [quadriceps inhibition]
+        functional_goal: [knee control]
+        tags: [requires_supine, isometric]
+        requires_starting_position: true
+        source_reference: null
+  - key: heel_slide
+    preferred_name: Heel slide
+    aliases: [supine heel slide, knee flexion slide]
+    body_region: knee
+    movement_purpose: knee flexion range within permitted limits
+    variants:
+      - key: heel_slide_active_assisted
+        name: Heel slide (supine, active-assisted with strap)
+        assistance: active_assisted
+        region: knee
+        joint: tibiofemoral
+        movement_plane: sagittal
+        starting_position: lying on the back, strap around the foot
+        side_behavior: unilateral
+        equipment: [strap]
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with a strap around the foot of the operated leg.
+          - Slide the heel toward you, using the strap to assist, only within the range permitted by your surgeon.
+          - Slide back slowly.
+        target_impairment: [limited knee flexion]
+        functional_goal: [sit-to-stand]
+        tags: [requires_supine, range_limited]
+        requires_starting_position: true
+        source_reference: null
+  - key: straight_leg_raise
+    preferred_name: Straight leg raise
+    aliases: [SLR]
+    body_region: knee
+    movement_purpose: hip flexor and quadriceps activation with knee held straight
+    variants:
+      - key: slr_active
+        name: Straight leg raise (supine, active)
+        assistance: active
+        region: knee
+        joint: tibiofemoral
+        starting_position: lying on the back, other knee bent
+        side_behavior: unilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with the other knee bent.
+          - Tighten the thigh, keep the knee straight, and lift the leg to the height of the other knee.
+          - Lower slowly.
+        target_impairment: [quadriceps weakness]
+        functional_goal: [walking]
+        tags: [requires_supine]
+        requires_starting_position: true
+        source_reference: null
+  - key: leg_press
+    preferred_name: Leg press
+    aliases: [double-leg press]
+    body_region: knee
+    movement_purpose: closed-chain lower limb strengthening
+    variants:
+      - key: leg_press_resisted_bilateral
+        name: Leg press (bilateral, resisted, range-limited)
+        assistance: resisted
+        region: knee
+        joint: tibiofemoral
+        chain: closed
+        load_mode: machine_resistance
+        starting_position: seated on a leg-press machine
+        side_behavior: bilateral
+        equipment: [leg press machine]
+        setting: [supervised]
+        step_sequence:
+          - Sit on the machine with both feet on the platform.
+          - Press within the knee range permitted by your surgeon's protocol.
+          - Return with control.
+        target_impairment: [lower limb weakness]
+        functional_goal: [stairs]
+        tags: [strengthening, requires_gym]
+        source_reference: null
+clinical_uses:
+  - key: cu_quad_set_protection
+    variant: quad_set_supine
+    phase: protection
+    indication: Early postoperative activation within surgeon restrictions.
+    goals: [quadriceps activation]
+    dose_envelope:
+      sets: {null_reason: "Not supplied: surgeon protocol / clinical lead must author", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+      hold_seconds: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: [S6_structure]
+    directness: indirect
+    support_category: insufficient_support
+  - key: cu_heel_slide_protection
+    variant: heel_slide_active_assisted
+    phase: protection
+    indication: Flexion range strictly within surgeon-permitted ROM.
+    exclusion: Any ROM restriction that is unknown blocks this item.
+    goals: [permitted knee flexion]
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+      range_max_deg: {null_reason: "Must come from surgeon restrictions; never assumed", provenance: unknown}
+    supporting_claims: [S6_structure]
+    directness: indirect
+    support_category: insufficient_support
+  - key: cu_slr_early_strength
+    variant: slr_active
+    phase: progressive_loading
+    goals: [quadriceps strength]
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: []
+    directness: unknown
+    support_category: insufficient_support
+  - key: cu_leg_press_functional
+    variant: leg_press_resisted_bilateral
+    phase: functional_strengthening
+    goals: [stairs, return to activity]
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+      load_value: {null_reason: "Not supplied", provenance: unknown}
+      range_max_deg: {null_reason: "From surgeon protocol", provenance: unknown}
+    supporting_claims: []
+    directness: unknown
+    support_category: insufficient_support
+rules:
+  - key: req_side
+    name: Operated side must be established
+    kind: required_input
+    expression: {op: known, field: affected_side}
+    action: {type: require_field, field: affected_side, reason: Laterality is not established}
+    severity: block
+  - key: req_procedure
+    name: Exact procedure and date are required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: procedure}, {op: known, field: procedure_date}, {op: known, field: procedure_type}]}
+    action: {type: require_field, fields: [procedure, procedure_date, procedure_type], reason: "Exact procedure, date, and repair-versus-reconstruction are required"}
+    severity: block
+  - key: req_associated
+    name: Associated injuries/procedures must be known
+    kind: required_input
+    expression: {op: known, field: associated_procedures}
+    action: {type: require_field, field: associated_procedures, reason: Combined ligament/meniscal procedures need their own pathway}
+    severity: block
+  - key: req_surgeon_protocol
+    name: Surgeon protocol and restrictions are required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: surgeon_restrictions}, {op: known, field: brace_restrictions},
+                                 {op: known, field: weight_bearing_restrictions}, {op: known, field: rom_restrictions}]}
+    action: {type: require_field, fields: [surgeon_restrictions, brace_restrictions, weight_bearing_restrictions, rom_restrictions], reason: Missing surgeon restrictions block individualized postoperative loading and progression}
+    severity: block
+  - key: req_current_assessment
+    name: Current assessment is required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: rom_active}, {op: known, field: pain_movement}, {op: known, field: concerning_findings}]}
+    action: {type: require_field, fields: [rom_active, pain_movement, concerning_findings], reason: Current assessment and concern screen are required}
+    severity: block
+  - key: concern_findings_present
+    name: Concerning findings reported
+    kind: concern_screen
+    expression: {op: and, args: [{op: known, field: concerning_findings}, {op: ne, field: concerning_findings, value: []}]}
+    action: {type: block_for_review, message: "Concerning findings reported after surgery. Route to surgeon/clinician review per approved rule (unsigned)."}
+    severity: block
+  - key: reconstruction_not_repair
+    name: Reconstruction is a different pathway
+    kind: restriction
+    expression: {op: eq, field: procedure_type, value: reconstruction}
+    action: {type: block_for_review, message: "Reconstruction is not interchangeable with repair; no approved reconstruction pathway is published."}
+    severity: block
+  - key: combined_procedure
+    name: Combined ligament/meniscal procedure
+    kind: restriction
+    expression: {op: and, args: [{op: known, field: associated_procedures}, {op: ne, field: associated_procedures, value: []}]}
+    action: {type: block_for_review, message: "Isolated MCL repair rehabilitation is not merged with combined procedures; a separate approved pathway is required."}
+    severity: block
+  - key: worsening_response
+    name: Worsening response after prior session
+    kind: next_day_response
+    expression: {op: eq, field: prior_session_response, value: worse}
+    action: {type: block_for_review, message: "Worsened response; routing requires an approved rule."}
+    severity: block
+  - key: branch_isolated_repair
+    name: Isolated MCL repair
+    kind: eligibility
+    expression: {op: and, args: [{op: eq, field: procedure_type, value: repair}, {op: eq, field: associated_procedures, value: []}]}
+    action: {type: inform, message: isolated repair pathway}
+  - key: phase_entry_criteria_slot
+    name: Phase advancement criteria (RULE SLOT — unsigned)
+    kind: progression
+    expression: {op: eq, field: functional_criteria_met, value: true}
+    action: {type: inform, message: "Advance only when PT-confirmed criteria are met; elapsed time is not a criterion."}
+protocols:
+  - key: mcl_isolated_repair
+    name: Isolated MCL repair — postoperative pathway (structure only)
+    population_description: Adults after isolated surgical MCL repair with surgeon protocol available
+    branch_conditions: [procedure_type = repair, no associated procedures]
+    eligibility_rules: [branch_isolated_repair]
+    required_inputs: [affected_side, procedure, procedure_date, procedure_type, associated_procedures, surgeon_restrictions, brace_restrictions, weight_bearing_restrictions, rom_restrictions, rom_active, pain_movement, concerning_findings]
+    phases:
+      - key: p_protection
+        name: Protection
+        goals: [tissue protection, quadriceps activation, permitted ROM]
+        window: {anchor: procedure, start: 0, end: null, unit: weeks, provisional: true,
+                 text: "Window defined by the surgeon's protocol; not supplied", provenance: unknown}
+        items: [cu_quad_set_protection, cu_heel_slide_protection]
+        restrictions: [brace per surgeon, weight bearing per surgeon, ROM per surgeon]
+        review_checkpoint: Surgeon/PT review of restrictions before any progression
+        advance_criteria: [surgeon clearance, PT-confirmed criteria]
+        hold_criteria: [restrictions unchanged]
+        regress_criteria: [pain or effusion increase]
+        basis: [S6_structure]
+        gaps: [surgeon protocol not supplied, dose not supplied, windows not supplied]
+      - key: p_loading
+        name: Progressive loading
+        goals: [strength within restrictions]
+        window: {anchor: procedure, start: null, end: null, unit: weeks, provisional: true, text: "Not supplied", provenance: unknown}
+        items: [cu_slr_early_strength]
+        entry_rules: [phase_entry_criteria_slot]
+        review_checkpoint: PT confirms criteria
+        advance_criteria: [PT-confirmed criteria]
+        basis: []
+        gaps: [criteria not signed]
+      - key: p_functional
+        name: Functional strengthening
+        goals: [stairs, return to activity]
+        window: {anchor: procedure, start: null, end: null, unit: weeks, provisional: true, text: "Not supplied", provenance: unknown}
+        items: [cu_leg_press_functional]
+        entry_rules: [phase_entry_criteria_slot]
+        review_checkpoint: PT confirms criteria and surgeon clearance
+        basis: []
+        gaps: [criteria not signed]
+    monitoring: [pain, effusion, ROM, weight-bearing tolerance]
+    reassessment: {timing: "per surgeon protocol", provenance: unknown}
+    recovery_horizon: {text: "Return-to-activity horizon depends on the surgeon protocol and criteria; not supplied", provenance: unknown}
+    provenance: {kind: structural_reference, refs: [S6]}
+applicability: []
+intake_prompts:
+  affected_side: Laterality is not established
+  procedure: Exact procedure is required
+  procedure_date: Procedure date anchors the timeline
+  procedure_type: Repair versus reconstruction must be stated
+  associated_procedures: Associated injuries/procedures determine the pathway
+  surgeon_restrictions: Missing surgeon restrictions block loading and progression
+  brace_restrictions: Brace restrictions per surgeon
+  weight_bearing_restrictions: Weight-bearing restrictions per surgeon
+  rom_restrictions: ROM restrictions per surgeon
+  rom_active: Current assessment required
+  pain_movement: Current assessment required
+  concerning_findings: Concern screen must be completed

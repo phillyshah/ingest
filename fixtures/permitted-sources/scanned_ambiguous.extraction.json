@@ -1,0 +1,5 @@
+{"exercises": [{"source_exercise_name": "Movement C (passive)", "assistance": "passive", "locator": {"page": 1, "bbox": [50, 40, 300, 60]}, "steps": [], "phase": null, "setting": [],
+  "dose": {"sets": {"value": 3, "locator": {"page": 1, "bbox": [50, 80, 120, 100]}, "ocr_confidence": 0.95},
+           "repetitions": {"value": null, "null_reason": "OCR ambiguous: '1-2' vs '12'", "locator": {"page": 1, "bbox": [50, 110, 120, 130]}, "ocr_confidence": 0.61, "ambiguous": true}}}],
+ "clinician_only": [], "contraindications": [], "phases": [], "conflicts": [], "unreadable": [{"locator": {"page": 1, "bbox": [50, 110, 120, 130]}, "candidates": ["1-2", "12"]}],
+ "declared_publication_date": null, "document_identity": "Scanned ambiguous fixture"}

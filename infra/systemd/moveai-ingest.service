@@ -1,0 +1,16 @@
+# /etc/systemd/system/moveai-ingest.service — manages the compose stack as one unit on the VPS.
+[Unit]
+Description=MoveAI ingestion engine (api, worker, scheduler, reviewer)
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/srv/moveai/ingest/infra
+ExecStart=/usr/bin/docker compose up -d --remove-orphans
+ExecStop=/usr/bin/docker compose down
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

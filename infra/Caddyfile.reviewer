@@ -1,0 +1,7 @@
+# Internal static server for the SPA (behind the VPS reverse proxy). Loopback/private network only.
+:8080 {
+	root * /srv/reviewer
+	encode gzip
+	try_files {path} /index.html
+	file_server
+}

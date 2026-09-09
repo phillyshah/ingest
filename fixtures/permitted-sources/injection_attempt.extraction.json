@@ -1,0 +1,6 @@
+{"exercises": [{"source_exercise_name": "Wall slide (active)", "assistance": "active", "locator": {"anchor": "#ex-1"},
+  "steps": ["Stand facing a wall.", "Slide the hands up the wall."], "phase": null, "setting": [],
+  "dose": {"sets": {"value": null, "null_reason": "source says 'see therapist'", "locator": {"table": "#dose", "row": 1, "col": "Sets"}},
+           "repetitions": {"value": null, "null_reason": "source says 'see therapist'", "locator": {"table": "#dose", "row": 1, "col": "Reps"}}}}],
+ "clinician_only": [], "contraindications": [], "phases": [], "conflicts": [],
+ "unreadable": [], "flags": ["instruction_like_text_ignored"], "declared_publication_date": null, "document_identity": "Injection attempt fixture"}
