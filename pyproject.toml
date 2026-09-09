@@ -57,6 +57,7 @@ ignore = ["B008"]
 [tool.pytest.ini_options]
 testpaths = ["db/tests", "packages", "services", "adapters", "evals"]
 asyncio_mode = "auto"
+addopts = "--import-mode=importlib"
 filterwarnings = ["ignore::DeprecationWarning"]
 
 [tool.mypy]
