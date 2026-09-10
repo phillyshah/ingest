@@ -28,7 +28,8 @@ api:              ## run API on loopback
 worker:           ## run ingestion worker
 	@uv run python -m moveai_ingestion.worker
 
-demo: seed        ## end-to-end acceptance demonstration
+demo: migrate     ## end-to-end acceptance demonstration (installs the non-clinical demo pack)
+	@uv run python scripts/seed.py --with-demo-pack
 	@uv run python scripts/demo.py
 
 openapi:          ## export OpenAPI + regenerate TS client

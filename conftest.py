@@ -39,7 +39,8 @@ def migrated_db() -> str:
     with psycopg.connect(f"{head}/postgres", autocommit=True) as admin:
         if not admin.execute("select 1 from pg_database where datname=%s", (name,)).fetchone():
             admin.execute(f'create database "{name}"')
-    env = {**os.environ, "DATABASE_URL": url}
+    # The test database is created and dropped by this fixture, so the destructive reset is intended here.
+    env = {**os.environ, "DATABASE_URL": url, "ALLOW_DESTRUCTIVE_RESET": "1"}
     subprocess.run(["python", str(ROOT / "scripts" / "migrate.py"), "--reset"], check=True, env=env, capture_output=True)
     os.environ["DATABASE_URL"] = url
     return url

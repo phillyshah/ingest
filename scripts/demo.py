@@ -45,6 +45,15 @@ def main() -> int:
         if not rel:
             print("run `make seed` first")
             return 2
+        # Section 4 exercises the approval path, which needs the clearly-labelled non-clinical demo pack. That pack
+        # is excluded from a default seed on purpose, so say so rather than failing with an IndexError.
+        if not conn.execute("select 1 from protocol_version where content_pack='demo_synthetic'").fetchone():
+            print(
+                "the demo_synthetic content pack is not installed.\n"
+                "  It is excluded from a default seed because it is approved and can produce draft_ready plans.\n"
+                "  Run: uv run python scripts/seed.py --with-demo-pack   (or `make demo`, which does it for you)"
+            )
+            return 2
         section("1. Catalog state (seeded fixtures + content packs)")
         for r in conn.execute("select approval_state, count(*) as n from exercise_variant_version group by 1 order by 1").fetchall():
             print(f"  variants {r['approval_state']:20} {r['n']}")
