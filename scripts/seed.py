@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import pathlib
 import uuid
+from pathlib import Path
 
 os.environ.setdefault("PLAN_SIGNING_SECRET", "dev-only-secret-change-me")
 from moveai_contracts.api import PERMISSION_OPS  # noqa: E402
@@ -43,9 +44,44 @@ def ingest_fixture(conn, name: str, rights: dict[str, str], source_type: str = "
 ALL = {op: "allowed" for op in PERMISSION_OPS} | {"can_train_model": "denied"}
 TEXT_ONLY = {**ALL, "can_download_media": "unknown", "can_display_to_patient": "unknown"}
 
+# `demo_synthetic` is approved and can produce draft_ready plans. It is a non-clinical fixture and must never be
+# installed into a real environment by default; pass --with-demo-pack explicitly to include it.
+DEFAULT_EXCLUDED_PACKS = {"demo_synthetic"}
+
+
+def selected_packs(argv: list[str]) -> set[str] | None:
+    """Returns the set of pack names to install, or None for 'all except the excluded ones'."""
+    for i, a in enumerate(argv):
+        if a == "--packs" and i + 1 < len(argv):
+            return {p.strip() for p in argv[i + 1].split(",") if p.strip()}
+    return None
+
+
 if __name__ == "__main__":
+    import shutil
+    import sys
+    import tempfile
+
+    argv = sys.argv[1:]
+    wanted = selected_packs(argv)
+    with_demo = "--with-demo-pack" in argv
+    packs_dir = FIXTURES / "content-packs"
+    staged: str | None = None
+    chosen = []
+    for path in sorted(packs_dir.glob("*.yaml")):
+        name = path.stem
+        if wanted is not None and name not in wanted:
+            continue
+        if wanted is None and name in DEFAULT_EXCLUDED_PACKS and not with_demo:
+            continue
+        chosen.append(path)
+    if len(chosen) != len(list(packs_dir.glob("*.yaml"))):
+        staged = tempfile.mkdtemp(prefix="moveai-packs-")
+        for path in chosen:
+            shutil.copy(path, staged)
+    print("content packs:", ", ".join(p.stem for p in chosen) or "none")
     with connect() as conn:
-        out = seed(conn)
+        out = seed(conn, packs_dir=Path(staged) if staged else None)
         print("tenant", out["tenant_id"], "release", out["release"]["label"] if out["release"] else None)
         for name, rights, st in (
             ("owned_demo_protocol.html", ALL, "html"),

@@ -32,8 +32,13 @@ catalog releases, `/v1` API with campaign board endpoints and SSE, mock MoveAI a
 campaign detail, extraction review, catalog, plan options), 126 Python tests, 6 UI unit tests, a Playwright smoke,
 and `make demo`. Deployment files target the owner's VPS + Supabase (spec §22) but nothing has been deployed.
 
-Not yet: Supabase Auth verification (header shim only), a real OCR engine, live crawling of allowlisted domains
-beyond fixtures, signed clinical content (all packs are `unsigned_placeholder`).
+Also working: Supabase deployment hardening. Migration 0010 removes all `anon`/`authenticated` privileges and
+enables row-level security on every table, because Supabase publishes the `public` schema through PostgREST
+(ADR-0008). `AUTH_MODE=supabase` verifies real Supabase Auth tokens against the project JWKS and requires an
+invitation. See `docs/runbooks/supabase-deployment.md`.
+
+Not yet: a real OCR engine, live crawling of allowlisted domains beyond fixtures, signed clinical content (all
+three clinical packs are `unsigned_placeholder`).
 
 ## Quick start
 

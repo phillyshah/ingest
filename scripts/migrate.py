@@ -1,10 +1,15 @@
-"""Apply db/migrations/*.sql in order, recording each in schema_migration. Additive only."""
+"""Apply db/migrations/*.sql in order, recording each in schema_migration. Additive only.
+
+Safety: the target database is always printed before anything runs, and `--reset` (which drops the public schema)
+refuses to act unless ALLOW_DESTRUCTIVE_RESET=1 is set. Never use --reset against a real project.
+"""
 
 from __future__ import annotations
 
 import os
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 import psycopg
 
@@ -17,6 +22,17 @@ def database_url() -> str:
     if not url:
         sys.exit("DATABASE_URL is not set (run `make db-up`)")
     return url
+
+
+def describe(url: str) -> str:
+    """Host, port and database only. Never prints the password."""
+    p = urlparse(url)
+    return f"{p.hostname or '?'}:{p.port or 5432}/{(p.path or '/').lstrip('/') or '?'} as {p.username or '?'}"
+
+
+def looks_managed(url: str) -> bool:
+    host = (urlparse(url).hostname or "").lower()
+    return any(m in host for m in ("supabase.co", "supabase.com", "pooler.supabase.com", "rds.amazonaws.com", "neon.tech"))
 
 
 def reset(conn: psycopg.Connection) -> None:
@@ -44,9 +60,18 @@ def migrate(conn: psycopg.Connection) -> list[str]:
 
 
 if __name__ == "__main__":
-    with psycopg.connect(database_url(), autocommit=False) as c:
+    url = database_url()
+    print(f"target: {describe(url)}")
+    if "--reset" in sys.argv:
+        if os.environ.get("ALLOW_DESTRUCTIVE_RESET") != "1":
+            sys.exit("refusing --reset: it drops the public schema. Set ALLOW_DESTRUCTIVE_RESET=1 for a scratch database.")
+        if looks_managed(url):
+            sys.exit(f"refusing --reset against a managed database ({describe(url)}). Drop it from the provider console instead.")
+    with psycopg.connect(url, autocommit=False) as c:
         if "--reset" in sys.argv:
+            print("resetting schema public (destructive)")
             reset(c)
-        for name in migrate(c):
+        applied = migrate(c)
+        for name in applied:
             print("applied", name)
-        print("schema up to date")
+        print(f"schema up to date ({len(applied)} applied this run)")
