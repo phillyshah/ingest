@@ -65,11 +65,21 @@ PW_CHROMIUM=/path/to/chromium pnpm -C apps/reviewer test:e2e   # or let Playwrig
 Sign in with a user ID from `make seed` and the role you want to exercise. The board, detail tabs, review screen,
 and plan options are all live against the API.
 
-### Deployment target
+### Deployment
 
-`infra/` holds the env template, Dockerfiles, compose file, reverse-proxy snippets (Caddy and nginx) for
-`ingest.phillyshah.com`, and a systemd unit. See `docs/runbooks/` for operations. Confirm the Supabase project,
-VPS capacity, and DNS before applying anything (spec §22 D/E).
+Two runbooks, both written to be followed step by step:
+
+- `docs/runbooks/vps-deployment.md` — the full path from an empty server to a live site, for a non-technical
+  operator. Every step is a click or a single paste.
+- `docs/runbooks/supabase-deployment.md` — the database specifics, connection choices, rollback and rotation.
+
+Deployment runs through GitHub Actions rather than a laptop, so credentials live only in GitHub's encrypted
+secret store: **Migrate Supabase** applies the schema and proves the exposure boundary, and **Verify deployment**
+checks the live site from outside, including that the owner's other sites still work.
+
+`deploy/inspect.sh` reads a server and changes nothing. `deploy/install.sh` is a dry run unless given `--apply`,
+adds only one new virtual host, validates the web-server config before reloading, and rolls its own change back if
+validation fails. `infra/` holds the env template, Dockerfiles, compose file, proxy snippets and a systemd unit.
 
 Auth in development is a header shim (`X-Role`, `X-Tenant-Id`, `X-User-Id`). Supabase Auth replaces the
 shim behind the same interface (`moveai_api.auth`). Production target: `https://ingest.phillyshah.com`.

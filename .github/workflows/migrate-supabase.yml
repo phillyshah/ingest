@@ -1,0 +1,89 @@
+# Applies the database schema to the Supabase project and proves the exposure boundary afterwards.
+#
+# Why a workflow and not a laptop: the connection string lives only in GitHub's encrypted secret store. It is
+# never pasted into a chat, a terminal history, or a file on anyone's machine, so there is nothing to rotate.
+#
+# Run it from the Actions tab. See docs/runbooks/vps-deployment.md for the click-by-click.
+name: Migrate Supabase
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type the word "migrate" to confirm you intend to change the database'
+        required: true
+        default: ''
+      seed:
+        description: "Also load terminology and the three unsigned clinical packs (safe, additive, no demo pack)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: supabase-migration          # never two migrations at once
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    # To require a human approval before every migration, create an Environment in repo settings and add
+    # `environment: <name>` here. Left off so the first run cannot fail on a missing environment.
+    steps:
+      - name: Check the confirmation word
+        if: inputs.confirm != 'migrate'
+        run: |
+          echo "::error::You must type migrate in the confirmation box. Nothing was changed."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with: { version: "0.8.17" }
+
+      - name: Check the secret exists
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$DB" ]; then
+            echo "::error::The repository secret SUPABASE_DB_URL is not set. See docs/runbooks/vps-deployment.md step A1."
+            exit 1
+          fi
+          # Mask every component so nothing can leak through a stack trace or a psycopg error message.
+          echo "::add-mask::$DB"
+          host=$(printf '%s' "$DB" | sed -E 's#.*@([^:/?]+).*#\1#')
+          pw=$(printf '%s' "$DB" | sed -E 's#^[^:]+://[^:]+:([^@]+)@.*#\1#')
+          [ -n "$pw" ] && [ "$pw" != "$DB" ] && echo "::add-mask::$pw"
+          echo "Target host: $host"
+
+      - run: uv sync --all-packages
+
+      - name: Apply migrations
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: uv run python scripts/migrate.py      # --reset is refused against a managed host by design
+
+      - name: Verify the exposure boundary
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          # Fails the job unless anon/authenticated can reach nothing and RLS covers every table.
+          uv run python scripts/verify_supabase.py
+
+      - name: Seed reference data
+        if: inputs.seed
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PLAN_SIGNING_SECRET: ${{ secrets.PLAN_SIGNING_SECRET || 'unused-during-seed' }}
+        run: |
+          # No --with-demo-pack: the approved demo pack must never reach a real environment.
+          uv run python scripts/seed.py
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Supabase migration"
+            echo ""
+            echo "- Migrations: ${{ job.status }}"
+            echo "- Verification: see the *Verify the exposure boundary* step above; it must print PASSED."
+            echo "- Seeded: ${{ inputs.seed }}"
+          } >> "$GITHUB_STEP_SUMMARY"

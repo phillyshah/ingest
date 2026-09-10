@@ -1,0 +1,109 @@
+# Checks the live site from outside. Runs on a GitHub runner because it needs open internet access.
+#
+# It is safe to run at any time and changes nothing. Use it before deploying to record a baseline for the other
+# sites on the server, and after deploying to prove the new one works and nothing else broke.
+name: Verify deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      host:
+        description: "Hostname to check"
+        default: ingest.phillyshah.com
+      also_check:
+        description: "Comma-separated other sites on the same server that must keep working"
+        default: phillyshah.com
+  schedule:
+    - cron: "17 7 * * *"     # a daily canary once it is live
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Health check
+        id: health
+        env:
+          HOST: ${{ inputs.host || 'ingest.phillyshah.com' }}
+        run: |
+          set -u
+          fail=0
+          note() { echo "$1" | tee -a "$GITHUB_STEP_SUMMARY"; }
+
+          note "### Verifying https://$HOST"
+          note ""
+
+          if ! getent hosts "$HOST" >/dev/null 2>&1; then
+            note "- DNS: **no record yet** for $HOST. Add it before deploying (runbook step D1)."
+            exit 1
+          fi
+          note "- DNS: resolves to $(getent hosts "$HOST" | awk '{print $1}' | paste -sd, -)"
+
+          code=$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 "https://$HOST/api/v1/healthz" || echo 000)
+          if [ "$code" = "200" ] && grep -q '"status"' /tmp/health.json; then
+            note "- API health: **200 OK**"
+          else
+            note "- API health: **FAILED** (HTTP $code)"; fail=1
+          fi
+
+          # An unauthenticated call to a protected route must be refused, not served.
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "https://$HOST/api/v1/exercises" || echo 000)
+          if [ "$code" = "401" ] || [ "$code" = "403" ]; then
+            note "- Unauthenticated API call: correctly refused ($code)"
+          else
+            note "- Unauthenticated API call: **expected 401/403, got $code**"; fail=1
+          fi
+
+          code=$(curl -sS -o /tmp/index.html -w '%{http_code}' --max-time 20 "https://$HOST/" || echo 000)
+          if [ "$code" = "200" ]; then
+            note "- Reviewer UI: **200 OK**"
+          else
+            note "- Reviewer UI: **FAILED** (HTTP $code)"; fail=1
+          fi
+
+          # No secret may ever appear in anything the browser downloads.
+          bundle=$(grep -oE '/assets/[A-Za-z0-9._-]+\.js' /tmp/index.html | head -1 || true)
+          if [ -n "$bundle" ]; then
+            curl -sS --max-time 20 "https://$HOST$bundle" -o /tmp/bundle.js || true
+            if grep -qiE 'service_role|postgresql://|SUPABASE_SERVICE|PLAN_SIGNING_SECRET|BEGIN [A-Z ]*PRIVATE KEY' /tmp/bundle.js; then
+              note "- Browser bundle: **SECRET-LIKE STRING FOUND — do not leave this deployed**"; fail=1
+            else
+              note "- Browser bundle: no secret-like strings"
+            fi
+          fi
+
+          days=$( (echo | openssl s_client -servername "$HOST" -connect "$HOST":443 2>/dev/null | openssl x509 -noout -enddate 2>/dev/null || true) \
+                  | sed 's/notAfter=//' )
+          if [ -n "$days" ]; then
+            exp=$(date -d "$days" +%s 2>/dev/null || echo 0)
+            now=$(date +%s)
+            left=$(( (exp - now) / 86400 ))
+            if [ "$exp" -gt 0 ] && [ "$left" -lt 14 ]; then
+              note "- TLS certificate: **expires in $left days** — check renewal"; fail=1
+            else
+              note "- TLS certificate: valid, $left days remaining"
+            fi
+          fi
+
+          exit $fail
+
+      - name: The other sites on that server must still work
+        if: always()
+        env:
+          OTHERS: ${{ inputs.also_check || 'phillyshah.com' }}
+        run: |
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Other sites on the same server" >> "$GITHUB_STEP_SUMMARY"
+          fail=0
+          IFS=',' read -ra hosts <<< "$OTHERS"
+          for h in "${hosts[@]}"; do
+            h=$(echo "$h" | xargs)
+            [ -z "$h" ] && continue
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "https://$h/" || echo 000)
+            case "$code" in
+              2*|3*) echo "- $h: OK ($code)" >> "$GITHUB_STEP_SUMMARY" ;;
+              *) echo "- $h: **FAILED ($code)** — investigate before going further" >> "$GITHUB_STEP_SUMMARY"; fail=1 ;;
+            esac
+          done
+          exit $fail
