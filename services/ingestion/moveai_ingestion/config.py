@@ -28,6 +28,7 @@ def allowed_domains() -> set[str]:
 
 MAX_DOCUMENT_BYTES = int(os.environ.get("MAX_DOCUMENT_BYTES", str(25 * 1024 * 1024)))
 MAX_GRAPHIC_BYTES = int(os.environ.get("MAX_GRAPHIC_BYTES", str(2 * 1024 * 1024)))
+MAX_IMAGES_PER_DOCUMENT = int(os.environ.get("MAX_IMAGES_PER_DOCUMENT", "200"))  # a runaway PDF is a bug, not a big document
 MAX_REDIRECTS = 3
 FETCH_TIMEOUT_S = float(os.environ.get("FETCH_TIMEOUT_S", "20"))
 PARSE_TIMEOUT_S = float(os.environ.get("PARSE_TIMEOUT_S", "60"))

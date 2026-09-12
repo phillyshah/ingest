@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { upload } from "../api/client";
 import { useSourcePolicies, useSourcePolicyDecision, type SourcePolicy } from "../api/hooks";
 import { useAuth, hasRole } from "../auth";
 import { Badge, Err, fmt } from "../components/ui";
@@ -124,6 +126,71 @@ function Policy({ p }: { p: SourcePolicy }) {
   );
 }
 
+/** Upload a PDF of your own — a printed protocol sheet, a handout — and run it through the same pipeline as
+ * anything fetched from the web: parsed, extracted, matched against the catalog, queued for PT review. No
+ * publisher policy applies, because nothing is being fetched from someone else's site; the operator supplied the
+ * file, so it is treated as owned content, same as the demo fixtures always have been. If the PDF has exercise
+ * photos embedded in it, those are pulled out and attached to the one exercise on the same page automatically —
+ * a page with more than one candidate exercise is left for a PT to attach manually instead of guessing. */
+function UploadPdf() {
+  const { session } = useAuth();
+  const [file, setFile] = useState<File | null>(null);
+  const [title, setTitle] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<unknown>(null);
+  const [done, setDone] = useState<{ job_id: string } | null>(null);
+  if (!hasRole(session, "source_admin")) return null;
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!file) return;
+    setErr(null);
+    setBusy(true);
+    setDone(null);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("title", title || file.name);
+      const out = await upload<{ job_id: string }>("/sources/upload", form);
+      setDone(out);
+      setFile(null);
+      setTitle("");
+    } catch (ex) {
+      setErr(ex);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="panel" style={{ marginBottom: 16 }}>
+      <h2 style={{ marginTop: 0 }}>Upload a PDF</h2>
+      <p className="small muted">
+        Your own protocol sheets and handouts — not something to allowlist, since nothing is fetched from anyone
+        else's site. It runs through the same pipeline as any other source and lands in the review queue.
+      </p>
+      <form onSubmit={submit} className="row" style={{ alignItems: "flex-end", flexWrap: "wrap" }}>
+        <label className="f">
+          PDF file
+          <input type="file" accept="application/pdf" onChange={(e) => setFile(e.target.files?.[0] ?? null)} required />
+        </label>
+        <label className="f">
+          Title <span className="muted small">— optional, defaults to the filename</span>
+          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={file?.name} />
+        </label>
+        <button className="primary" type="submit" disabled={busy || !file}>{busy ? "Uploading…" : "Upload"}</button>
+      </form>
+      <Err e={err} />
+      {done && (
+        <div className="notice small" style={{ marginTop: 8 }}>
+          Uploaded. It is being parsed now — check the <Link to="/reviews">review queue</Link> shortly for anything
+          it found.
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Sources() {
   const q = useSourcePolicies();
   const { session } = useAuth();
@@ -135,6 +202,10 @@ export default function Sources() {
   return (
     <>
       <h1>Sources</h1>
+
+      <UploadPdf />
+
+      <h2>The curated allowlist</h2>
       <p className="muted">
         The publishers this system may read, and on what terms. A campaign can only reach a publisher listed as
         readable below — there is no crawling of anything else.

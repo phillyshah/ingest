@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 from dataclasses import dataclass, field
@@ -9,6 +10,8 @@ from typing import Any, Protocol
 
 from pypdf import PdfReader
 from selectolax.parser import HTMLParser
+
+from .config import MAX_GRAPHIC_BYTES, MAX_IMAGES_PER_DOCUMENT
 
 
 @dataclass
@@ -26,12 +29,30 @@ class Block:
 
 
 @dataclass
+class ExtractedImage:
+    """An embedded image pulled out of a source document, with its real bytes.
+
+    Separate from `Block`: a block is text structure fed to the extraction model, and the model is never shown
+    image bytes (spec §5: schema-only text output, no tools) or told a `src` for content that never had one — a
+    PDF's embedded images have no URL to report. Association back to an exercise is done deterministically from
+    `page`, in code, never guessed by the model (see pipeline.py stage_extract/persist).
+    """
+
+    page: int
+    index: int
+    data: bytes
+    content_type: str
+    sha256: str
+
+
+@dataclass
 class ParsedDocument:
     blocks: list[Block]
     title: str | None
     declared_publication_date: str | None
     warnings: list[str] = field(default_factory=list)
     kind: str = "html"
+    images: list[ExtractedImage] = field(default_factory=list)
 
     def text(self) -> str:
         return "\n".join(b.text for b in self.blocks)
@@ -134,13 +155,43 @@ def parse_html(content: bytes) -> ParsedDocument:
     return ParsedDocument(blocks, title, date, kind="html")
 
 
+def _extract_page_images(page: Any, pno: int, warnings: list[str]) -> list[ExtractedImage]:
+    """Pull the real, embedded images off one PDF page (spec: uploaded protocol sheets often carry exercise
+    photos inline). Best-effort: a PDF with an image pypdf cannot decode should not fail the whole document."""
+    out: list[ExtractedImage] = []
+    try:
+        images = page.images
+    except Exception as e:  # noqa: BLE001 - a malformed embedded image must not sink the whole document
+        warnings.append(f"page {pno}: could not read embedded images: {type(e).__name__}: {e}")
+        return out
+    for idx, img in enumerate(images):
+        if len(out) >= MAX_IMAGES_PER_DOCUMENT:
+            warnings.append(f"page {pno}: more than {MAX_IMAGES_PER_DOCUMENT} images in this document; the rest were skipped")
+            break
+        data = img.data
+        if not data or len(data) > MAX_GRAPHIC_BYTES:
+            warnings.append(
+                f"page {pno} image {idx}: {'empty' if not data else f'{len(data)} bytes exceeds the {MAX_GRAPHIC_BYTES}-byte limit'}; skipped"
+            )
+            continue
+        fmt = (getattr(img.image, "format", None) or "").upper() if getattr(img, "image", None) else ""
+        content_type = {"PNG": "image/png", "JPEG": "image/jpeg", "JPG": "image/jpeg"}.get(fmt)
+        if not content_type:
+            warnings.append(f"page {pno} image {idx}: unsupported embedded image format {fmt or 'unknown'!r}; skipped")
+            continue
+        out.append(ExtractedImage(page=pno, index=idx, data=data, content_type=content_type, sha256=hashlib.sha256(data).hexdigest()))
+    return out
+
+
 def parse_pdf(content: bytes) -> ParsedDocument:
     reader = PdfReader(io.BytesIO(content))
     blocks: list[Block] = []
+    images: list[ExtractedImage] = []
     warnings: list[str] = []
     heading_path: list[str] = []
     title = None
     for pno, page in enumerate(reader.pages, start=1):
+        images.extend(_extract_page_images(page, pno, warnings))
         text = page.extract_text() or ""
         if not text.strip():
             warnings.append(f"page {pno} has no text layer; OCR required")
@@ -169,7 +220,7 @@ def parse_pdf(content: bytes) -> ParsedDocument:
                 )
             else:
                 blocks.append(Block("paragraph", line, loc, heading_path=list(heading_path), page=pno))
-    return ParsedDocument(blocks, title, None, warnings, kind="pdf")
+    return ParsedDocument(blocks, title, None, warnings, kind="pdf", images=images)
 
 
 class OCREngine(Protocol):

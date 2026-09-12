@@ -3,9 +3,10 @@ from __future__ import annotations
 from typing import Any
 
 import psycopg
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from moveai_contracts.api import CatalogReleaseCreate, ProtocolCreate, ReviewCreate
 from moveai_db import J
+from moveai_ingestion.storage import get_storage
 from moveai_planner.release import publish
 from moveai_rules.ast import Action, parse_expr
 
@@ -171,6 +172,30 @@ def review_detail(
     ):
         raise HTTPException(422, {"code": "bad_table", "message": "unsupported entity table"})
     return detail(conn, entity_table, as_uuid(version_id))
+
+
+@router.get("/media/{media_id}/file")
+def media_file(
+    media_id: str,
+    conn: psycopg.Connection = Depends(get_conn),
+    p: Principal = Depends(require("pt", "clinical_lead", "rights_reviewer", "auditor", "source_admin")),
+) -> Response:
+    """The actual bytes of a stored media asset (spec: an embedded PDF photo, extracted and linked to its
+    exercise). Same reviewer roles as the rest of the review queue — a PT confirming what a photo shows is part
+    of reviewing the exercise it was attached to, not a separate permission."""
+    m = conn.execute("select storage_ref from media_asset_version where id=%s", (as_uuid(media_id),)).fetchone()
+    if not m or not m["storage_ref"]:
+        raise HTTPException(404, {"code": "not_found", "message": "no stored file for this media asset"})
+    data = get_storage().get(m["storage_ref"])
+    # media_asset_version has no content_type column; sniff it from the actual bytes rather than adding one just
+    # to remember something two magic-byte checks already tell us for certain.
+    if data.startswith(b"\x89PNG"):
+        media_type = "image/png"
+    elif data.startswith(b"\xff\xd8"):
+        media_type = "image/jpeg"
+    else:
+        media_type = "application/octet-stream"
+    return Response(content=data, media_type=media_type)
 
 
 @router.post("/reviews", status_code=201)

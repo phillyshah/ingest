@@ -88,5 +88,20 @@ export async function api<T = unknown>(path: string, init: RequestInit & { json?
 
 export const get = <T,>(path: string) => api<T>(path);
 export const post = <T,>(path: string, json?: unknown, idempotencyKey?: string) => api<T>(path, { method: "POST", json, idempotencyKey });
+
+// Multipart upload. Deliberately not routed through `post`: passing FormData as `init.json` would JSON-stringify
+// the file object instead of sending its bytes, and setting a content-type header ourselves would drop the
+// multipart boundary the browser computes — `fetch` only gets that right when it sets the header itself.
+export const upload = <T,>(path: string, form: FormData) => api<T>(path, { method: "POST", body: form });
+
+// A binary GET (a stored image), not routed through `api()`: that helper always reads the body as text and tries
+// to parse JSON, which would corrupt image bytes. Auth here is header-based (X-User-Id/X-Role, no cookies), so a
+// plain `<img src="...">` can never carry it — the caller fetches the bytes itself and hands the resulting blob
+// URL to `<img>` instead.
+export async function getBlobUrl(path: string): Promise<string> {
+  const res = await fetch(API_BASE + path, { headers: authHeaders() });
+  if (!res.ok) throw new ApiError(res.status, "http_error", res.statusText);
+  return URL.createObjectURL(await res.blob());
+}
 export const patch = <T,>(path: string, json?: unknown) => api<T>(path, { method: "PATCH", json });
 export const del = <T,>(path: string) => api<T>(path, { method: "DELETE" });

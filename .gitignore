@@ -14,3 +14,4 @@ apps/reviewer/test-results/
 !.env.example
 *.log
 .demo-out/
+fixtures/clinician-uploads/

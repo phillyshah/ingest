@@ -13,6 +13,7 @@ validators can be tested. They contain no copied text and no real clinical recom
 | `headingless_dose_table.html` | Dose table whose phase heading was removed; doses must not leak across phases (spec §13 test 3). |
 | `rights_restricted_graphic.html` | Text allowed, graphic rights unknown; the graphic goes to `rights_hold`, text proceeds. |
 | `derivative_copy.html` | Byte-different copy of the demo protocol claiming the same underlying guideline (duplicate grouping). |
+| `owned_demo_protocol_with_photo.pdf` | One page, one heading, one embedded PNG photo — the minimal case for testing embedded-image extraction and page-based association to the exercise it belongs to. Built with `reportlab` + `Pillow` (not a project dependency; regenerate with `scripts/dev/make_photo_pdf_fixture.py` if it ever needs to change). |
 
 Each `.html`/`.pdf` has a sidecar `<name>.extraction.json`: the deterministic output the mock extraction model
 returns for it (ADR-0006). Sidecars are what a clinician-annotated benchmark would hold.

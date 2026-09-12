@@ -1,0 +1,21 @@
+{
+  "exercises": [
+    {
+      "source_exercise_name": "Heel slide (active)",
+      "assistance": "active",
+      "locator": {"page": 1},
+      "steps": ["Step one.", "Step two."],
+      "phase": "Phase 1 - Demo phase",
+      "setting": ["home"],
+      "graphics": [],
+      "dose": {}
+    }
+  ],
+  "clinician_only": [],
+  "contraindications": [],
+  "phases": [{"name": "Phase 1 - Demo phase", "locator": {"page": 1}}],
+  "conflicts": [],
+  "unreadable": [],
+  "declared_publication_date": null,
+  "document_identity": "Owned demo protocol with an embedded photo (synthetic fixture)"
+}

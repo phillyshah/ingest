@@ -25,6 +25,25 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.7.0",
+    date: "2026-09-12",
+    headline: "Upload your own PDFs, photos and all",
+    changes: [
+      {
+        kind: "added",
+        text: "Upload a PDF protocol sheet or handout directly from the Sources page. It runs through the same pipeline as anything read from the web and lands in the review queue — no publisher terms to accept, since nothing is being read from someone else's site.",
+      },
+      {
+        kind: "added",
+        text: "Exercise photos embedded in an uploaded PDF are pulled out and attached to the right exercise automatically. If a page has more than one exercise on it, the photo is left for a PT to attach by hand rather than guessed at.",
+      },
+      {
+        kind: "added",
+        text: "A stored photo now actually shows up in the review queue, next to the exercise it belongs to, instead of a link.",
+      },
+    ],
+  },
+  {
     version: "0.6.0",
     date: "2026-09-12",
     headline: "A pathway for a plain MCL sprain",
