@@ -2309,6 +2309,52 @@
         ]
       }
     },
+    "/v1/dev-login": {
+      "post": {
+        "description": "Resolve a username to a development identity, so nobody has to paste a UUID to sign in.\n\nUnauthenticated by necessity \u2014 it is what produces the identity \u2014 and therefore refused outright unless the\ndeployment is explicitly running the development shim. In production, Supabase Auth issues identities and\nthis route is not a way in.\n\nIt creates the named user when absent, with every role, because on a staging deployment whose whole purpose\nis to look at content there is nothing to protect by refusing. That is also exactly why it must never be\nreachable in production, and why the two guards below are separate: AUTH_MODE could plausibly be\nmisconfigured on its own, MOVEAI_ENV is set deliberately.",
+        "operationId": "dev_login_v1_dev_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "title": "Body",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Dev Login V1 Dev Login Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Dev Login",
+        "tags": [
+          "ops"
+        ]
+      }
+    },
     "/v1/diagnostics": {
       "get": {
         "operationId": "diagnostics_v1_diagnostics_get",
@@ -2957,6 +3003,49 @@
       }
     },
     "/v1/ingestion-campaigns/{campaign_id}": {
+      "delete": {
+        "description": "Remove a campaign from the board. Soft: the row and its audit trail are retained (see svc.delete).",
+        "operationId": "delete_v1_ingestion_campaigns__campaign_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Delete V1 Ingestion Campaigns  Campaign Id  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete",
+        "tags": [
+          "campaigns"
+        ]
+      },
       "get": {
         "operationId": "get_v1_ingestion_campaigns__campaign_id__get",
         "parameters": [
@@ -4816,6 +4905,30 @@
           }
         },
         "summary": "Users",
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/version": {
+      "get": {
+        "description": "Which build is actually running.\n\nUnauthenticated and deliberately thin: a commit SHA and a build time, nothing about the machine. After a\ndeploy the only way to be sure the new code is live is to ask the running process, not the repository.",
+        "operationId": "version_v1_version_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Version V1 Version Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Version",
         "tags": [
           "ops"
         ]

@@ -40,3 +40,29 @@ dialog { border:1px solid var(--line); border-radius:8px; padding:16px; width:mi
 .kv { display:grid; grid-template-columns: max-content 1fr; gap:2px 12px; font-size:12px; } .kv dt { color:var(--muted); } .kv dd { margin:0; }
 .stat { display:flex; flex-direction:column; padding:10px 14px; border:1px solid var(--line); border-radius:6px; background:#fff; min-width:140px; }
 .stat b { font-size:20px; } .stat span { color:var(--muted); font-size:12px; }
+
+/* Footer: version and release notes. Sits below the routed content, not fixed, so it never covers the board. */
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.footer .dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--accent, #2f6fd0);
+  vertical-align: middle;
+}
+dialog.whatsnew {
+  max-width: 720px;
+  max-height: 80vh;
+  overflow: auto;
+}
+dialog.whatsnew ul { padding-left: 18px; }
+dialog.whatsnew li { margin: 6px 0; }

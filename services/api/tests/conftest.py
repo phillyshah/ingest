@@ -39,6 +39,9 @@ class As:
     def patch(self, url, json=None, **kw):
         return self.c.patch("/v1" + url, json=json, headers={**self.h, **kw.pop("headers", {})}, **kw)
 
+    def delete(self, url, **kw):
+        return self.c.delete("/v1" + url, headers={**self.h, **kw.pop("headers", {})}, **kw)
+
 
 @pytest.fixture()
 def admin(client, seeded):

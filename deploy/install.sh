@@ -137,6 +137,7 @@ PLAN_SIGNING_SECRET=$SIGNING
 # fixture output rather than anything read from that document — see the runbook before reading results as real.
 EXTRACTION_MODEL=mock-1
 ANTHROPIC_API_KEY=
+ANTHROPIC_MODEL=claude-haiku-4-5
 
 WORKER_POLL_SECONDS=2
 WORKER_CONCURRENCY=1
@@ -155,7 +156,7 @@ else
 fi
 
 step "Building (a few minutes on first run)"
-$COMPOSE build
+GIT_SHA=$(git rev-parse --short HEAD) BUILT_AT=$(date -u '+%Y-%m-%dT%H:%M:%SZ') $COMPOSE build
 
 step "Starting"
 $COMPOSE up -d
