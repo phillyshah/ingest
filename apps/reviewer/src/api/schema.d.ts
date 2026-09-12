@@ -56,6 +56,35 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dev-login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dev Login
+         * @description Resolve a username to a development identity, so nobody has to paste a UUID to sign in.
+         *
+         *     Unauthenticated by necessity — it is what produces the identity — and therefore refused outright unless the
+         *     deployment is explicitly running the development shim. In production, Supabase Auth issues identities and
+         *     this route is not a way in.
+         *
+         *     It creates the named user when absent, with every role, because on a staging deployment whose whole purpose
+         *     is to look at content there is nothing to protect by refusing. That is also exactly why it must never be
+         *     reachable in production, and why the two guards below are separate: AUTH_MODE could plausibly be
+         *     misconfigured on its own, MOVEAI_ENV is set deliberately.
+         */
+        post: operations["dev_login_v1_dev_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/diagnostics": {
         parameters: {
             query?: never;
@@ -253,7 +282,11 @@ export interface paths {
         get: operations["get_v1_ingestion_campaigns__campaign_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete
+         * @description Remove a campaign from the board. Soft: the row and its audit trail are retained (see svc.delete).
+         */
+        delete: operations["delete_v1_ingestion_campaigns__campaign_id__delete"];
         options?: never;
         head?: never;
         /** Patch */
@@ -710,6 +743,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/source-policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Policies */
+        get: operations["list_policies_v1_source_policies_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/source-policies/{domain}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Decide */
+        post: operations["decide_v1_source_policies__domain__decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/sources": {
         parameters: {
             query?: never;
@@ -775,6 +842,29 @@ export interface paths {
          * @description Dev role switcher support: lists users in the caller's tenant. Replaced by Supabase Auth user management.
          */
         get: operations["users_v1_users_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/version": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Version
+         * @description Which build is actually running.
+         *
+         *     Unauthenticated and deliberately thin: a commit SHA and a build time, nothing about the machine. After a
+         *     deploy the only way to be sure the new code is live is to ask the running process, not the repository.
+         */
+        get: operations["version_v1_version_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1229,6 +1319,16 @@ export interface components {
          * @enum {string}
          */
         PlanStatus: "needs_assessment" | "blocked_for_clinical_review" | "draft_ready";
+        /** PolicyDecision */
+        PolicyDecision: {
+            /**
+             * Decision
+             * @description sign or reject
+             */
+            decision: string;
+            /** Note */
+            note?: string | null;
+        };
         /** ProtocolCreate */
         ProtocolCreate: {
             /** Condition Code */
@@ -1626,6 +1726,43 @@ export interface operations {
             };
         };
     };
+    dev_login_v1_dev_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     diagnostics_v1_diagnostics_get: {
         parameters: {
             query?: never;
@@ -1974,6 +2111,39 @@ export interface operations {
         };
     };
     get_v1_ingestion_campaigns__campaign_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_v1_ingestion_campaigns__campaign_id__delete: {
         parameters: {
             query?: never;
             header?: never;
@@ -3017,6 +3187,65 @@ export interface operations {
             };
         };
     };
+    list_policies_v1_source_policies_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    decide_v1_source_policies__domain__decision_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                domain: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PolicyDecision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_sources_v1_sources_get: {
         parameters: {
             query?: {
@@ -3193,6 +3422,28 @@ export interface operations {
         };
     };
     users_v1_users_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    version_v1_version_get: {
         parameters: {
             query?: never;
             header?: never;

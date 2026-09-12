@@ -12,7 +12,7 @@ from .auth import Principal, as_dict, current_principal
 from .db import get_conn
 from .errors import install
 from .middleware import RequestContext
-from .routers import campaigns, catalog, plans, sources
+from .routers import campaigns, catalog, plans, source_policies, sources
 
 app = FastAPI(
     title="MoveAI Exercise Ingestion and Plan-Drafting Engine",
@@ -23,7 +23,7 @@ app = FastAPI(
 )
 app.add_middleware(RequestContext)
 install(app)
-for r in (sources.router, catalog.router, plans.router, campaigns.router):
+for r in (sources.router, source_policies.router, catalog.router, plans.router, campaigns.router):
     app.include_router(r, prefix="/v1")
 
 

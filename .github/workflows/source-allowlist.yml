@@ -1,0 +1,125 @@
+# Manage the curated source allowlist: which publishers the system may read, and on what terms.
+#
+# This runs here rather than on a developer's machine because of one fact: the terms have to be *fetched*. A
+# licence written down from memory is not evidence, so `capture` goes to each publisher's terms page, extracts
+# the text and hashes it. A GitHub runner has the open internet; the environment the policy files were authored
+# in does not.
+#
+# Order the first time round:
+#
+#   1. load     — read fixtures/source-policies/*.yaml into the database
+#   2. capture  — fetch every publisher's terms page and record the text
+#   3. list     — see what each publisher is waiting for
+#   4. sign     — a rights reviewer accepts one publisher's terms (one run per publisher)
+#
+# Run `capture` again on a schedule. If a publisher rewrites its terms, the hash stops matching the signature and
+# that publisher silently becomes unreadable until someone reads the new terms — which is the behaviour you want
+# and the reason the signature covers the text rather than the date.
+#
+# Uses the same SUPABASE_DB_URL secret as the migration and invite workflows.
+name: Source allowlist
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What to do"
+        type: choice
+        options: [list, load, capture, sign, reject]
+        default: list
+      domain:
+        description: "Domain, for sign/reject (e.g. medlineplus.gov). Optional for capture: limits it to one."
+        required: false
+        default: ""
+      reviewer_email:
+        description: "For sign/reject: email of a rights_reviewer or clinical_lead"
+        required: false
+        default: ""
+      note:
+        description: "For sign/reject: recorded with the decision. Required when rejecting."
+        required: false
+        default: ""
+  schedule:
+    # Weekly re-read of every publisher's terms. Cheap, and the alternative is finding out that a licence changed
+    # by being sued rather than by reading a job summary.
+    - cron: "17 6 * * 1"
+
+concurrency:
+  group: source-allowlist
+  cancel-in-progress: false
+
+jobs:
+  allowlist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with: { version: "0.8.17" }
+
+      - name: Check the secret exists
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$DB" ]; then
+            echo "::error::The repository secret SUPABASE_DB_URL is not set. See docs/runbooks/vps-deployment.md step A1."
+            exit 1
+          fi
+          echo "::add-mask::$DB"
+          pw=$(printf '%s' "$DB" | sed -E 's#^[^:]+://[^:]+:([^@]+)@.*#\1#')
+          [ -n "$pw" ] && [ "$pw" != "$DB" ] && echo "::add-mask::$pw"
+          echo "Target host: $(printf '%s' "$DB" | sed -E 's#.*@([^:/?]+).*#\1#')"
+
+      - run: uv sync --all-packages
+
+      - name: Run
+        id: run
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+          # Inputs travel as environment variables, never interpolated into the script: a ${{ }} expression is
+          # pasted in verbatim, so an input containing a quote or semicolon would execute as shell.
+          ACTION: ${{ inputs.action || 'capture' }}
+          DOMAIN: ${{ inputs.domain }}
+          REVIEWER: ${{ inputs.reviewer_email }}
+          NOTE: ${{ inputs.note }}
+        run: |
+          set -o pipefail
+          run_policy() { uv run python scripts/source_policies.py "$@" 2>&1 | tee -a out.txt; }
+          case "$ACTION" in
+            load)    run_policy load ;;
+            list)    run_policy list ;;
+            capture)
+              args=(capture)
+              if [ -n "$DOMAIN" ]; then args+=(--domain "$DOMAIN"); fi
+              run_policy "${args[@]}"
+              # The state after a capture is the useful output, not the capture log alone.
+              run_policy list
+              ;;
+            sign|reject)
+              if [ -z "$DOMAIN" ] || [ -z "$REVIEWER" ]; then
+                echo "::error::$ACTION needs both a domain and a reviewer email."
+                exit 1
+              fi
+              args=(sign --domain "$DOMAIN" --reviewer "$REVIEWER")
+              if [ -n "$NOTE" ]; then args+=(--note "$NOTE"); fi
+              if [ "$ACTION" = "reject" ]; then args+=(--reject); fi
+              run_policy "${args[@]}"
+              ;;
+            *) echo "::error::unknown action $ACTION"; exit 1 ;;
+          esac
+
+      - name: Summary
+        if: always()
+        env:
+          ACTION: ${{ inputs.action || 'capture' }}
+        run: |
+          {
+            echo "### Source allowlist — $ACTION"
+            echo ""
+            echo '```'
+            cat out.txt 2>/dev/null || echo "(no output)"
+            echo '```'
+            echo ""
+            echo "A publisher is readable only when its terms have been fetched AND a rights reviewer has signed"
+            echo "that exact text. Changing terms unsign themselves."
+          } >> "$GITHUB_STEP_SUMMARY"

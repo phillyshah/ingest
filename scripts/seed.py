@@ -13,6 +13,7 @@ from moveai_db import J, connect  # noqa: E402
 from moveai_ingestion import queue as q  # noqa: E402
 from moveai_ingestion.config import FIXTURES  # noqa: E402
 from moveai_ingestion.pipeline import register_source_version, run_all  # noqa: E402
+from moveai_ingestion.source_policies import sync as sync_source_policies  # noqa: E402
 from moveai_planner.seed import seed  # noqa: E402
 
 
@@ -83,6 +84,13 @@ if __name__ == "__main__":
     with connect() as conn:
         out = seed(conn, packs_dir=Path(staged) if staged else None)
         print("tenant", out["tenant_id"], "release", out["release"]["label"] if out["release"] else None)
+        # The curated allowlist of publishers. Loaded here rather than inside moveai_planner.seed, which has no
+        # business knowing how sources are fetched. Safe on every run: it never deletes, and it grants nothing —
+        # each publisher still needs its terms fetched and a rights reviewer's signature before it can be read.
+        pol = sync_source_policies(conn)
+        print(
+            f"source policies: {len(pol['added'])} added, {len(pol['updated'])} updated, {len(pol['unchanged'])} unchanged (none readable until signed)"
+        )
         for name, rights, st in (
             ("owned_demo_protocol.html", ALL, "html"),
             ("owned_demo_protocol.pdf", ALL, "pdf"),

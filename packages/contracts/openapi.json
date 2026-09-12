@@ -1296,6 +1296,31 @@
         "title": "PlanStatus",
         "type": "string"
       },
+      "PolicyDecision": {
+        "properties": {
+          "decision": {
+            "description": "sign or reject",
+            "title": "Decision",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "decision"
+        ],
+        "title": "PolicyDecision",
+        "type": "object"
+      },
       "ProtocolCreate": {
         "properties": {
           "condition_code": {
@@ -4618,6 +4643,83 @@
         "summary": "Review Detail",
         "tags": [
           "catalog"
+        ]
+      }
+    },
+    "/v1/source-policies": {
+      "get": {
+        "operationId": "list_policies_v1_source_policies_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Policies V1 Source Policies Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Policies",
+        "tags": [
+          "source-policies"
+        ]
+      }
+    },
+    "/v1/source-policies/{domain}/decision": {
+      "post": {
+        "operationId": "decide_v1_source_policies__domain__decision_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "domain",
+            "required": true,
+            "schema": {
+              "title": "Domain",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyDecision"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Decide V1 Source Policies  Domain  Decision Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Decide",
+        "tags": [
+          "source-policies"
         ]
       }
     },

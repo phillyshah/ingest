@@ -6,12 +6,14 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
+from urllib.parse import urlparse
 
 import psycopg
 from moveai_db import J
 
 from . import queue as q
 from .fetch import canonicalize
+from .source_policies import policy_for_url
 from .terminology import resolve_code
 
 HEARTBEAT_STALE_S = 60
@@ -91,9 +93,24 @@ def scope_preview(conn: psycopg.Connection, tenant_id: Any, scope: dict[str, Any
         "select canonical_url, publisher, allowlist_state from source where allowlist_state='approved' order by created_at"
     ).fetchall()
     strategy = [f"supplied source: {u}" for u in scope.get("supplied_source_urls", [])]
+    policies = conn.execute("select * from source_policy order by publisher").fetchall()
+    readable = [p for p in policies if p["effective"]]
     if scope.get("source_policy") != "supplied_only":
         strategy += [f"allowlisted source: {s['canonical_url']}" for s in sources[:20]]
+        strategy += [f"allowlisted publisher: {p['publisher']} ({p['domain']}, {p['license_id']})" for p in readable]
     strategy.append("no new-domain discovery: domains outside the allowlist are recorded as pending, never fetched")
+    # Only a campaign with nothing at all to read is blocked. Supplied URLs and per-source approvals are both
+    # legitimate ways in, and the fixture-backed runs use them.
+    if not readable and not scope.get("supplied_source_urls") and not sources:
+        awaiting = sum(1 for p in policies if p["review_state"] == "pending")
+        blocking.append(
+            "nothing to read: no source is approved, no URL was supplied, and "
+            + (
+                f"{awaiting} publisher policies are waiting for a rights reviewer to accept their licence terms"
+                if awaiting
+                else "the curated allowlist is empty"
+            )
+        )
     return {
         "interpreted_conditions": [
             {
@@ -264,6 +281,29 @@ def start(conn: psycopg.Connection, tenant_id: Any, user_id: Any, campaign_id: A
     return get(conn, tenant_id, camp["id"])
 
 
+def _pending_reason(pol: dict | None) -> str:
+    """Why a URL was parked rather than fetched, in words the operator can act on.
+
+    'pending allowlist approval' told nobody what to do next. Naming the publisher and the exact missing step is
+    the difference between a Needs Attention card that gets resolved and one that gets ignored.
+    """
+    if pol is None:
+        return "no publisher policy covers this domain; add it to the curated allowlist before it can be read"
+    if pol["review_state"] == "rejected":
+        return f"{pol['publisher']} was reviewed and rejected: {pol['review_note'] or 'no reason recorded'}"
+    if pol["evidence_state"] == "uncaptured":
+        return f"{pol['publisher']}: the licence terms have not been read yet"
+    if pol["evidence_state"] == "unreachable":
+        return f"{pol['publisher']}: the licence terms page could not be reached on the last attempt"
+    if pol["evidence_state"] == "drifted":
+        return f"{pol['publisher']} changed its terms since they were signed; they need re-reading"
+    if pol["review_state"] != "signed":
+        return f"{pol['publisher']}: the licence terms are captured and waiting for a rights reviewer to accept them"
+    if pol["can_fetch"] != "allowed":
+        return f"{pol['publisher']}'s licence ({pol['license_id']}) does not permit reading: can_fetch is {pol['can_fetch']}"
+    return f"{pol['publisher']}: the signature no longer covers the terms on record"
+
+
 def _dispatch_sources(conn: psycopg.Connection, tenant_id: Any, camp: dict, scope: dict, run: dict) -> dict[str, Any]:
     """Bounded, request-driven discovery: supplied URLs + allowlisted sources already linked to the scoped conditions.
     Unknown domains become pending items (Needs Attention), never fetches."""
@@ -300,7 +340,8 @@ def _dispatch_sources(conn: psycopg.Connection, tenant_id: Any, camp: dict, scop
             skipped.append({"url": c["url"], "reason": c["problem"]})
             continue
         src = c["source"]
-        if src["allowlist_state"] != "approved":
+        pol = policy_for_url(conn, c["url"])
+        if src["allowlist_state"] != "approved" and not (pol and pol["effective"]):
             pending.append(c["url"])
             _item(
                 conn,
@@ -309,7 +350,7 @@ def _dispatch_sources(conn: psycopg.Connection, tenant_id: Any, camp: dict, scop
                 "source",
                 src["id"],
                 "pending",
-                {"reason": "domain/source pending allowlist approval"},
+                {"reason": _pending_reason(pol), "domain": urlparse(c["url"]).hostname},
             )
             continue
         if len(dispatched) >= int(limits["max_sources"]):

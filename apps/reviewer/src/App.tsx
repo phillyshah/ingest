@@ -6,6 +6,7 @@ import Campaigns from "./pages/Campaigns";
 import CampaignDetail from "./pages/CampaignDetail";
 import Exercises from "./pages/Exercises";
 import Reviews from "./pages/Reviews";
+import Sources from "./pages/Sources";
 import PlanOptions from "./pages/PlanOptions";
 import { API_BASE, get } from "./api/client";
 import { WhatsNew } from "./components/WhatsNew";
@@ -75,6 +76,7 @@ export default function App() {
         <nav>
           <NavLink to="/" end>Dashboard</NavLink>
           <NavLink to="/campaigns">Campaigns</NavLink>
+          <NavLink to="/sources">Sources</NavLink>
           <NavLink to="/exercises">Exercises</NavLink>
           <NavLink to="/reviews">Reviews</NavLink>
           <NavLink to="/plan-options">Plan options</NavLink>
@@ -96,6 +98,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/campaigns" element={<Campaigns />} />
           <Route path="/campaigns/:id" element={<CampaignDetail />} />
+          <Route path="/sources" element={<Sources />} />
           <Route path="/exercises" element={<Exercises />} />
           <Route path="/exercises/:entityId" element={<Exercises />} />
           <Route path="/reviews" element={<Reviews />} />

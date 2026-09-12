@@ -1,0 +1,142 @@
+# The curated allowlist: which publishers this system may read, and on what terms.
+#
+# READ THIS BEFORE SIGNING ANYTHING.
+#
+# Every `license_id` below is a *proposal*, not a finding. It was written from general knowledge of these
+# publishers, in an environment with no access to the open internet, so not one of these terms pages has been
+# read. That is why every entry ships unsigned and every entry blocks.
+#
+# The gap is closed by machine, not by trust: `scripts/capture_policy_evidence.py` runs on a GitHub runner, which
+# does have internet access, fetches each `policy_reference`, and records the terms text with its hash. A rights
+# reviewer then reads the captured text and signs. The signature covers that exact text, so if the publisher
+# changes its terms the policy stops being effective on its own.
+#
+# Fields:
+#   domain            exact host. No wildcards — `www.x.org` and `x.org` are separate decisions.
+#   license_id        key into licenses.yaml. Supplies the twelve permissions.
+#   policy_reference  the page that states the terms. This is what gets fetched, hashed and signed.
+#   scope_note        what the licence does not cover, so a reviewer is not surprised later.
+#   overrides         narrow a permission for this publisher. May only tighten: an override that widens
+#                     `denied` to `allowed` is rejected by the loader.
+#
+# Adding a publisher is a pull request, not a form field. That is deliberate: the allowlist is the boundary
+# between "a system that reads what we permitted" and "a crawler".
+
+publishers:
+  # ---------------------------------------------------------------- United States federal health agencies
+  # Publicly funded, published as US Government works, and the usual home of patient-facing rehabilitation
+  # material. The recurring catch is imagery, which is routinely licensed from third parties, so media blocks.
+  - domain: medlineplus.gov
+    publisher: MedlinePlus, U.S. National Library of Medicine
+    license_id: us-gov-public-domain
+    policy_reference: https://medlineplus.gov/about/using/usingcontent/
+    scope_note: >-
+      NLM-authored text is a US Government work. MedlinePlus also syndicates material from other organisations
+      that is not, and the licensed A.D.A.M. medical illustrations are explicitly excluded.
+    overrides:
+      can_download_media: denied
+
+  - domain: www.cdc.gov
+    publisher: Centers for Disease Control and Prevention
+    license_id: us-gov-public-domain
+    policy_reference: https://www.cdc.gov/other/agencymaterials.html
+    scope_note: >-
+      CDC-authored material is public domain. Content credited to another organisation, and the CDC name and
+      logo, are not.
+
+  - domain: www.niams.nih.gov
+    publisher: National Institute of Arthritis and Musculoskeletal and Skin Diseases
+    license_id: us-gov-public-domain
+    policy_reference: https://www.niams.nih.gov/policies
+    scope_note: The institute most directly relevant to musculoskeletal rehabilitation.
+
+  - domain: www.ninds.nih.gov
+    publisher: National Institute of Neurological Disorders and Stroke
+    license_id: us-gov-public-domain
+    policy_reference: https://www.ninds.nih.gov/policies
+    scope_note: Relevant to neurological rehabilitation pathways rather than orthopaedic ones.
+
+  - domain: www.healthquality.va.gov
+    publisher: VA/DoD Clinical Practice Guidelines
+    license_id: us-gov-public-domain
+    policy_reference: https://www.healthquality.va.gov/
+    scope_note: >-
+      Publishes full clinical practice guidelines, including musculoskeletal rehabilitation, as US Government
+      works. The highest-value entry on this list for protocol structure and phase definitions.
+
+  # ---------------------------------------------------------------- United Kingdom
+  - domain: www.nhs.uk
+    publisher: NHS website (NHS England)
+    license_id: ogl-uk-3.0
+    policy_reference: https://www.nhs.uk/our-policies/copyright/
+    scope_note: >-
+      Patient-facing condition and self-management content. The NHS logo and the NHS identity are excluded from
+      the licence and may not be reproduced.
+
+  - domain: www.england.nhs.uk
+    publisher: NHS England
+    license_id: ogl-uk-3.0
+    policy_reference: https://www.england.nhs.uk/terms-and-conditions/
+    scope_note: Service specifications and pathway documents rather than patient-facing material.
+
+  - domain: www.nice.org.uk
+    publisher: National Institute for Health and Care Excellence
+    license_id: bespoke-requires-review
+    policy_reference: https://www.nice.org.uk/terms-and-conditions
+    scope_note: >-
+      NICE publishes under its own UK Open Content Licence rather than a standard one, with restrictions on
+      commercial use and on adaptations that could alter clinical meaning. Clinically this is one of the most
+      valuable sources on the list, so it is worth a reviewer's time — but every permission blocks until the
+      bespoke terms are read and set by hand.
+
+  # ---------------------------------------------------------------- International
+  - domain: www.who.int
+    publisher: World Health Organization
+    license_id: cc-by-nc-sa-3.0-igo
+    policy_reference: https://www.who.int/about/policies/publishing/copyright
+    scope_note: >-
+      Non-commercial and share-alike. Listed for completeness and for the rehabilitation package of
+      interventions; under this licence almost nothing may be used in a commercial product.
+
+  # ---------------------------------------------------------------- Known unknowns
+  # Publishers that clinicians ask for by name. Recorded so their absence is a visible, explained gap rather than
+  # a campaign that quietly returns nothing.
+  - domain: www.physio-pedia.com
+    publisher: Physiopedia
+    license_id: undetermined
+    policy_reference: https://www.physio-pedia.com/Physiopedia:Copyrights
+    scope_note: >-
+      Widely cited by physiotherapists and frequently the most specific source for a given technique. Physiopedia
+      states a licence on its copyright page; which one, and whether it carries a NonCommercial term, has not
+      been established here. Worth determining early — if it is permissive this is the single highest-yield
+      domain on the list.
+
+  - domain: orthoinfo.aaos.org
+    publisher: American Academy of Orthopaedic Surgeons (OrthoInfo)
+    license_id: all-rights-reserved
+    policy_reference: https://orthoinfo.aaos.org/en/terms-of-use/
+    scope_note: >-
+      Excellent post-operative rehabilitation protocols, conventionally copyrighted. Using them needs a licence
+      agreement with the AAOS, which would be recorded as a per-source grant rather than by relaxing this entry.
+
+  - domain: www.jospt.org
+    publisher: Journal of Orthopaedic & Sports Physical Therapy
+    license_id: all-rights-reserved
+    policy_reference: https://www.jospt.org/page/about/termsOfUse
+    scope_note: >-
+      Publishes the clinical practice guidelines most often cited in orthopaedic physiotherapy. Subscription
+      content; citation is fine, ingestion is not.
+
+  - domain: www.choosingwisely.org
+    publisher: Choosing Wisely (ABIM Foundation)
+    license_id: all-rights-reserved
+    policy_reference: https://www.choosingwisely.org/terms-of-use/
+    scope_note: Useful for what not to do. Reuse requires permission from the ABIM Foundation.
+
+# ---------------------------------------------------------------- Deliberately absent
+#
+# PubMed Central and Europe PMC are not here, and not by oversight. Their open-access articles carry a licence
+# *per article* — some CC BY, some CC BY-NC, some publisher-specific — so a single domain-level policy would be
+# wrong for most of what it covered. Using them needs per-document licence detection at fetch time, which this
+# model does not support. Adding them as a domain policy would be the one change on this list that could actually
+# assert rights nobody holds.

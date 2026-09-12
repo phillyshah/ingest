@@ -19,6 +19,7 @@ from .llm import ExtractionModel, SchemaViolation, get_model
 from .normalize import persist
 from .parse import parse
 from .rights import check, grant_for_source_version
+from .source_policies import effective_domains, materialise_rights_grant, policy_for_url
 from .storage import content_key, get_storage
 
 NEXT = {
@@ -51,14 +52,32 @@ def _source(conn: psycopg.Connection, svid: Any) -> tuple[dict, dict]:
 
 def stage_access_check(conn: psycopg.Connection, job: dict) -> dict:
     sv, src = _source(conn, job["source_version_id"])
-    if src["allowlist_state"] != "approved":
+    if src["allowlist_state"] == "denied":
         _set_state(conn, sv["id"], "rights_hold")
-        raise StageError(
-            "not_allowlisted",
-            f"source {src['canonical_url']} allowlist_state={src['allowlist_state']}",
-            permanent=True,
-        )
+        raise StageError("not_allowlisted", f"source {src['canonical_url']} is denied", permanent=True)
+    if src["allowlist_state"] != "approved":
+        # A per-source approval is one way in; a signed domain policy is the other, and it is the one that lets a
+        # campaign reach a publisher nobody has hand-entered. Anything else is still refused here.
+        pol = policy_for_url(conn, sv["final_url"] or src["canonical_url"])
+        if not (pol and pol["effective"]):
+            _set_state(conn, sv["id"], "rights_hold")
+            raise StageError(
+                "not_allowlisted",
+                f"source {src['canonical_url']} allowlist_state={src['allowlist_state']}"
+                + (
+                    f"; the policy for {pol['domain']} is {pol['review_state']} and its terms are {pol['evidence_state']}"
+                    if pol
+                    else "; no publisher policy covers this domain"
+                ),
+                permanent=True,
+            )
     grant = grant_for_source_version(conn, sv["id"])
+    if grant is None:
+        # A campaign creates source versions straight from a URL, with nobody to type permissions in. Derive them
+        # from the domain policy instead. A policy that is unsigned yields a grant of `unknown`, which blocks —
+        # the point is that the reviewer sees which publisher's terms are outstanding, not a blank record.
+        materialise_rights_grant(conn, sv["id"], sv["final_url"] or src["canonical_url"])
+        grant = grant_for_source_version(conn, sv["id"])
     for op in ("can_fetch", "can_process_with_model"):
         r = check(grant, op)
         if not r.allowed:
@@ -75,7 +94,7 @@ def stage_fetch(conn: psycopg.Connection, job: dict) -> dict:
     sv, src = _source(conn, job["source_version_id"])
     url = job["payload"].get("url") or src["canonical_url"]
     try:
-        f = fetch(url)
+        f = fetch(url, effective_domains(conn))
     except FetchError as e:
         raise StageError(e.error_class, str(e), permanent=e.error_class in q.PERMANENT_ERRORS) from e
     prior = conn.execute(
@@ -127,7 +146,7 @@ def _load_bytes(conn: psycopg.Connection, sv: dict, src: dict, job: dict) -> tup
     if sv["storage_ref"]:
         return get_storage().get(sv["storage_ref"]), sv["content_type"]
     # not stored: re-fetch transiently (permitted: can_fetch was checked) and never persist
-    f = fetch(job["payload"].get("url") or src["canonical_url"])
+    f = fetch(job["payload"].get("url") or src["canonical_url"], effective_domains(conn))
     return f.content, f.content_type
 
 
