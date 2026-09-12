@@ -112,6 +112,38 @@ class MockExtractionModel:
         return validate_output(json.loads(sidecar.read_text())), 0.0
 
 
+# Published per-million-token rates, used to charge campaign budgets. Keyed by model because a single hardcoded
+# pair silently misprices the moment the model changes — which had already happened: the previous defaults were
+# 3/15, the rate for a model this code no longer calls, so every campaign was billed roughly 50% over.
+#
+# These are Anthropic first-party rates. Bedrock and Vertex bill separately; override per deployment if you move.
+MODEL_PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
+    "claude-haiku-4-5": (1.0, 5.0),
+    "claude-sonnet-5": (2.0, 10.0),
+    "claude-opus-5": (5.0, 25.0),
+}
+
+# Extraction is schema-constrained reading of one already-parsed document: no planning, no tool use, no open-ended
+# reasoning. The cheapest current model is the right default, and its 200K context is far more than the 120K
+# characters this sends. Override with ANTHROPIC_MODEL when a document type proves too hard for it.
+DEFAULT_EXTRACTION_MODEL = "claude-haiku-4-5"
+
+
+def price_per_mtok(model: str) -> tuple[float, float]:
+    """(input, output) dollars per million tokens. Explicit env settings win, then the table, then a safe guess.
+
+    The fallback is deliberately the most expensive known rate: an unknown model that is undercharged spends past
+    a campaign's cap without the cap noticing, which is the failure that actually costs money.
+    """
+    table = MODEL_PRICES_PER_MTOK.get(model)
+    dearest = max(MODEL_PRICES_PER_MTOK.values(), key=lambda p: p[0])
+    into, out = table if table else dearest
+    return (
+        float(os.environ.get("PRICE_IN_PER_MTOK") or into),
+        float(os.environ.get("PRICE_OUT_PER_MTOK") or out),
+    )
+
+
 class AnthropicExtractionModel:
     """Real provider adapter. Only constructed when ANTHROPIC_API_KEY is present. Tools are never passed."""
 
@@ -121,7 +153,7 @@ class AnthropicExtractionModel:
         import anthropic  # local import keeps the dependency optional at runtime
 
         self._client = anthropic.Anthropic()
-        self._model = model or os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
+        self._model = model or os.environ.get("ANTHROPIC_MODEL") or DEFAULT_EXTRACTION_MODEL
 
     def extract(self, doc: ParsedDocument, *, source_hint: str | None = None) -> tuple[ExtractionResult, float]:
         schema = ExtractionResult.model_json_schema()
@@ -141,11 +173,8 @@ class AnthropicExtractionModel:
         usage = getattr(resp, "usage", None)
         cost = 0.0
         if usage:
-            # rough accounting; real pricing is configured per deployment
-            cost = (
-                usage.input_tokens * float(os.environ.get("PRICE_IN_PER_MTOK", "3"))
-                + usage.output_tokens * float(os.environ.get("PRICE_OUT_PER_MTOK", "15"))
-            ) / 1_000_000
+            into, out = price_per_mtok(self._model)
+            cost = (usage.input_tokens * into + usage.output_tokens * out) / 1_000_000
         return validate_output(raw), cost
 
 

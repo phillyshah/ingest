@@ -35,6 +35,7 @@ export const RELEASES: Release[] = [
       { kind: "changed", text: "Plain-English labels: the old “spend_usd” column is now “Spent”, and “max usd” is “Spend cap”. Time limits are in minutes and document sizes in MB." },
       { kind: "added", text: "Campaigns can be deleted. They disappear from the board; their history is kept, because the record of what was ingested cannot be erased." },
       { kind: "added", text: "This What’s new panel, plus a version number and the running build shown in the footer." },
+      { kind: "fixed", text: "Campaign spend was being charged at roughly 50% over the real rate. Extraction now runs on the cheapest current model and is priced from that model’s own published rate." },
     ],
   },
   {
