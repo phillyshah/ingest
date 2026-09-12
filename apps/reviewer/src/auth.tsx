@@ -20,4 +20,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export const useAuth = () => useContext(Ctx);
-export const hasRole = (s: Session | null, ...roles: string[]) => !!s && roles.includes(s.role);
+
+// STAGING CONVENIENCE, mirrors services/api/moveai_api/auth.py `_shim`: the API widens `source_admin` to every
+// role the account actually holds (dev-login gives a new user all of them), so the UI has to agree or a request
+// the backend would accept would still hide its own button. This is not itself a security boundary — the API
+// enforces the real one — it just keeps the two from disagreeing about what is possible. Remove alongside the
+// backend widening once real per-person accounts and roles replace this single-operator period.
+export const hasRole = (s: Session | null, ...roles: string[]) => !!s && (s.role === "source_admin" || roles.includes(s.role));

@@ -66,7 +66,22 @@ def _shim(request: Request, conn: psycopg.Connection) -> Principal:
         raise _unauthenticated("unknown_user", "user not found") from e
     if not row:
         raise _unauthenticated("unknown_user", "user not found")
-    return _principal_from_row(row, request.headers.get("x-role"), request.headers.get("x-tenant-id"))
+    requested_role = request.headers.get("x-role")
+    p = _principal_from_row(row, requested_role, request.headers.get("x-tenant-id"))
+
+    # STAGING CONVENIENCE, shim mode only — remove once real per-person Supabase accounts replace this (spec
+    # §22C follow-up; see task #17). There is one operator on this deployment right now, `source_admin` is the
+    # role the reviewer app defaults to, and switching roles to accept a licence or approve a plan is friction
+    # nobody asked for while every content pack is still unsigned placeholder anyway. Selecting source_admin keeps
+    # every role the account actually holds instead of narrowing to one; picking any other specific role still
+    # narrows normally, so the author-cannot-approve-their-own-work checks can still be exercised deliberately.
+    #
+    # Confined to _shim: current_principal() already refuses AUTH_MODE=shim outright when MOVEAI_ENV=production,
+    # so this cannot reach a real deployment. It is never applied to the Supabase path below, where a person's
+    # roles are exactly what an administrator invited them with.
+    if requested_role == "source_admin":
+        p = Principal(user_id=p.user_id, tenant_id=p.tenant_id, roles=list(row["roles"]), display_name=p.display_name)
+    return p
 
 
 # ---------------------------------------------------------------- Supabase Auth

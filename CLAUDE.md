@@ -20,3 +20,7 @@
   order he should use them — a merge link, a specific Actions-workflow link with which run/inputs to pick, etc.
   Don't just describe the steps in words; hand him something to click.** He works from a phone/tablet a lot and
   won't hunt through the repo or the Actions tab to find things himself.
+- **Staging convenience, temporary:** signing in as `source_admin` (the default) acts with every role the account
+  holds — `services/api/moveai_api/auth.py` `_shim`, mirrored in `apps/reviewer/src/auth.tsx` `hasRole`. Deliberate,
+  single-operator, shim-mode-only; never touch the Supabase auth path the same way. Remove both sides together once
+  real per-person accounts and roles replace this (task #17).
