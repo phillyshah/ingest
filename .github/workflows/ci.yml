@@ -38,3 +38,70 @@ jobs:
       - run: pnpm -C apps/reviewer lint
       - run: pnpm -C apps/reviewer test
       - run: pnpm -C apps/reviewer build
+
+  # The containers are what actually runs on the server, and nothing above ever starts one. That gap let a
+  # runtime-only failure reach production: `uv run` in the CMD needed a cache under $HOME, which the image's
+  # `useradd -r` account has no permission to create, so every Python container exited before Python started.
+  # Unit tests could not have caught it — they never run as that user, in that image, through that CMD.
+  # This job boots them for real.
+  containers:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: postgres, POSTGRES_DB: moveai }
+        ports: ["55432:5432"]
+        options: --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      # host.docker.internal so the containers reach the runner's postgres service.
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:55432/moveai
+      PLAN_SIGNING_SECRET: ci-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with: { version: "0.8.17" }
+
+      - name: Prepare the schema the containers will talk to
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:55432/moveai
+        run: uv sync --all-packages && uv run python scripts/migrate.py
+
+      - run: docker build -f infra/Dockerfile.api -t ingest-api .
+      - run: docker build -f infra/Dockerfile.worker -t ingest-worker .
+
+      - name: The API container must serve healthz as its unprivileged user
+        run: |
+          docker run -d --name api --add-host host.docker.internal:host-gateway \
+            -e DATABASE_URL -e PLAN_SIGNING_SECRET -e MOVEAI_ENV=staging -e AUTH_MODE=shim \
+            -p 8000:8000 ingest-api
+          for i in $(seq 1 30); do
+            if curl -fsS --max-time 3 http://127.0.0.1:8000/v1/healthz >/dev/null 2>&1; then
+              echo "API answered healthz."; exit 0
+            fi
+            if [ "$(docker inspect -f '{{.State.Running}}' api)" != "true" ]; then
+              echo "::error::The API container exited (code $(docker inspect -f '{{.State.ExitCode}}' api)). Logs:"
+              docker logs api; exit 1
+            fi
+            sleep 2
+          done
+          echo "::error::The API container never answered healthz. Logs:"; docker logs api; exit 1
+
+      - name: The worker container must stay up rather than crash-loop
+        run: |
+          docker run -d --name worker --add-host host.docker.internal:host-gateway \
+            -e DATABASE_URL -e PLAN_SIGNING_SECRET ingest-worker
+          sleep 15
+          if [ "$(docker inspect -f '{{.State.Running}}' worker)" != "true" ]; then
+            echo "::error::The worker container exited (code $(docker inspect -f '{{.State.ExitCode}}' worker)). Logs:"
+            docker logs worker; exit 1
+          fi
+          # A container that is "running" while printing the same error forever is still broken, which is exactly
+          # how this failure looked on the server.
+          if docker logs worker 2>&1 | grep -qiE 'permission denied|traceback|failed to create directory'; then
+            echo "::error::The worker is up but logging errors:"; docker logs worker; exit 1
+          fi
+          echo "Worker healthy."
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker logs api 2>&1 | tail -40 || true; docker logs worker 2>&1 | tail -40 || true

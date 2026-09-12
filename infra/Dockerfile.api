@@ -13,4 +13,7 @@ RUN uv sync --frozen --no-dev --all-packages
 RUN useradd -r -u 10001 moveai && chown -R moveai /app
 USER moveai
 EXPOSE 8000
-CMD ["uv", "run", "--no-sync", "uvicorn", "moveai_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+# Call the venv directly rather than through `uv run`: uv wants a cache under $HOME, and this image runs as a
+# system account with no home directory, so `uv run` dies with "failed to create directory ... Permission
+# denied" before Python starts. Nothing needs resolving at runtime anyway — the venv is already built.
+CMD ["/app/.venv/bin/uvicorn", "moveai_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]

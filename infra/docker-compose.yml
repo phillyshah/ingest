@@ -19,7 +19,7 @@ services:
   scheduler:
     build: { context: .., dockerfile: infra/Dockerfile.worker }
     env_file: .env
-    command: ["uv", "run", "--no-sync", "python", "scripts/scheduler.py"]
+    command: ["/app/.venv/bin/python", "scripts/scheduler.py"]   # not `uv run`: no writable $HOME cache in the image
     restart: unless-stopped
     deploy: { resources: { limits: { cpus: "0.25", memory: 256M } } }
   reviewer:
