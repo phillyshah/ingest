@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pathlib
+
 
 def _tables(conn) -> list[dict]:
     return conn.execute(
@@ -67,8 +69,6 @@ def test_auth_user_mapping_column_exists(conn):
 # removes the PUBLIC pseudo-role's USAGE grant. Supabase uses the original schema, so two defects in migration 0010
 # were invisible here and only surfaced on the real project. These tests recreate those conditions.
 # --------------------------------------------------------------------------------------------------------------
-import pathlib
-
 MIGRATIONS = pathlib.Path(__file__).resolve().parents[2] / "db" / "migrations"
 EXPOSED = ("anon", "authenticated")
 PRIVS = ("select", "insert", "update", "delete")
@@ -77,8 +77,9 @@ PRIVS = ("select", "insert", "update", "delete")
 def _make_it_look_like_supabase(conn):
     """Create the roles Supabase creates and hand them what Supabase hands them by default."""
     for role in EXPOSED:
-        conn.execute(f"do $$ begin if not exists (select 1 from pg_roles where rolname='{role}') "
-                     f"then create role {role} nologin; end if; end $$")
+        conn.execute(
+            f"do $$ begin if not exists (select 1 from pg_roles where rolname='{role}') then create role {role} nologin; end if; end $$"
+        )
     # the stock grant on an original `public` schema, which a recreated schema does not carry
     conn.execute("grant usage on schema public to public")
     for role in EXPOSED:
@@ -94,9 +95,13 @@ def _apply(conn, name: str):
 
 
 def _tables_now(conn):
-    return [r["relname"] for r in conn.execute(
-        "select c.relname from pg_class c join pg_namespace n on n.oid=c.relnamespace "
-        "where n.nspname='public' and c.relkind='r' order by 1").fetchall()]
+    return [
+        r["relname"]
+        for r in conn.execute(
+            "select c.relname from pg_class c join pg_namespace n on n.oid=c.relnamespace "
+            "where n.nspname='public' and c.relkind='r' order by 1"
+        ).fetchall()
+    ]
 
 
 def test_supabase_shaped_database_is_locked_down_by_0012(conn):
@@ -105,21 +110,23 @@ def test_supabase_shaped_database_is_locked_down_by_0012(conn):
     # the mess is real: both roles can reach the schema, and two tables lost their policy
     assert conn.execute("select has_schema_privilege('anon','public','usage') as ok").fetchone()["ok"]
     assert conn.execute("select has_table_privilege('anon','public.rights_grant','select') as ok").fetchone()["ok"]
-    assert conn.execute("select count(*) as n from pg_policies where schemaname='public' and tablename='rights_grant'"
-                        ).fetchone()["n"] == 0
+    assert conn.execute("select count(*) as n from pg_policies where schemaname='public' and tablename='rights_grant'").fetchone()["n"] == 0
 
     _apply(conn, "0012_close_exposure_gaps.sql")
 
     for role in EXPOSED:
-        assert not conn.execute("select has_schema_privilege(%s,'public','usage') as ok", (role,)).fetchone()["ok"], \
+        assert not conn.execute("select has_schema_privilege(%s,'public','usage') as ok", (role,)).fetchone()["ok"], (
             f"{role} still has usage on schema public"
+        )
         for t in _tables_now(conn):
             for p in PRIVS:
                 got = conn.execute("select has_table_privilege(%s,%s,%s) as ok", (role, f"public.{t}", p)).fetchone()["ok"]
                 assert not got, f"{role} can {p} on {t}"
 
-    counts = {r["tablename"]: r["n"] for r in conn.execute(
-        "select tablename, count(*) as n from pg_policies where schemaname='public' group by 1").fetchall()}
+    counts = {
+        r["tablename"]: r["n"]
+        for r in conn.execute("select tablename, count(*) as n from pg_policies where schemaname='public' group by 1").fetchall()
+    }
     assert [t for t in _tables_now(conn) if counts.get(t, 0) == 0] == []
 
 
