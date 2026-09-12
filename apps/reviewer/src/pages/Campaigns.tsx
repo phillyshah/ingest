@@ -66,6 +66,9 @@ function NewCampaign({ onClose }: { onClose: () => void }) {
   const [preview, setPreview] = useState<Record<string, any> | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [err, setErr] = useState<unknown>(null);
+  // Conditions accepted from `suggested_conditions` (the fallback for ailment text too general/colloquial for the
+  // exact match) — never populated by the preview itself, only by clicking "Use this" below.
+  const [acceptedConditionIds, setAcceptedConditionIds] = useState<string[]>([]);
   const urlList = urls.split(/\s+/).filter(Boolean);
   const scope = () => ({
     ailment_text: ailment || null,
@@ -80,8 +83,14 @@ function NewCampaign({ onClose }: { onClose: () => void }) {
     media_policy: media,
     supplied_source_urls: urlList,
     scope_confirmed: confirmed,
+    additional_condition_ids: acceptedConditionIds,
   });
   const doPreview = async () => { setErr(null); try { setPreview(await previewScope(null, scope())); } catch (e) { setErr(e); } };
+  const acceptSuggestion = async (id: string) => {
+    setAcceptedConditionIds((prev) => [...prev, id]);
+    setErr(null);
+    try { setPreview(await previewScope(null, { ...scope(), additional_condition_ids: [...acceptedConditionIds, id] })); } catch (e) { setErr(e); }
+  };
   const save = async () => {
     setErr(null);
     try { await createCampaign({ title, scope: scope() }); await qc.invalidateQueries({ queryKey: ["campaigns"] }); onClose(); } catch (e) { setErr(e); }
@@ -150,6 +159,18 @@ function NewCampaign({ onClose }: { onClose: () => void }) {
         <div className="panel" data-testid="scope-preview">
           <h3>Scope preview</h3>
           <p><b>Interpreted:</b> {preview.interpreted_conditions.map((c: any) => `${c.name} (${c.code})`).join(", ") || <span className="muted">none</span>}</p>
+          {preview.suggested_conditions?.length > 0 && (
+            <div className="notice small" data-testid="suggested-conditions">
+              <b>Did you mean:</b>
+              <ul>{preview.suggested_conditions.map((s: any) => (
+                <li key={s.id}>
+                  {s.name} ({s.code}) <span className="muted">— {s.reason}, confidence {s.confidence}</span>{" "}
+                  <button className="small" onClick={() => acceptSuggestion(s.id)}>Use this</button>
+                </li>
+              ))}</ul>
+              <span className="muted">Nothing here is applied until you click "Use this" — what you typed did not match anything in the catalog on its own.</span>
+            </div>
+          )}
           {preview.resolved_codes?.length > 0 && <table><thead><tr><th>Code</th><th>Descriptor</th><th>Release</th><th>Laterality</th><th>Billable</th><th>Note</th></tr></thead>
             <tbody>{preview.resolved_codes.map((r: any) => <tr key={r.code}><td className="mono">{r.code}</td><td>{r.descriptor ?? <Badge kind="bad">unresolved</Badge>}</td><td>{r.release_label}</td><td>{r.laterality}</td><td>{String(r.billable)}</td><td className="muted">{r.note}</td></tr>)}</tbody></table>}
           <p><b>Existing coverage:</b> <span className="mono">{JSON.stringify(preview.existing_coverage)}</span></p>

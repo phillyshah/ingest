@@ -59,6 +59,12 @@ function ConfirmScope({ id }: { id: string }) {
               : <span className="muted">nothing recognised</span>}
           </p>
           {preview.unresolved_text?.length > 0 && <p className="small"><b>Not recognised:</b> {preview.unresolved_text.join("; ")}</p>}
+          {preview.suggested_conditions?.length > 0 && (
+            <p className="small" data-testid="suggested-conditions">
+              <b>Closest matches in the catalog:</b> {preview.suggested_conditions.map((s: any) => `${s.name} (${s.reason})`).join("; ")}
+              <span className="muted"> — none of these were applied; edit the scope's ailment text to name one directly if it's right.</span>
+            </p>
+          )}
           {preview.missing?.length > 0 && (
             <details><summary className="small">Known gaps ({preview.missing.length})</summary>
               <ul className="small">{preview.missing.map((m: string) => <li key={m}>{m}</li>)}</ul>

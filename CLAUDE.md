@@ -15,6 +15,11 @@
   exercise only by deterministic page-based matching in code (`normalize._associate_images`); never let the
   extraction model itself decide which exercise a photo belongs to — it is never shown the images and has no
   honest way to know. Ambiguous pages (0 or 2+ candidate exercises) get a review flag, never a guess.
+- Scoping a campaign from free text (`match_conditions`) stays an exact substring match — it never invents a
+  condition. `suggested_conditions` (`condition_match.py`) is a fallback for text that match finds nothing for; it
+  only proposes, never selects — a suggestion enters scope only once the operator names its id in
+  `additional_condition_ids`. Same discipline as the extraction adapter: schema-only output, no tools, and an id
+  outside the supplied condition list is dropped rather than trusted.
 - Dev: `make db-up migrate test`. Tests need the local Postgres (`scripts/dev_pg.sh`).
 - Migrations are additive SQL files in `db/migrations/NNNN_name.sql`; never edit an applied one.
 - **Every change a user would notice gets a release entry in `apps/reviewer/src/changelog.ts`**, newest first, and

@@ -258,6 +258,13 @@
             "title": "Acceptance Criteria",
             "type": "array"
           },
+          "additional_condition_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Additional Condition Ids",
+            "type": "array"
+          },
           "ailment_text": {
             "anyOf": [
               {

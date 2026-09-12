@@ -25,6 +25,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.8.0",
+    date: "2026-09-12",
+    headline: "Typing something close now offers the exact match",
+    changes: [
+      {
+        kind: "added",
+        text: "A campaign's \"what should it cover?\" field now suggests the closest condition in the catalog when what you typed is close but not exact — a typo, or a looser description. Nothing is applied on its own: you pick \"Use this\" to accept a suggestion, same as everywhere else in the system that nothing is guessed silently.",
+      },
+    ],
+  },
+  {
     version: "0.7.0",
     date: "2026-09-12",
     headline: "Upload your own PDFs, photos and all",
