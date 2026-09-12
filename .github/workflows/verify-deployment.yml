@@ -26,6 +26,10 @@ jobs:
         id: health
         env:
           HOST: ${{ inputs.host || 'ingest.phillyshah.com' }}
+          # Optional. Set these repository secrets to let the deeper checks past the basic-auth door. Without
+          # them the locked-door check still runs, which is the one that must never be skipped.
+          BA_USER: ${{ secrets.SITE_BASIC_AUTH_USER }}
+          BA_PASS: ${{ secrets.SITE_BASIC_AUTH_PASS }}
         run: |
           set -u
           fail=0
@@ -40,22 +44,44 @@ jobs:
           fi
           note "- DNS: resolves to $(getent hosts "$HOST" | awk '{print $1}' | paste -sd, -)"
 
-          code=$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 "https://$HOST/api/v1/healthz" || echo 000)
+          # The most important check on this whole deployment. The reviewer UI still uses the development header
+          # shim, where anyone can select clinical_lead, so the site must never answer without a password. A 200
+          # here means it is open to the internet and must be taken down, not investigated later.
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "https://$HOST/" || echo 000)
+          if [ "$code" = "401" ]; then
+            note "- Locked door: **401 without credentials** (correct)"
+          elif [ "$code" = "200" ]; then
+            note "- Locked door: **SERVED 200 WITH NO PASSWORD — the site is open to the internet.**"
+            note "  Take it down now: \`cd /opt/sites/ingest && docker compose -f infra/docker-compose.prod.yml down\`"
+            fail=1
+          else
+            note "- Locked door: unexpected HTTP $code (expected 401)"; fail=1
+          fi
+
+          if [ -z "${BA_USER:-}" ] || [ -z "${BA_PASS:-}" ]; then
+            note ""
+            note "Repository secrets SITE_BASIC_AUTH_USER / SITE_BASIC_AUTH_PASS are not set, so the checks"
+            note "behind the password were skipped. The locked-door check above still ran."
+            exit $fail
+          fi
+          AUTH=(-u "$BA_USER:$BA_PASS")
+
+          code=$(curl -sS "${AUTH[@]}" -o /tmp/health.json -w '%{http_code}' --max-time 20 "https://$HOST/api/v1/healthz" || echo 000)
           if [ "$code" = "200" ] && grep -q '"status"' /tmp/health.json; then
             note "- API health: **200 OK**"
           else
             note "- API health: **FAILED** (HTTP $code)"; fail=1
           fi
 
-          # An unauthenticated call to a protected route must be refused, not served.
-          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "https://$HOST/api/v1/exercises" || echo 000)
+          # Past the door, the application's own auth must still refuse a call carrying no identity.
+          code=$(curl -sS "${AUTH[@]}" -o /dev/null -w '%{http_code}' --max-time 20 "https://$HOST/api/v1/exercises" || echo 000)
           if [ "$code" = "401" ] || [ "$code" = "403" ]; then
             note "- Unauthenticated API call: correctly refused ($code)"
           else
             note "- Unauthenticated API call: **expected 401/403, got $code**"; fail=1
           fi
 
-          code=$(curl -sS -o /tmp/index.html -w '%{http_code}' --max-time 20 "https://$HOST/" || echo 000)
+          code=$(curl -sS "${AUTH[@]}" -o /tmp/index.html -w '%{http_code}' --max-time 20 "https://$HOST/" || echo 000)
           if [ "$code" = "200" ]; then
             note "- Reviewer UI: **200 OK**"
           else
@@ -65,7 +91,7 @@ jobs:
           # No secret may ever appear in anything the browser downloads.
           bundle=$(grep -oE '/assets/[A-Za-z0-9._-]+\.js' /tmp/index.html | head -1 || true)
           if [ -n "$bundle" ]; then
-            curl -sS --max-time 20 "https://$HOST$bundle" -o /tmp/bundle.js || true
+            curl -sS "${AUTH[@]}" --max-time 20 "https://$HOST$bundle" -o /tmp/bundle.js || true
             if grep -qiE 'service_role|postgresql://|SUPABASE_SERVICE|PLAN_SIGNING_SECRET|BEGIN [A-Z ]*PRIVATE KEY' /tmp/bundle.js; then
               note "- Browser bundle: **SECRET-LIKE STRING FOUND — do not leave this deployed**"; fail=1
             else

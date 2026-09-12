@@ -80,46 +80,96 @@ curl -fsSL https://raw.githubusercontent.com/phillyshah/ingest/main/deploy/inspe
 4. It prints a report. Copy everything between `===== BEGIN MOVEAI SERVER REPORT =====` and
    `===== END MOVEAI SERVER REPORT =====` and paste it back to me.
 
-This only reads. It installs nothing, starts nothing, stops nothing, and does not touch your websites.
+5. Then run the second one, which reads how Traefik is set up so the new site can copy your existing
+   conventions exactly:
+
+```
+curl -fsSL https://raw.githubusercontent.com/phillyshah/ingest/main/deploy/inspect-traefik.sh | sudo bash
+```
+
+Both only read. They install nothing, start nothing, stop nothing, and do not touch your websites. The second one
+never prints `acme.json`, which holds the private key of every certificate on the server.
 
 ---
 
 ## Part C — Install the application
 
-Do this only after I have confirmed the report looks as expected.
+Do this only after the inspection reports have been read. They found what this server actually runs, and the
+install is written to match it:
 
-### C1. See the plan first, change nothing
+| What the server runs | Consequence for this install |
+| --- | --- |
+| Traefik v3.6 owns ports 80 and 443 | No nginx or Caddy config is written. Nothing is added to `/etc/nginx`. |
+| Eight other sites route through Traefik on the `proxy` network | This app joins that network and publishes no ports. |
+| Certificates come from Traefik's `letsencrypt` resolver by HTTP challenge | **DNS must exist before installing** — do Part D1 first. |
+| `exposedByDefault: false` | The app opts in with `traefik.enable=true`, like every other site. |
+| 7.8 GB RAM and **no swap** | Memory limits are set on all four containers so a spike here cannot reach the OOM killer and take out another site. |
 
-In the same browser terminal:
+The installer never touches `/opt/traefik`, the `proxy` network, or any other site's files. It writes only under
+`/opt/sites/ingest`, matching the `/opt/sites/<name>` convention already used for hipapp, npi and the ledger.
+
+### C1. Do Part D1 first
+
+Certificates are issued by HTTP challenge, which means Let's Encrypt has to reach `ingest.phillyshah.com` on
+port 80 at the moment the app starts. **Add the DNS record first** (Part D1 below), then come back here. The
+installer checks this and refuses to continue if the name does not resolve, so nothing is half-done.
+
+### C2. Run the installer
+
+In the Hostinger browser terminal:
 
 ```
-curl -fsSL https://raw.githubusercontent.com/phillyshah/ingest/main/deploy/install.sh -o install.sh && sudo bash install.sh
+curl -fsSL https://raw.githubusercontent.com/phillyshah/ingest/main/deploy/install.sh | sudo bash
 ```
 
-This is a **dry run**. It prints what it would do, line by line, and changes nothing. Every line starts with
-"would run". Send me the output if anything looks surprising.
+It asks for two things, typed straight into your own terminal so neither is ever sent anywhere else:
 
-If it stops with a red `fail` line, that is the script protecting you. Send me the message.
+1. **The Supabase connection string** — the same one from step A1 (Project Settings → Database → Connection
+   string → Session pooler).
+2. **A username and password to open the site.** The whole site sits behind this one browser prompt, because the
+   application does not yet have its own sign-in. The password is hashed immediately; the plaintext is never
+   written to a file.
 
-### C2. Do it for real
+It also generates its own signing secret, so you never have to invent one.
+
+Then it builds the four containers, starts them, and finishes by checking that the site answers **401 without a
+password**. If it ever answers 200 without one, it tells you to take the site down immediately and says how.
+
+### C3. What is actually protecting the site
+
+Worth understanding, because it is a deliberate compromise rather than the finished design:
+
+- One shared username and password at the door, enforced by Traefik before any request reaches the app.
+- Inside, the app still uses the **development sign-in**, where you pick a role from a dropdown. That is why the
+  door matters: without it, anyone could choose `clinical_lead` and approve clinical content.
+- The environment is declared `staging`, not `production`, because that is what it is. The API refuses to run the
+  development sign-in when told it is production, and that guard is left intact.
+- Consequence: the audit trail records **which role acted, not which person**. Fine while every content pack is
+  an unsigned placeholder and there is no patient data. Not fine afterwards — proper sign-in is required before
+  any real clinical use.
+
+---
+
+## Redeploying later — the `deploy-ingest` command
+
+Once installed, there is a single command for every future release:
 
 ```
-sudo bash install.sh --apply
+sudo deploy-ingest
 ```
 
-It will ask you to paste two things directly into the terminal window:
+It pulls the latest `main`, rebuilds, restarts, and checks the API came back healthy. Your configuration and
+password are never overwritten. If the build fails, nothing is restarted and the running version keeps serving.
+If the new version starts but is unhealthy, it prints the exact command to roll back to the previous commit.
 
-- the same Supabase connection string from step A1
-- your Supabase project URL, which looks like `https://abcdefgh.supabase.co` and is on the Supabase **Project
-  Settings → API** page
+Variations:
 
-Typing them here rather than sending them to me keeps them on your own server. The script also generates its own
-signing secret, so you never have to invent one.
+```
+sudo deploy-ingest --logs          # deploy, then watch the logs
+sudo deploy-ingest some-branch     # deploy a branch instead of main
+```
 
-What it does, in order: creates a locked-down folder, downloads the code, starts the application on the server's
-internal-only ports, then adds **one new website entry** for `ingest.phillyshah.com`. It checks the web server
-configuration before switching it on, and if that check fails it undoes its own change and leaves your other sites
-exactly as they were.
+This only ever touches this app's four containers. Traefik and your other eight sites are never restarted.
 
 ---
 
@@ -138,22 +188,35 @@ propagated yet; wait longer.
 
 ### D2. Get the padlock
 
-If the install said nginx, paste this and follow its prompts, choosing to redirect HTTP to HTTPS when asked:
+Nothing to do. Traefik requests the certificate from Let's Encrypt automatically the moment the app starts, the
+same way it already did for `labelcheck.90ten.life` and the rest.
+
+Ignore the `certbot` that is installed on this machine — it manages nothing here (`/etc/letsencrypt` is empty and
+there are no renewal timers). Running it would be a mistake.
+
+The first visit can take up to a minute while the certificate is issued. If the browser warns about the
+certificate, wait a minute and reload. If it still warns after a few minutes, the usual cause is DNS not pointing
+at this server yet, since the challenge needs port 80 to reach it — check with:
 
 ```
-sudo certbot --nginx -d ingest.phillyshah.com
+cd /opt/sites/ingest && docker compose -f infra/docker-compose.prod.yml logs --tail 50 api
+docker logs traefik --tail 50 | grep -i acme
 ```
-
-If it said Caddy, do nothing. Caddy fetches the certificate by itself within a minute or two.
 
 ### D3. Prove it all works
 
 1. Open `https://github.com/phillyshah/ingest/actions`.
 2. Click **Verify deployment**, then **Run workflow**, then the green button.
 
-A green tick means: the site is up, the API correctly refuses unauthenticated visitors, the page loads, no secret
-is leaking into the browser, the certificate is valid, **and your other websites still work.** That last check is
-deliberate. Run this workflow any time you want reassurance; it changes nothing.
+A green tick means: DNS resolves, **the site refuses anyone without the password**, the API is healthy, the page
+loads, no secret is leaking into the browser, the certificate is valid, **and your other websites still work.**
+The last two checks are the deliberate ones. Run this workflow any time you want reassurance; it changes nothing.
+
+The locked-door check is the one that matters most. If it ever reports the site answered without a password, take
+it down immediately — the workflow prints the command.
+
+To let it check behind the password as well, add two repository secrets (Settings → Secrets and variables →
+Actions): `SITE_BASIC_AUTH_USER` and `SITE_BASIC_AUTH_PASS`. Without them it still verifies the door is locked.
 
 ---
 
