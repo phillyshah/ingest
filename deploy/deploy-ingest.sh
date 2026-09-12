@@ -62,7 +62,9 @@ $COMPOSE up -d --remove-orphans
 step "Checking health"
 ok=0
 for _ in $(seq 1 24); do
-  if $COMPOSE exec -T api python -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz')" >/dev/null 2>&1; then
+  # `</dev/null`: `exec -T` otherwise inherits this script's stdin and consumes it. Harmless when run from a file,
+  # fatal when piped, and there is no reason to leave the difference lying around.
+  if $COMPOSE exec -T api python -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz')" </dev/null >/dev/null 2>&1; then
     ok=1; break
   fi
   sleep 5
