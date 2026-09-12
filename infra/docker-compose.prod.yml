@@ -1,0 +1,97 @@
+# Production deployment for srv1373951, written against what the server inspection actually found.
+#
+# That host front-ends every site with Traefik v3.6 on ports 80/443, docker provider, `exposedByDefault: false`,
+# entrypoints `web` (HTTP challenge) and `websecure`, certificate resolver `letsencrypt`, watching network
+# `proxy`. So this file publishes no ports of its own and joins `proxy`, exactly like the eight sites already
+# running there. The labels below copy that convention rather than inventing one.
+#
+# Access control: the reviewer UI has no Supabase sign-in yet, only the development header shim, which must never
+# face the open internet — anyone could select clinical_lead and approve content. Until real sign-in lands, the
+# whole hostname sits behind one Traefik basic-auth prompt, and the environment is declared `staging` rather than
+# production because that is what it is. The credential hash is read from .env (written by deploy/install.sh at
+# mode 600) and never appears in this repository.
+#
+# Trade-off worth knowing: one shared door means the audit trail records which ROLE acted, not which PERSON.
+# Acceptable while every content pack is unsigned_placeholder and no real patient data exists. Not acceptable
+# afterwards; see task "Supabase login in the reviewer UI".
+name: ingest
+
+x-limits: &limits
+  restart: unless-stopped
+  # The host has 7.8G RAM and NO SWAP. Limits are deliberate: an unbounded spike here would reach the OOM killer,
+  # which picks its victim across the whole machine and could take out labelcheck or the dashboard.
+  logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
+
+services:
+  api:
+    <<: *limits
+    build: { context: .., dockerfile: infra/Dockerfile.api }
+    env_file: .env
+    mem_limit: 640m
+    cpus: 0.75
+    networks: [proxy]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    labels:
+      - "traefik.enable=true"
+      # Required here though the existing sites omit it: they sit on `proxy` alone, so Traefik has no ambiguity
+      # to resolve. Being explicit costs nothing and survives a future second network.
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.ingest-api.rule=Host(`${INGEST_HOST}`) && PathPrefix(`/api/`)"
+      - "traefik.http.routers.ingest-api.entrypoints=websecure"
+      - "traefik.http.routers.ingest-api.tls.certresolver=letsencrypt"
+      # Explicit, rather than relying on Traefik ranking this longer rule above the UI's bare Host() match.
+      - "traefik.http.routers.ingest-api.priority=100"
+      - "traefik.http.routers.ingest-api.middlewares=ingest-auth@docker,ingest-api-strip@docker"
+      # The SPA calls /api/v1/*; the API serves /v1/*.
+      - "traefik.http.middlewares.ingest-api-strip.stripprefix.prefixes=/api"
+      - "traefik.http.services.ingest-api.loadbalancer.server.port=8000"
+
+  reviewer:
+    <<: *limits
+    build: { context: .., dockerfile: infra/Dockerfile.reviewer }
+    mem_limit: 96m
+    cpus: 0.25
+    networks: [proxy]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.ingest-ui.rule=Host(`${INGEST_HOST}`)"
+      - "traefik.http.routers.ingest-ui.entrypoints=websecure"
+      - "traefik.http.routers.ingest-ui.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.ingest-ui.middlewares=ingest-auth@docker"
+      - "traefik.http.services.ingest-ui.loadbalancer.server.port=8080"
+      # Defined once here, referenced by both routers. The value is user:bcrypt-hash from .env; a bcrypt hash
+      # contains '$', which is why it arrives by variable substitution rather than being written inline (compose
+      # would otherwise need every '$' doubled).
+      - "traefik.http.middlewares.ingest-auth.basicauth.users=${BASIC_AUTH_USERS}"
+      - "traefik.http.middlewares.ingest-auth.basicauth.realm=MoveAI Ingest (staging)"
+
+  # No proxy network: these reach Supabase outbound and are never addressed from outside.
+  worker:
+    <<: *limits
+    build: { context: .., dockerfile: infra/Dockerfile.worker }
+    env_file: .env
+    mem_limit: 640m
+    cpus: 0.75
+    volumes: ["uploads:/srv/moveai/uploads:ro", "storage:/app/.demo-out/storage"]
+
+  scheduler:
+    <<: *limits
+    build: { context: .., dockerfile: infra/Dockerfile.worker }
+    env_file: .env
+    command: ["uv", "run", "--no-sync", "python", "scripts/scheduler.py"]
+    mem_limit: 192m
+    cpus: 0.25
+
+networks:
+  # Created and owned by the host's Traefik stack in /opt/traefik. Declared external so `docker compose down`
+  # here can never remove the network the owner's other eight sites depend on.
+  proxy:
+    external: true
+
+volumes: { uploads: {}, storage: {} }
