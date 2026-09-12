@@ -59,9 +59,22 @@ def capture_one(client: httpx.Client, pol: dict[str, Any]) -> dict[str, Any]:
     except httpx.HTTPError as e:
         return {"state": "unreachable", "evidence": {"error": f"{type(e).__name__}: {e}", "attempted_at": datetime.now(UTC).isoformat()}}
     if resp.status_code != 200:
+        # Name the status. The first real run reported these as "0 chars", which reads like an empty page and sent
+        # the diagnosis straight past the actual cause — a 403 (the site refuses unknown clients) and a 404 (the
+        # URL in the policy file is simply wrong) need completely different fixes, and neither is "0 chars".
+        meaning = {
+            403: "the site refused this client",
+            404: "no such page — the policy_reference URL is wrong",
+            429: "rate limited; try again later",
+        }.get(resp.status_code, "")
         return {
             "state": "unreachable",
-            "evidence": {"http_status": resp.status_code, "final_url": str(resp.url), "attempted_at": datetime.now(UTC).isoformat()},
+            "evidence": {
+                "http_status": resp.status_code,
+                "final_url": str(resp.url),
+                "error": f"HTTP {resp.status_code}" + (f" — {meaning}" if meaning else ""),
+                "attempted_at": datetime.now(UTC).isoformat(),
+            },
         }
     content = resp.content[:MAX_TERMS_BYTES]
     text = terms_text(content)
