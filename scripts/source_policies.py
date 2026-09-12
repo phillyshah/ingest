@@ -35,10 +35,25 @@ from moveai_db import J, connect
 from moveai_ingestion.parse import parse_html
 from moveai_ingestion.source_policies import PolicyError, load_publishers, reject, sign, sync
 from psycopg.rows import dict_row
+from selectolax.parser import HTMLParser
 
 CAPTURE_TIMEOUT_S = 30
 MAX_TERMS_BYTES = 4 * 1024 * 1024
 QUOTE_CHARS = 600
+
+# Identify honestly and send the headers any well-formed HTTP client sends. Several publishers returned 403 to a
+# bare User-Agent with no Accept headers. This is not a disguise: the agent string still says what this is and why
+# it is here. If a publisher still refuses, that is their answer and it gets recorded as one — we do not pretend to
+# be a browser to get around it.
+HTTP_HEADERS = {
+    "User-Agent": "MoveAI-Ingest/0.1 (licence terms verification; allowlist only)",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-GB,en;q=0.9",
+}
+
+# Words that appear in a link to a terms, licence or copyright page. Used only to *suggest* candidates to a human;
+# nothing here picks a policy_reference on its own.
+TERMS_HINTS = ("terms", "copyright", "licence", "license", "usage", "reuse", "rights", "disclaimer", "policies", "policy")
 
 
 def terms_text(content: bytes) -> str:
@@ -103,6 +118,65 @@ def capture_one(client: httpx.Client, pol: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def cmd_find_terms(conn: psycopg.Connection, args: argparse.Namespace) -> int:
+    """List candidate terms pages for publishers whose policy_reference did not resolve.
+
+    Every 404 in the first real capture was a policy_reference I had guessed rather than looked up, and guessing a
+    second time from the same position would be no better. This fetches the publisher's home page and reports the
+    links that look like terms, licence or copyright pages, so the URL that goes into publishers.yaml is one that
+    was actually found on their site.
+
+    It suggests; it never selects. Nothing here writes to source_policy, and a person still has to put the URL in
+    the file and read what it says.
+    """
+    rows = conn.execute(
+        "select * from source_policy where (%s::text is null or domain=%s) order by publisher",
+        (args.domain, args.domain),
+    ).fetchall()
+    if not rows:
+        print("no policies loaded; run `load` first", file=sys.stderr)
+        return 2
+    if not args.all:
+        rows = [r for r in rows if r["evidence_state"] != "captured"]
+        if not rows:
+            print("every publisher's terms have been captured; nothing to look for. Use --all to list anyway.")
+            return 0
+
+    with httpx.Client(follow_redirects=True, timeout=CAPTURE_TIMEOUT_S, headers=HTTP_HEADERS) as client:
+        for pol in rows:
+            print(f"\n{pol['publisher']} ({pol['domain']})")
+            print(f"  currently pointing at: {pol['policy_reference']}  -> {(pol['evidence'] or {}).get('error', 'not tried')}")
+            try:
+                resp = client.get(f"https://{pol['domain']}/")
+            except httpx.HTTPError as e:
+                print(f"  home page unreachable too: {type(e).__name__}: {e}")
+                continue
+            if resp.status_code != 200:
+                print(f"  home page returned HTTP {resp.status_code}; this publisher refuses automated access")
+                continue
+
+            seen: dict[str, str] = {}
+            for a in HTMLParser(resp.text).css("a[href]"):
+                href = (a.attributes.get("href") or "").strip()
+                label = " ".join(a.text(strip=True).split())[:60]
+                if not href or href.startswith(("#", "mailto:", "javascript:")):
+                    continue
+                if not any(h in href.lower() or h in label.lower() for h in TERMS_HINTS):
+                    continue
+                absolute = str(httpx.URL(str(resp.url)).join(href))
+                # Only pages the publisher itself serves: a link out to creativecommons.org is the licence, not
+                # this publisher's statement that they use it.
+                if (httpx.URL(absolute).host or "").lower() != pol["domain"]:
+                    continue
+                seen.setdefault(absolute.split("#")[0], label or "(no link text)")
+            if not seen:
+                print("  no candidate links found on the home page; the terms may be reachable only from a footer menu")
+            for url, label in sorted(seen.items())[:12]:
+                print(f"    {url}\n        {label}")
+    print("\nPut the right URL in fixtures/source-policies/publishers.yaml, then run `capture` again.")
+    return 0
+
+
 def cmd_capture(conn: psycopg.Connection, args: argparse.Namespace) -> int:
     rows = conn.execute(
         "select * from source_policy where (%s::text is null or domain=%s) order by publisher",
@@ -116,7 +190,7 @@ def cmd_capture(conn: psycopg.Connection, args: argparse.Namespace) -> int:
     with httpx.Client(
         follow_redirects=True,
         timeout=CAPTURE_TIMEOUT_S,
-        headers={"User-Agent": "MoveAI-Ingest/0.1 (licence terms verification; allowlist only)"},
+        headers=HTTP_HEADERS,
     ) as client:
         for pol in rows:
             out = capture_one(client, pol)
@@ -215,6 +289,10 @@ def main(argv: list[str] | None = None) -> int:
 
     sub.add_parser("list", help="show every publisher and what it is waiting for")
 
+    ft = sub.add_parser("find-terms", help="list candidate terms pages for publishers whose URL did not resolve")
+    ft.add_argument("--domain", default=None, help="just this one")
+    ft.add_argument("--all", action="store_true", help="include publishers whose terms were already captured")
+
     sg = sub.add_parser("sign", help="accept or reject a publisher's captured terms")
     sg.add_argument("--domain", required=True)
     sg.add_argument("--reviewer", required=True, help="email of a rights_reviewer or clinical_lead")
@@ -222,7 +300,7 @@ def main(argv: list[str] | None = None) -> int:
     sg.add_argument("--reject", action="store_true", help="record a decision not to use this publisher")
 
     args = ap.parse_args(argv)
-    handlers = {"load": cmd_load, "capture": cmd_capture, "list": cmd_list, "sign": cmd_sign}
+    handlers = {"load": cmd_load, "capture": cmd_capture, "list": cmd_list, "sign": cmd_sign, "find-terms": cmd_find_terms}
     with connect() as conn:
         conn.row_factory = dict_row
         return handlers[args.cmd](conn, args)
