@@ -122,31 +122,28 @@ In the Hostinger browser terminal:
 curl -fsSL https://raw.githubusercontent.com/phillyshah/ingest/main/deploy/install.sh | sudo bash
 ```
 
-It asks for two things, typed straight into your own terminal so neither is ever sent anywhere else:
+It asks for one thing, typed straight into your own terminal so it is never sent anywhere else: the Supabase
+connection string from step A1 (Project Settings → Database → Connection string → Session pooler). It also
+generates its own signing secret, so you never have to invent one.
 
-1. **The Supabase connection string** — the same one from step A1 (Project Settings → Database → Connection
-   string → Session pooler).
-2. **A username and password to open the site.** The whole site sits behind this one browser prompt, because the
-   application does not yet have its own sign-in. The password is hashed immediately; the plaintext is never
-   written to a file.
+Then it builds the four containers, starts them, and checks two things: that the page loads, **and that the API
+answers on `/api/v1/healthz` with JSON**. The second is the one that matters — the first deployment loaded its
+page perfectly while every API call from it was refused, which looks like a working site and is not.
 
-It also generates its own signing secret, so you never have to invent one.
+### C3. What is protecting the site: nothing
 
-Then it builds the four containers, starts them, and finishes by checking that the site answers **401 without a
-password**. If it ever answers 200 without one, it tells you to take the site down immediately and says how.
+Stated plainly, because it is a deliberate choice rather than an oversight:
 
-### C3. What is actually protecting the site
+- **There is no password.** Anyone who knows the address can open it.
+- Inside, the application uses its **development sign-in**, where you pick a role from a dropdown — so a visitor
+  can select `clinical_lead`, the role that can approve clinical content.
+- The environment is declared `staging`, not production. That keeps the API's own guard intact: it refuses the
+  development sign-in outright when told it is production.
+- The audit trail therefore records **which role acted, not which person.**
 
-Worth understanding, because it is a deliberate compromise rather than the finished design:
-
-- One shared username and password at the door, enforced by Traefik before any request reaches the app.
-- Inside, the app still uses the **development sign-in**, where you pick a role from a dropdown. That is why the
-  door matters: without it, anyone could choose `clinical_lead` and approve clinical content.
-- The environment is declared `staging`, not `production`, because that is what it is. The API refuses to run the
-  development sign-in when told it is production, and that guard is left intact.
-- Consequence: the audit trail records **which role acted, not which person**. Fine while every content pack is
-  an unsigned placeholder and there is no patient data. Not fine afterwards — proper sign-in is required before
-  any real clinical use.
+This is tolerable only while both of these hold: every content pack is an `unsigned_placeholder`, so no plan can
+be prescribed, and there is no patient data. When either changes, this needs a real boundary — proper sign-in, or
+at minimum an IP allowlist, which on this Traefik is one label and no secret.
 
 ---
 
@@ -208,15 +205,16 @@ docker logs traefik --tail 50 | grep -i acme
 1. Open `https://github.com/phillyshah/ingest/actions`.
 2. Click **Verify deployment**, then **Run workflow**, then the green button.
 
-A green tick means: DNS resolves, **the site refuses anyone without the password**, the API is healthy, the page
-loads, no secret is leaking into the browser, the certificate is valid, **and your other websites still work.**
-The last two checks are the deliberate ones. Run this workflow any time you want reassurance; it changes nothing.
+A green tick means: DNS resolves, the reviewer page loads, **the API answers on `/api/v1`**, the application
+still refuses an API call carrying no identity, no secret is leaking into the browser bundle, the certificate is
+valid, **and your other websites still work.**
 
-The locked-door check is the one that matters most. If it ever reports the site answered without a password, take
-it down immediately — the workflow prints the command.
+The API check is the one to watch. A site whose page loads but whose API is unreachable looks fine and does
+nothing — that is exactly how the first deployment failed.
 
-To let it check behind the password as well, add two repository secrets (Settings → Secrets and variables →
-Actions): `SITE_BASIC_AUTH_USER` and `SITE_BASIC_AUTH_PASS`. Without them it still verifies the door is locked.
+The checks use IPv4 explicitly. An earlier run timed out on all eight hostnames, including seven we never
+touched, which was almost certainly IPv6: GitHub's runners prefer it, and the older domains carry `AAAA` records
+while `ingest` has only an `A` record. Timeouts there were never evidence that your sites were down.
 
 ---
 

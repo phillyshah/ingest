@@ -100,33 +100,13 @@ fi
 
 if [ "$REDO" = "yes" ]; then
   echo
-  echo "  Two things are needed. Neither is stored anywhere but this server."
+  echo "  One thing is needed, and it is not stored anywhere but this server."
   echo
-  echo "  1. The Supabase connection string — Supabase dashboard, Project Settings, Database,"
-  echo "     Connection string, Session pooler. It starts with postgresql:// and contains your password."
-  ask_secret DB_URL "     Paste it here (it will not be shown as you type)"
+  echo "  The Supabase connection string — Supabase dashboard, Project Settings, Database,"
+  echo "  Connection string, Session pooler. It starts with postgresql:// and contains your password."
+  ask_secret DB_URL "  Paste it here (it will not be shown as you type)"
   [ -n "$DB_URL" ] || die "the connection string is required."
   case "$DB_URL" in postgresql://*|postgres://*) ;; *) die "that does not look like a connection string; it should start with postgresql://" ;; esac
-
-  echo
-  echo "  2. A username and password to open the site. The whole site sits behind this one prompt,"
-  echo "     because the application does not have its own sign-in yet."
-  ask BA_USER "     Username" "moveai"
-  ask_secret BA_PASS "     Password (not shown as you type)"
-  [ -n "$BA_PASS" ] || die "a password is required; the site must not be left open."
-
-  # Hash locally. The plaintext never reaches a file, the environment, or a docker label.
-  if command -v htpasswd >/dev/null 2>&1; then
-    BA_LINE=$(htpasswd -nbB "$BA_USER" "$BA_PASS")
-  elif command -v openssl >/dev/null 2>&1; then
-    BA_LINE="$BA_USER:$(openssl passwd -apr1 "$BA_PASS")"
-  else
-    die "neither htpasswd nor openssl is available to hash the password."
-  fi
-  unset BA_PASS
-  # Compose interpolates env-file values, so every '$' in the hash must be doubled or the hash is silently
-  # mangled into a blank string and the login prompt breaks. Caught by `docker compose config`, not by reading.
-  BA_LINE_ESCAPED=${BA_LINE//$/$$}
 
   SIGNING=$(openssl rand -hex 32)
 
@@ -138,15 +118,13 @@ APP_ORIGIN=https://$INGEST_HOST
 API_ROOT_PATH=/api
 
 # Declared staging, not production, and that is accurate: the reviewer UI still uses the development header
-# shim, so there is no per-person identity. The API refuses the shim outright when MOVEAI_ENV=production.
+# shim, so there is no per-person identity, and this deployment has no edge authentication at all. The API
+# refuses the shim outright when MOVEAI_ENV=production, and that guard is deliberately left intact.
 MOVEAI_ENV=staging
 AUTH_MODE=shim
 
 DATABASE_URL=$DB_URL
 PLAN_SIGNING_SECRET=$SIGNING
-
-# Traefik basic-auth credential (bcrypt or apr1 hash; the plaintext was never written down).
-BASIC_AUTH_USERS=$BA_LINE_ESCAPED
 
 # Extraction runs the deterministic mock until a key is set here. With the mock, ingesting any document returns
 # fixture output rather than anything read from that document — see the runbook before reading results as real.
@@ -192,33 +170,42 @@ for i in $(seq 1 24); do
   sleep 5
 done
 
-step "Checking the site is protected"
-# A bcrypt hash contains '$', which compose will silently eat if it is not escaped. Rather than trust that,
-# ask Traefik: an unauthenticated request must come back 401 with a basic-auth challenge.
-probe=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 --resolve "$INGEST_HOST:443:127.0.0.1" -k "https://$INGEST_HOST/" 2>/dev/null || true)
-challenge=$(curl -s -I --max-time 15 --resolve "$INGEST_HOST:443:127.0.0.1" -k "https://$INGEST_HOST/" 2>/dev/null | grep -ci '^www-authenticate' || true)
-if [ "$probe" = "401" ] && [ "$challenge" -ge 1 ]; then
-  echo "  the site answers 401 with a password prompt: the door is locked."
-elif [ "$probe" = "200" ]; then
-  die "the site answered 200 WITHOUT asking for a password. It is open to the internet.
-  Stop it now:  cd $DIR && $COMPOSE down
-  Then report this — the basic-auth middleware did not load."
+step "Checking the site actually works end to end"
+# Both halves matter, and the second is the one that failed on the first deployment: the UI router worked while
+# the /api router refused every request, so the page loaded and nothing in it did. Asserting the page returns 200
+# is not enough — the browser's API calls have to be proved separately, through the same path the browser uses.
+probe() { curl -s -o "$2" -w '%{http_code}' --max-time 15 --resolve "$INGEST_HOST:443:127.0.0.1" -k "https://$INGEST_HOST$1" 2>/dev/null || true; }
+ui=$(probe "/" /dev/null)
+body=$(mktemp); api=$(probe "/api/v1/healthz" "$body")
+
+if [ "$ui" = "200" ]; then
+  echo "  the reviewer page loads (200)."
 else
-  echo "  WARNING: expected 401, got '${probe:-no response}'. Traefik may still be starting."
-  echo "  Re-check in a minute:  curl -I https://$INGEST_HOST/"
-  echo "  It MUST return 401. If it returns 200, run '$COMPOSE down' and report it."
+  echo "  WARNING: the page returned '${ui:-no response}' instead of 200. Traefik may still be starting; reload in a minute."
 fi
+
+if [ "$api" = "200" ] && grep -q '"status"' "$body" 2>/dev/null; then
+  echo "  the API answers through /api/v1 (200, JSON). The application will work."
+else
+  echo "  WARNING: /api/v1/healthz returned '${api:-no response}' and did not look like JSON."
+  echo "  The page will load but nothing in it will work, because the browser's API calls are not reaching the API."
+  echo "  Check:  docker logs traefik --tail 30 | grep ingest"
+fi
+rm -f "$body"
 
 cat <<EOF
 
 ================================================================
 Done. Nothing outside $DIR was modified.
 
-  Site:      https://$INGEST_HOST
-  Username:  ${BA_USER:-the one you set earlier}
+  Site:  https://$INGEST_HOST
 
 The first visit may take up to a minute while Traefik obtains the certificate.
 If the browser warns about the certificate, wait a minute and reload.
+
+There is NO password on this site: anyone who knows the address can open it, and the
+sign-in screen inside lets them pick any role. That is acceptable only while every
+content pack is an unsigned placeholder and there is no patient data.
 
 To deploy a new version later, from anywhere:
   sudo deploy-ingest          # pull latest main, rebuild, restart
@@ -230,7 +217,7 @@ Useful later, all from $DIR:
   $COMPOSE restart            # restart this app only
   $COMPOSE down               # stop this app only; the other sites are untouched
 
-This is a staging deployment: one shared password, no per-person identity, and every
+This is a staging deployment: no edge authentication, no per-person identity, and every
 content pack is unsigned placeholder, so no plan can be prescribed.
 ================================================================
 EOF
