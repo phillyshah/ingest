@@ -206,6 +206,10 @@ class CampaignScopeInput(BaseModel):
     exclusion: dict[str, Any] = Field(default_factory=dict)
     scope_confirmed: bool = False
     service_date: str | None = None
+    # Conditions the operator explicitly accepted from `suggested_conditions` (or supplied directly). The only
+    # path by which a condition the exact text/code match did not find can enter scope — never populated by the
+    # server on its own.
+    additional_condition_ids: list[str] = Field(default_factory=list)
 
 
 class CampaignCreate(BaseModel):
@@ -231,6 +235,9 @@ class ScopePreview(BaseModel):
     interpreted_conditions: list[dict[str, Any]]
     resolved_codes: list[ResolvedCode]
     unresolved_text: list[str]
+    # Fallback proposals when the exact text/code match found nothing at all — never auto-selected. The operator
+    # accepts one by resending the preview (or the campaign) with its id added to `additional_condition_ids`.
+    suggested_conditions: list[dict[str, Any]] = Field(default_factory=list)
     included: dict[str, Any]
     excluded: dict[str, Any]
     existing_coverage: dict[str, Any]

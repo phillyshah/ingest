@@ -12,6 +12,7 @@ import psycopg
 from moveai_db import J
 
 from . import queue as q
+from .condition_match import get_condition_matcher
 from .fetch import canonicalize
 from .source_policies import policy_for_url
 from .terminology import resolve_code
@@ -39,6 +40,36 @@ def match_conditions(conn: psycopg.Connection, text: str | None) -> list[dict[st
     return out
 
 
+def suggested_conditions(conn: psycopg.Connection, text: str | None) -> list[dict[str, Any]]:
+    """Fallback proposals for free text the exact match in `match_conditions` could not place.
+
+    Never merged into the scope on its own — see condition_match.py's module docstring. Only called when the
+    exact match already came up empty, so it never overrides or second-guesses a match that already succeeded.
+    """
+    if not text:
+        return []
+    candidates = conn.execute("select id, preferred_name, internal_code, synonyms from condition").fetchall()
+    if not candidates:
+        return []
+    hits = get_condition_matcher().suggest(text, candidates)
+    by_id = {str(c["id"]): c for c in candidates}
+    out = []
+    for h in hits:
+        c = by_id.get(h["condition_id"])
+        if not c:
+            continue  # a matcher naming an id outside the supplied list is dropped, not trusted
+        out.append(
+            {
+                "id": h["condition_id"],
+                "code": c["internal_code"],
+                "name": c["preferred_name"],
+                "confidence": h["confidence"],
+                "reason": h["reason"],
+            }
+        )
+    return out
+
+
 def conditions_for_codes(conn: psycopg.Connection, codes: list[str]) -> list[dict[str, Any]]:
     """Conditions a diagnosis code alone can select.
 
@@ -62,12 +93,22 @@ def conditions_for_codes(conn: psycopg.Connection, codes: list[str]) -> list[dic
 def scope_preview(conn: psycopg.Connection, tenant_id: Any, scope: dict[str, Any]) -> dict[str, Any]:
     svc_date = date.fromisoformat(scope["service_date"]) if scope.get("service_date") else date.today()
     resolved = [resolve_code(conn, c, svc_date) for c in scope.get("codes", [])]
-    conds = {c["id"]: c for c in match_conditions(conn, scope.get("ailment_text"))}
+    exact = match_conditions(conn, scope.get("ailment_text"))
+    conds = {c["id"]: c for c in exact}
+    for cid in scope.get("additional_condition_ids") or []:
+        # Explicit operator acceptance of a proposed suggestion (or any other condition id) — the only path by
+        # which a condition the exact text match did not find can enter scope. Never populated by this function.
+        c = conn.execute("select * from condition where id=%s", (cid,)).fetchone()
+        if c:
+            conds[c["id"]] = c
     for c in conditions_for_codes(conn, [r["code"] for r in resolved if r["resolved"]]):
         conds[c["id"]] = c
     unresolved_text = []
-    if scope.get("ailment_text") and not match_conditions(conn, scope.get("ailment_text")):
+    if scope.get("ailment_text") and not exact:
         unresolved_text.append(scope["ailment_text"])
+    # Only offered when the exact match found nothing at all — a fallback for the case it exists to help, not a
+    # second opinion on a match that already succeeded.
+    suggested = suggested_conditions(conn, scope.get("ailment_text")) if scope.get("ailment_text") and not exact else []
     blocking: list[str] = []
     if not conds:
         blocking.append("no condition could be interpreted from the ailment text or codes")
@@ -133,6 +174,7 @@ def scope_preview(conn: psycopg.Connection, tenant_id: Any, scope: dict[str, Any
         ],
         "resolved_codes": resolved,
         "unresolved_text": unresolved_text,
+        "suggested_conditions": [s for s in suggested if s["id"] not in {str(cid) for cid in conds}],
         "included": {
             "conditions": [c["preferred_name"] for c in conds.values()],
             "refinements": scope.get("refinements", {}),
@@ -249,6 +291,11 @@ def preview_for_scope_version(conn: psycopg.Connection, tenant_id: Any, scope: d
             "scope_confirmed": bool(scope["authorized_by"]),
             "exclusion": scope["exclusion"],
             "refinements": scope["refinements"],
+            # The stored version's condition_ids is itself the earlier preview's resolved set — exact matches,
+            # code-derived matches, and any suggestion the operator had already accepted. Carrying it forward here
+            # is what makes an accepted suggestion survive a later re-preview (confirm_scope, start) rather than
+            # only ever existing for the one preview call it was accepted on.
+            "additional_condition_ids": [str(cid) for cid in scope["condition_ids"]],
         },
     )
 

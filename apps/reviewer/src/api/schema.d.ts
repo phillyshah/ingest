@@ -1038,6 +1038,8 @@ export interface components {
         CampaignScopeInput: {
             /** Acceptance Criteria */
             acceptance_criteria?: string[];
+            /** Additional Condition Ids */
+            additional_condition_ids?: string[];
             /** Ailment Text */
             ailment_text?: string | null;
             /** Codes */
