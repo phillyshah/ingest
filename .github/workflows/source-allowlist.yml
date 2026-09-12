@@ -25,7 +25,7 @@ on:
       action:
         description: "What to do"
         type: choice
-        options: [list, load, capture, sign, reject]
+        options: [list, load, capture, find-terms, sign, reject]
         default: list
       domain:
         description: "Domain, for sign/reject (e.g. medlineplus.gov). Optional for capture: limits it to one."
@@ -94,6 +94,13 @@ jobs:
               run_policy "${args[@]}"
               # The state after a capture is the useful output, not the capture log alone.
               run_policy list
+              ;;
+            find-terms)
+              # Diagnostic only: reads publishers' home pages and suggests which page states their terms. It
+              # writes nothing, so it cannot change what any campaign is allowed to read.
+              args=(find-terms)
+              if [ -n "$DOMAIN" ]; then args+=(--domain "$DOMAIN"); fi
+              run_policy "${args[@]}"
               ;;
             sign|reject)
               if [ -z "$DOMAIN" ] || [ -z "$REVIEWER" ]; then
