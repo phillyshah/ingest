@@ -178,6 +178,17 @@ def cmd_find_terms(conn: psycopg.Connection, args: argparse.Namespace) -> int:
 
 
 def cmd_capture(conn: psycopg.Connection, args: argparse.Namespace) -> int:
+    # Sync from the files first, always. capture fetches whatever policy_reference is sitting in the database, so
+    # a policy_reference edited in publishers.yaml but never `load`ed would capture the OLD url and report it as
+    # unreachable again, giving no sign that the fix was never applied. This happened: two URLs were corrected in
+    # a PR, `capture` was run straight after merging, and it silently re-fetched the stale ones. sync() is
+    # idempotent and never touches a signature unless the file actually changed, so running it here has no cost
+    # when nothing changed and closes the gap when something did.
+    result = sync(conn)
+    conn.commit()
+    if result["updated"]:
+        print(f"  synced from publishers.yaml first: {', '.join(result['updated'])} changed")
+
     rows = conn.execute(
         "select * from source_policy where (%s::text is null or domain=%s) order by publisher",
         (args.domain, args.domain),
