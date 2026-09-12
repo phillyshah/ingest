@@ -16,3 +16,7 @@
   bumps the version there. It is what the footer's "What's new" shows. Write it for the person using the system,
   not for a developer: no endpoints, filenames or table names. Purely internal work (refactors, CI, infrastructure)
   gets no entry. Bump patch for fixes, minor for new or changed behaviour.
+- **When Andy needs to do something (merge a PR, run a workflow, click a button), give him the actual links in the
+  order he should use them — a merge link, a specific Actions-workflow link with which run/inputs to pick, etc.
+  Don't just describe the steps in words; hand him something to click.** He works from a phone/tablet a lot and
+  won't hunt through the repo or the Actions tab to find things himself.
