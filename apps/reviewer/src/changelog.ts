@@ -25,6 +25,15 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.5.2",
+    date: "2026-09-12",
+    headline: "Clearer about who can accept a publisher's terms",
+    changes: [
+      { kind: "fixed", text: "The Sources page now says plainly when your current role cannot accept or reject a publisher, and which role to switch to, instead of a easy-to-miss note at the bottom." },
+      { kind: "changed", text: "For a rights reviewer or clinical lead, a publisher's terms open automatically so the accept/reject buttons are visible straight away, rather than hidden behind a details toggle." },
+    ],
+  },
+  {
     version: "0.5.1",
     date: "2026-09-12",
     headline: "Reading real web pages, and a way to confirm a campaign",
