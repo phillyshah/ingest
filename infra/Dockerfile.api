@@ -12,6 +12,10 @@ COPY fixtures ./fixtures
 RUN uv sync --frozen --no-dev --all-packages
 RUN useradd -r -u 10001 moveai && chown -R moveai /app
 USER moveai
+ARG GIT_SHA=unknown
+ARG BUILT_AT=unknown
+ENV GIT_SHA=$GIT_SHA BUILT_AT=$BUILT_AT
+
 EXPOSE 8000
 # Call the venv directly rather than through `uv run`: uv wants a cache under $HOME, and this image runs as a
 # system account with no home directory, so `uv run` dies with "failed to create directory ... Permission

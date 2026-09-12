@@ -11,35 +11,48 @@ import { API_BASE, get } from "./api/client";
 
 function SignIn() {
   const { setSession } = useAuth();
-  const [userId, setUserId] = useState("");
-  const [tenantId, setTenantId] = useState("");
-  const [role, setRole] = useState("source_admin");
+  const [username, setUsername] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  // A username, not a UUID. The server resolves it; nobody should have to paste identifiers to look at a board.
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
-    const s = { userId: userId.trim(), tenantId: tenantId.trim(), role };
+    setBusy(true);
     try {
-      const me = await fetch(API_BASE + "/me", { headers: { "X-User-Id": s.userId, "X-Tenant-Id": s.tenantId, "X-Role": s.role } });
-      if (!me.ok) throw new Error(((await me.json()) as { message?: string }).message ?? me.statusText);
-      const body = (await me.json()) as { display_name?: string; tenant_id?: string };
-      setSession({ ...s, tenantId: body.tenant_id ?? s.tenantId, displayName: body.display_name });
-    } catch (ex) { setErr((ex as Error).message); }
+      const res = await fetch(API_BASE + "/dev-login", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ username: username.trim() }),
+      });
+      const text = await res.text();
+      const body = text ? (JSON.parse(text) as { user_id?: string; tenant_id?: string; display_name?: string; role?: string; message?: string }) : null;
+      if (!res.ok) throw new Error(body?.message ?? res.statusText);
+      setSession({
+        userId: body!.user_id!,
+        tenantId: body!.tenant_id ?? "",
+        role: body!.role ?? "source_admin",
+        displayName: body!.display_name,
+      });
+    } catch (ex) {
+      setErr((ex as Error).message);
+    } finally {
+      setBusy(false);
+    }
   };
   return (
     <main>
       <h1>Sign in</h1>
-      <div className="panel" style={{ maxWidth: 560 }}>
-        <p className="muted small">Development sign-in (header shim). Production uses Supabase Auth with invitation-only access (spec §22C). Get IDs from <span className="mono">make seed</span>.</p>
+      <div className="panel" style={{ maxWidth: 460 }}>
         <form onSubmit={submit} className="row">
-          <label className="f">User ID<input value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="uuid from make seed" required /></label>
-          <label className="f">Tenant ID<input value={tenantId} onChange={(e) => setTenantId(e.target.value)} placeholder="uuid (optional)" /></label>
-          <label className="f">Role<select value={role} onChange={(e) => setRole(e.target.value)}>
-            {["source_admin", "rights_reviewer", "pt", "clinical_lead", "auditor", "integration"].map((r) => <option key={r}>{r}</option>)}
-          </select></label>
-          <button className="primary" type="submit">Sign in</button>
+          <label className="f">Username<input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="moveai" autoFocus required /></label>
+          <button className="primary" type="submit" disabled={busy || !username.trim()}>{busy ? "Signing in…" : "Sign in"}</button>
         </form>
         {err && <div className="error">{err}</div>}
+        <p className="muted small" style={{ marginTop: 10 }}>
+          Staging sign-in. There is no password here and no per-person identity — actions are recorded against a
+          role, not a person. Production replaces this with Supabase Auth and invitation-only access (spec §22C).
+        </p>
       </div>
     </main>
   );
@@ -48,7 +61,10 @@ function SignIn() {
 export default function App() {
   const { session, setSession, users } = useAuth();
   const [health, setHealth] = useState<"ok" | "down" | "?">("?");
+  const [build, setBuild] = useState<{ commit: string; built_at: string; environment: string } | null>(null);
   useEffect(() => { get<{ status: string }>("/healthz").then(() => setHealth("ok")).catch(() => setHealth("down")); }, []);
+  // Which commit is serving. After a deploy this is the only honest answer; the repository only says what was pushed.
+  useEffect(() => { get<{ commit: string; built_at: string; environment: string }>("/version").then(setBuild).catch(() => setBuild(null)); }, []);
   if (!session) return <SignIn />;
   const me = users.find((u) => u.id === session.userId);
   return (
@@ -64,6 +80,11 @@ export default function App() {
         </nav>
         <span className="spacer" />
         <span className={`badge ${health === "ok" ? "ok" : health === "down" ? "bad" : ""}`}>api {health}</span>
+        {build && (
+          <span className="badge" title={`built ${build.built_at}`} data-testid="build-version">
+            {build.environment} · {build.commit}
+          </span>
+        )}
         <span className="small">{session.displayName ?? session.userId.slice(0, 8)}</span>
         <select value={session.role} onChange={(e) => setSession({ ...session, role: e.target.value })} title="role (dev switcher; server validates)">
           {(me?.roles ?? [session.role]).map((r) => <option key={r}>{r}</option>)}

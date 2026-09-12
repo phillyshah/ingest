@@ -28,7 +28,11 @@ x-limits: &limits
 services:
   api:
     <<: *limits
-    build: { context: .., dockerfile: infra/Dockerfile.api }
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+      # Stamped so /v1/version reports which commit is actually serving. deploy-ingest sets these.
+      args: { GIT_SHA: "${GIT_SHA:-unknown}", BUILT_AT: "${BUILT_AT:-unknown}" }
     env_file: .env
     mem_limit: 640m
     cpus: 0.75

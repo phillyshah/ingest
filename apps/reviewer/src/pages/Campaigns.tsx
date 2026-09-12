@@ -2,14 +2,14 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { DndContext, type DragEndEvent, useDraggable, useDroppable } from "@dnd-kit/core";
 import { useQueryClient } from "@tanstack/react-query";
-import { post } from "../api/client";
+import { del, post } from "../api/client";
 import { createCampaign, previewScope, useCampaigns, type Card as CardT } from "../api/hooks";
 import { useAuth, hasRole } from "../auth";
 import { Badge, Err, stateKind } from "../components/ui";
 import { COLUMNS, columnOf, dragOutcome, funnel, staleness } from "../lib/kanban";
 import { useLiveEvents } from "../lib/sse";
 
-function CampaignCard({ c }: { c: CardT }) {
+function CampaignCard({ c, onDelete }: { c: CardT; onDelete?: (c: CardT) => void }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: c.id, data: c });
   const style = transform ? { transform: `translate(${transform.x}px, ${transform.y}px)` } : undefined;
   return (
@@ -26,16 +26,27 @@ function CampaignCard({ c }: { c: CardT }) {
       <div className="muted">spend ${c.spend_usd.toFixed(2)} / cap ${c.cap_usd.toFixed(2)} · active {Math.round(c.active_seconds / 60)}m · {c.current_activity ?? "idle"}</div>
       {c.blockers.length > 0 && <div style={{ color: "var(--bad)" }}>{c.blockers[0]}</div>}
       {c.next_human_action && <div><Badge kind="info">next: {c.next_human_action}</Badge></div>}
+      {onDelete && (
+        <div style={{ marginTop: 6 }}>
+          {/* Not inside the drag listeners above: pointer-down on a draggable would start a drag instead. */}
+          <button
+            className="small"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); onDelete(c); }}
+            title="Remove this campaign from the board"
+          >Delete</button>
+        </div>
+      )}
     </div>
   );
 }
 
-function Column({ k, label, cards }: { k: string; label: string; cards: CardT[] }) {
+function Column({ k, label, cards, onDelete }: { k: string; label: string; cards: CardT[]; onDelete?: (c: CardT) => void }) {
   const { setNodeRef, isOver } = useDroppable({ id: k });
   return (
     <div ref={setNodeRef} className={`col ${isOver ? "over" : ""}`} data-testid={`col-${k}`}>
       <h3>{label} <span className="muted">{cards.length}</span></h3>
-      {cards.map((c) => <CampaignCard key={c.id} c={c} />)}
+      {cards.map((c) => <CampaignCard key={c.id} c={c} onDelete={onDelete} />)}
     </div>
   );
 }
@@ -45,9 +56,9 @@ function NewCampaign({ onClose }: { onClose: () => void }) {
   const [title, setTitle] = useState("");
   const [ailment, setAilment] = useState("");
   const [codes, setCodes] = useState("");
+  // Campaigns sort by `order by priority, created_at`, so a LOWER number runs sooner.
   const [priority, setPriority] = useState(100);
   const [output, setOutput] = useState("text_first_phased_plan_templates");
-  const [policy, setPolicy] = useState("allowlist_only");
   const [urls, setUrls] = useState("");
   const [limits, setLimits] = useState({ max_sources: 20, max_candidates: 40, max_search_requests: 30, max_runtime_seconds: 7200, max_usd: 10, max_document_bytes: 50_000_000 });
   const [acceptance, setAcceptance] = useState("phases covered, restrictions captured, dose provenance, checkpoints");
@@ -55,8 +66,21 @@ function NewCampaign({ onClose }: { onClose: () => void }) {
   const [preview, setPreview] = useState<Record<string, any> | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [err, setErr] = useState<unknown>(null);
-  const scope = () => ({ ailment_text: ailment || null, codes: codes.split(/[,\s]+/).filter(Boolean), desired_output: output, priority, source_policy: policy,
-    limits, acceptance_criteria: acceptance.split(",").map((s) => s.trim()).filter(Boolean), media_policy: media, supplied_source_urls: urls.split(/\s+/).filter(Boolean), scope_confirmed: confirmed });
+  const urlList = urls.split(/\s+/).filter(Boolean);
+  const scope = () => ({
+    ailment_text: ailment || null,
+    codes: codes.split(/[,\s]+/).filter(Boolean),
+    desired_output: output,
+    priority,
+    // Derived rather than asked: supplying documents obviously means "use them too". There is no case where a
+    // person wants to paste URLs and then have them ignored.
+    source_policy: urlList.length > 0 ? "allowlist_and_supplied" : "allowlist_only",
+    limits,
+    acceptance_criteria: acceptance.split(",").map((s) => s.trim()).filter(Boolean),
+    media_policy: media,
+    supplied_source_urls: urlList,
+    scope_confirmed: confirmed,
+  });
   const doPreview = async () => { setErr(null); try { setPreview(await previewScope(null, scope())); } catch (e) { setErr(e); } };
   const save = async () => {
     setErr(null);
@@ -65,31 +89,62 @@ function NewCampaign({ onClose }: { onClose: () => void }) {
   return (
     <dialog open>
       <h2>New campaign</h2>
-      <p className="small muted">One card = one bounded ingestion request. Limits are ceilings, not targets (spec §21B).</p>
+      <p className="small muted">Describe what you want covered. Everything else has a sensible default.</p>
       <div className="row">
-        <label className="f">Title<input value={title} onChange={(e) => setTitle(e.target.value)} required /></label>
-        <label className="f">Ailment<input value={ailment} onChange={(e) => setAilment(e.target.value)} placeholder="e.g. nonoperative hamstring strain" /></label>
-        <label className="f">Diagnostic codes (ICD-10-CM)<input value={codes} onChange={(e) => setCodes(e.target.value)} placeholder="M75.01, S83.411A" /></label>
-        <label className="f">Priority<input type="number" value={priority} onChange={(e) => setPriority(Number(e.target.value))} /></label>
-        <label className="f">Desired output<select value={output} onChange={(e) => setOutput(e.target.value)}><option value="text_first_phased_plan_templates">text-first phased plan templates</option><option value="exercise_variants_only">exercise variants + evidence only</option></select></label>
-        <label className="f">Source policy<select value={policy} onChange={(e) => setPolicy(e.target.value)}><option value="allowlist_only">allowlist only</option><option value="supplied_only">supplied URLs only</option><option value="allowlist_and_supplied">allowlist + supplied</option></select></label>
-        <label className="f">Media<select value={media} onChange={(e) => setMedia(e.target.value)}><option value="reference_only">reference only</option><option value="small_graphics">small graphics if permitted</option><option value="none">none</option></select></label>
+        <label className="f">Title<input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="MCL sprain" /></label>
+        <label className="f">What should it cover?<input value={ailment} onChange={(e) => setAilment(e.target.value)} placeholder="e.g. grade 1 MCL sprain, nonoperative" /></label>
+        <label className="f">Priority
+          <select value={priority} onChange={(e) => setPriority(Number(e.target.value))}>
+            <option value={50}>High</option>
+            <option value={100}>Medium</option>
+            <option value={200}>Low</option>
+          </select>
+        </label>
       </div>
-      <label className="f" style={{ marginTop: 8 }}>Supplied source URLs / internal protocols (one per line)<textarea rows={2} value={urls} onChange={(e) => setUrls(e.target.value)} /></label>
-      <label className="f" style={{ marginTop: 8 }}>Acceptance coverage (comma separated)<input value={acceptance} onChange={(e) => setAcceptance(e.target.value)} /></label>
-      <h3>Run limits</h3>
-      <div className="row">
-        {(Object.keys(limits) as (keyof typeof limits)[]).map((k) => (
-          <label className="f" key={k}>{k.replace(/_/g, " ")}<input type="number" value={limits[k]} onChange={(e) => setLimits({ ...limits, [k]: Number(e.target.value) })} /></label>
-        ))}
-      </div>
+      <label className="f" style={{ marginTop: 8 }}>Diagnostic codes <span className="muted small">— optional, ICD-10-CM</span>
+        <input value={codes} onChange={(e) => setCodes(e.target.value)} placeholder="M75.01, S83.411A" />
+      </label>
+
+      {/* Everything below is defaulted. It stays reachable because these are real ceilings on spend and scope,
+          but nobody should have to answer six questions to create a draft. */}
+      <details style={{ marginTop: 12 }}>
+        <summary className="small">Advanced settings</summary>
+        <label className="f" style={{ marginTop: 8 }}>Specific documents to use <span className="muted small">— optional, one URL per line. Leave empty and the engine finds its own sources.</span>
+          <textarea rows={2} value={urls} onChange={(e) => setUrls(e.target.value)} />
+        </label>
+        <div className="row" style={{ marginTop: 8 }}>
+          <label className="f">Output<select value={output} onChange={(e) => setOutput(e.target.value)}><option value="text_first_phased_plan_templates">Phased plan templates</option><option value="exercise_variants_only">Exercises and evidence only</option></select></label>
+          <label className="f">Images<select value={media} onChange={(e) => setMedia(e.target.value)}><option value="reference_only">Reference only</option><option value="small_graphics">Include if licensed</option><option value="none">None</option></select></label>
+        </div>
+        <label className="f" style={{ marginTop: 8 }}>What counts as covered <span className="muted small">— comma separated</span>
+          <input value={acceptance} onChange={(e) => setAcceptance(e.target.value)} />
+        </label>
+        <h3>Ceilings</h3>
+        <p className="small muted">Hard stops, not targets. The run halts when it reaches any of them.</p>
+        <div className="row">
+          <label className="f">Spend cap (US$)<input type="number" value={limits.max_usd} onChange={(e) => setLimits({ ...limits, max_usd: Number(e.target.value) })} /></label>
+          <label className="f">Max sources read<input type="number" value={limits.max_sources} onChange={(e) => setLimits({ ...limits, max_sources: Number(e.target.value) })} /></label>
+          <label className="f">Max exercises proposed<input type="number" value={limits.max_candidates} onChange={(e) => setLimits({ ...limits, max_candidates: Number(e.target.value) })} /></label>
+          <label className="f">Max searches<input type="number" value={limits.max_search_requests} onChange={(e) => setLimits({ ...limits, max_search_requests: Number(e.target.value) })} /></label>
+          <label className="f">Time limit (minutes)<input type="number" value={Math.round(limits.max_runtime_seconds / 60)} onChange={(e) => setLimits({ ...limits, max_runtime_seconds: Number(e.target.value) * 60 })} /></label>
+          <label className="f">Max document size (MB)<input type="number" value={Math.round(limits.max_document_bytes / 1_000_000)} onChange={(e) => setLimits({ ...limits, max_document_bytes: Number(e.target.value) * 1_000_000 })} /></label>
+        </div>
+      </details>
+
       <div className="row" style={{ marginTop: 10 }}>
         <button onClick={doPreview}>Preview scope</button>
-        <label className="row"><input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} /> I confirm the interpreted scope</label>
         <span className="spacer" />
         <button onClick={onClose}>Cancel</button>
         <button className="primary" onClick={save} disabled={!title}>Save as draft</button>
       </div>
+      {/* The confirmation gate is required before a run may start (spec §21B), but it is meaningless until there
+          is an interpretation to confirm — so it appears with the preview rather than above it. */}
+      {preview && (
+        <label className="row" style={{ marginTop: 8 }}>
+          <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
+          &nbsp;The interpretation below is right — allow this campaign to start
+        </label>
+      )}
       <Err e={err} />
       {preview && (
         <div className="panel" data-testid="scope-preview">
@@ -107,6 +162,17 @@ function NewCampaign({ onClose }: { onClose: () => void }) {
     </dialog>
   );
 }
+
+// Header labels, because the raw column names are database fields, not English.
+const COLS: [keyof CardT, string][] = [
+  ["title", "Title"],
+  ["lifecycle", "State"],
+  ["control", "Control"],
+  ["priority", "Priority"],
+  ["condition_summary", "Covers"],
+  ["spend_usd", "Spent"],
+  ["last_update", "Last update"],
+];
 
 export default function Campaigns() {
   const { session } = useAuth();
@@ -134,6 +200,18 @@ export default function Campaigns() {
     void qc.invalidateQueries({ queryKey: ["campaigns"] });
   };
   const sorted = [...cards].sort((a, b) => (a[sort] as any) > (b[sort] as any) ? 1 : -1);
+  const canDelete = hasRole(session, "source_admin");
+  const doDelete = async (c: CardT) => {
+    if (!window.confirm(`Delete "${c.title}"?\n\nIt disappears from the board. Its history is kept, because the audit trail of what was ingested cannot be erased.`)) return;
+    try {
+      await del(`/ingestion-campaigns/${c.id}`);
+      setMsg(null);
+    } catch (ex) {
+      // A campaign that has already run is refused rather than hidden — say so instead of failing silently.
+      setMsg((ex as Error).message);
+    }
+    void qc.invalidateQueries({ queryKey: ["campaigns"] });
+  };
   return (
     <>
       <div className="row" style={{ marginBottom: 10 }}>
@@ -149,12 +227,12 @@ export default function Campaigns() {
       {msg && <div className="notice" data-testid="drag-message">{msg}</div>}
       {view === "board" ? (
         <DndContext onDragEnd={onDragEnd}>
-          <div className="board">{COLUMNS.map((c) => <Column key={c.key} k={c.key} label={c.label} cards={byCol[c.key]} />)}</div>
+          <div className="board">{COLUMNS.map((c) => <Column key={c.key} k={c.key} label={c.label} cards={byCol[c.key]} onDelete={canDelete ? doDelete : undefined} />)}</div>
         </DndContext>
       ) : (
         <table>
-          <thead><tr>{(["title", "lifecycle", "control", "priority", "condition_summary", "spend_usd", "last_update"] as (keyof CardT)[]).map((k) => <th key={k} onClick={() => setSort(k)} style={{ cursor: "pointer" }}>{k}{sort === k ? " ▲" : ""}</th>)}</tr></thead>
-          <tbody>{sorted.map((c) => <tr key={c.id}><td><Link to={`/campaigns/${c.id}`}>{c.title}</Link></td><td><Badge kind={stateKind(c.lifecycle)}>{c.lifecycle}</Badge></td><td>{c.control}</td><td>{c.priority}</td><td>{c.condition_summary}</td><td>${c.spend_usd.toFixed(2)}</td><td>{new Date(c.last_update).toLocaleString()}</td></tr>)}</tbody>
+          <thead><tr>{COLS.map(([k, label]) => <th key={k} onClick={() => setSort(k)} style={{ cursor: "pointer" }}>{label}{sort === k ? " ▲" : ""}</th>)}<th /></tr></thead>
+          <tbody>{sorted.map((c) => <tr key={c.id}><td><Link to={`/campaigns/${c.id}`}>{c.title}</Link></td><td><Badge kind={stateKind(c.lifecycle)}>{c.lifecycle}</Badge></td><td>{c.control}</td><td>{c.priority}</td><td>{c.condition_summary}</td><td>${c.spend_usd.toFixed(2)}</td><td>{new Date(c.last_update).toLocaleString()}</td><td>{canDelete && <button className="small" onClick={() => doDelete(c)}>Delete</button>}</td></tr>)}</tbody>
         </table>
       )}
       {creating && <NewCampaign onClose={() => setCreating(false)} />}

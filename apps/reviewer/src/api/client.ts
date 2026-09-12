@@ -65,3 +65,4 @@ export async function api<T = unknown>(path: string, init: RequestInit & { json?
 export const get = <T,>(path: string) => api<T>(path);
 export const post = <T,>(path: string, json?: unknown, idempotencyKey?: string) => api<T>(path, { method: "POST", json, idempotencyKey });
 export const patch = <T,>(path: string, json?: unknown) => api<T>(path, { method: "PATCH", json });
+export const del = <T,>(path: string) => api<T>(path, { method: "DELETE" });

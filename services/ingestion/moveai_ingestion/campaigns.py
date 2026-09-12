@@ -688,7 +688,10 @@ def list_cards(
     control: str | None = None,
     include_archived: bool = False,
 ) -> list[dict[str, Any]]:
-    rows = conn.execute("select * from ingestion_campaign where tenant_id=%s order by priority, created_at", (tenant_id,)).fetchall()
+    rows = conn.execute(
+        "select * from ingestion_campaign where tenant_id=%s and deleted_at is null order by priority, created_at",
+        (tenant_id,),
+    ).fetchall()
     out = []
     for r in rows:
         c = card(conn, r)
@@ -725,3 +728,28 @@ def events_since(conn: psycopg.Connection, tenant_id: Any, after_id: int, limit:
         """select e.* from campaign_event e join ingestion_campaign c on c.id=e.campaign_id where c.tenant_id=%s and e.id > %s order by e.id limit %s""",
         (tenant_id, after_id, limit),
     ).fetchall()
+
+
+def delete(conn: psycopg.Connection, tenant_id: Any, user_id: Any, campaign_id: Any) -> dict[str, Any]:
+    """Remove a campaign from the board without destroying its history.
+
+    A hard delete is not available and should not be: audit_event, review_event and ingestion_job all reference
+    the campaign, and audit_event is append-only, so erasing the row would mean erasing the record of who asked
+    for what to be ingested. The row is retained and stops being listed.
+
+    A campaign that has actually run is refused. Its jobs and any review decisions taken against them are real
+    work that belongs on the board until it is explicitly cancelled, and quietly hiding it would hide those too.
+    """
+    row = conn.execute("select * from ingestion_campaign where id=%s and tenant_id=%s", (campaign_id, tenant_id)).fetchone()
+    if not row:
+        raise LookupError("no such campaign")
+    if row["deleted_at"]:
+        return {"id": str(row["id"]), "deleted": True, "already": True}
+
+    runs = conn.execute("select count(*) as n from campaign_run where campaign_id=%s", (campaign_id,)).fetchone()["n"]
+    if runs and row["control"] != "cancelled":
+        raise ValueError("this campaign has already run; cancel it first, then delete it")
+
+    conn.execute("update ingestion_campaign set deleted_at=now(), deleted_by=%s where id=%s", (user_id, campaign_id))
+    _event(conn, campaign_id, None, "campaign.deleted", user_id, {"title": row["title"]})
+    return {"id": str(campaign_id), "deleted": True, "already": False}

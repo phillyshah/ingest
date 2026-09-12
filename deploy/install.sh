@@ -155,7 +155,7 @@ else
 fi
 
 step "Building (a few minutes on first run)"
-$COMPOSE build
+GIT_SHA=$(git rev-parse --short HEAD) BUILT_AT=$(date -u '+%Y-%m-%dT%H:%M:%SZ') $COMPOSE build
 
 step "Starting"
 $COMPOSE up -d

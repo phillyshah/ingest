@@ -54,7 +54,7 @@ else
 fi
 
 step "Building"
-$COMPOSE build || die "the build failed. Nothing was restarted; the previous version is still serving."
+GIT_SHA=$(git rev-parse --short HEAD) BUILT_AT=$(date -u '+%Y-%m-%dT%H:%M:%SZ') $COMPOSE build || die "the build failed. Nothing was restarted; the previous version is still serving."
 
 step "Restarting"
 $COMPOSE up -d --remove-orphans

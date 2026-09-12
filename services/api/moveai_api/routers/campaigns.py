@@ -171,6 +171,21 @@ def patch(
     return _wrap(svc.get, conn, _tenant(p), cid)
 
 
+@router.delete("/{campaign_id}")
+def delete(
+    campaign_id: str,
+    p: Principal = Depends(require("source_admin")),
+    conn: psycopg.Connection = Depends(get_conn),
+) -> dict[str, Any]:
+    """Remove a campaign from the board. Soft: the row and its audit trail are retained (see svc.delete)."""
+    try:
+        return svc.delete(conn, _tenant(p), p.user_id, as_uuid(campaign_id))
+    except LookupError as e:
+        raise HTTPException(404, {"code": "not_found", "message": str(e)}) from e
+    except ValueError as e:
+        raise HTTPException(409, {"code": "campaign_has_run", "message": str(e)}) from e
+
+
 @router.post("/{campaign_id}/scope-preview")
 def scope_preview(
     campaign_id: str,
