@@ -40,11 +40,21 @@ def match_conditions(conn: psycopg.Connection, text: str | None) -> list[dict[st
 
 
 def conditions_for_codes(conn: psycopg.Connection, codes: list[str]) -> list[dict[str, Any]]:
+    """Conditions a diagnosis code alone can select.
+
+    Only `exact` mappings count. A `broader`/`narrower` mapping exists so a pack shows up when someone searches
+    catalog by that code, but the code does not, by itself, establish that pack's population — a sprain ICD-10
+    code says nothing about whether the sprain was later treated surgically, so mcl_repair maps S83.411A as
+    `broader`, not `exact`. Treating every mapping as equally selecting would make the operative and nonoperative
+    MCL pathways permanently "ambiguous" from the code alone, when the ambiguity is real and belongs to
+    `procedure`/free text, not to this function silently picking one.
+    """
     if not codes:
         return []
     return conn.execute(
         """select distinct c.* from condition c join diagnosis_mapping_version m on m.condition_id=c.id
-             join terminology_code tc on tc.id=m.terminology_code_id where tc.code = any(%s)""",
+             join terminology_code tc on tc.id=m.terminology_code_id
+             where tc.code = any(%s) and m.relationship = 'exact'""",
         ([c.upper() for c in codes],),
     ).fetchall()
 

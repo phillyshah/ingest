@@ -1,0 +1,281 @@
+pack: mcl_sprain_nonoperative
+version: 0.1.0
+family: mcl_sprain_nonoperative
+approval_state: unsigned_placeholder
+label: "Nonoperative MCL sprain — UNSIGNED PLACEHOLDER, not a treatment protocol"
+# Structural sibling of hamstring_strain.yaml. That pack proved the shape for a nonoperative, graded soft-tissue
+# injury pathway; this is the same shape for the knee. Not to be confused with mcl_repair — that pack is
+# post-surgical MCL reconstruction, a different pathway entirely, and grade 3 (the most severe, most often still
+# managed nonoperatively unless there is a combined-ligament or bony injury) must never fall through to it.
+condition:
+  internal_code: mcl_sprain_nonoperative
+  preferred_name: Medial collateral ligament sprain, nonoperative
+  synonyms: [MCL sprain, MCL strain, medial collateral ligament sprain, medial knee sprain, grade 1 MCL sprain, grade 2 MCL sprain, grade 3 MCL sprain]
+  body_region: knee
+  ambiguity_flags: [laterality_required, grade_not_inferable, combined_injury_must_be_screened, valgus_instability_not_inferable]
+  icd10cm:
+    # `broader`, matching mcl_repair's mapping of the same codes: an ICD-10 sprain code names the diagnosis, not
+    # whether it was later treated surgically — that branch is decided by the `procedure` intake field and the
+    # surgical_not_this_pathway rule below, never by the code alone. Tagging this `exact` would make the code
+    # falsely claim to identify the nonoperative pathway on its own, which is exactly the ambiguity ICD-10 cannot
+    # resolve.
+    - {code: S83.411A, relationship: broader, laterality: right}
+    - {code: S83.412A, relationship: broader, laterality: left}
+    - {code: S83.419A, relationship: broader, laterality: unspecified}
+sources: []
+claims: []
+concepts:
+  - key: mcl_quad_set
+    preferred_name: Quadriceps setting
+    aliases: [quad set, static quad contraction]
+    body_region: knee
+    movement_purpose: quadriceps activation without valgus load or knee motion
+    variants:
+      - key: mcl_quad_set_supine
+        name: Quadriceps set (supine)
+        assistance: active
+        region: knee
+        joint: knee
+        starting_position: lying on the back with the leg straight, a small roll under the knee
+        side_behavior: unilateral
+        equipment: [small roll or towel]
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with the injured leg straight and a small roll under the knee.
+          - Press the back of the knee down into the roll to tighten the muscle on top of the thigh.
+          - Hold as instructed within tolerated symptoms, then relax.
+        target_impairment: [quadriceps inhibition]
+        functional_goal: [walking]
+        tags: [requires_supine, isometric, no_valgus_load]
+        requires_starting_position: true
+        source_reference: null
+  - key: mcl_rom_slide
+    preferred_name: Protected knee range of motion
+    aliases: [heel slide, protected ROM]
+    body_region: knee
+    movement_purpose: knee flexion/extension range within a pain- and valgus-protected limit
+    variants:
+      - key: mcl_heel_slide_protected
+        name: Heel slide (protected range, no valgus)
+        assistance: active
+        region: knee
+        joint: knee
+        starting_position: lying on the back, leg straight
+        side_behavior: unilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with the injured leg straight.
+          - Slide the heel toward the buttock, keeping the knee moving straight without letting it drift sideways.
+          - Move only within the range and symptom limit your therapist has set, then slide back.
+        target_impairment: [knee stiffness]
+        functional_goal: [walking, stairs]
+        tags: [requires_supine, no_valgus_load]
+        requires_starting_position: true
+        source_reference: null
+  - key: mcl_closed_chain_strength
+    preferred_name: Closed-chain knee strengthening
+    aliases: [mini squat, closed-chain quad strengthening]
+    body_region: knee
+    movement_purpose: closed-chain lower-limb strengthening with the knee tracking in line, no valgus collapse
+    variants:
+      - key: mcl_mini_squat_protected
+        name: Mini squat (protected range, knee-over-toe alignment)
+        assistance: active
+        region: knee
+        joint: knee
+        starting_position: standing, feet hip-width apart, weight-bearing as permitted
+        side_behavior: bilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Stand with feet hip-width apart.
+          - Bend the knees within the range your therapist has set, keeping the knees tracking over the toes.
+          - Do not let the knee drift inward. Return to standing.
+        target_impairment: [quadriceps and hip weakness]
+        functional_goal: [walking, stairs, squatting]
+        tags: [closed_chain, no_valgus_load]
+        source_reference: null
+  - key: mcl_lateral_agility
+    preferred_name: Lateral and multidirectional loading
+    aliases: [lateral step, cutting progression]
+    body_region: knee
+    movement_purpose: graded exposure to the valgus and lateral loads a healed MCL must tolerate
+    variants:
+      - key: mcl_lateral_step_graded
+        name: Graded lateral step / cutting progression (supervised criteria)
+        assistance: active
+        region: knee
+        joint: knee
+        starting_position: standing, on a marked surface or court
+        side_behavior: bilateral
+        equipment: [marked surface or agility ladder]
+        setting: [supervised]
+        step_sequence:
+          - Follow the lateral-loading stage your therapist sets for this session.
+          - Stop if symptoms, giving-way, or instability exceed the limit your therapist set.
+        target_impairment: [dynamic valgus control, confidence in lateral loading]
+        functional_goal: [return to sport, cutting, pivoting]
+        tags: [return_to_sport, valgus_loading]
+        source_reference: null
+clinical_uses:
+  - key: cu_quad_set_acute
+    variant: mcl_quad_set_supine
+    phase: acute_protected
+    indication: Pain-tolerated activation once graded and screened for combined injury.
+    goals: [tolerated activation, no valgus load]
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+      hold_seconds: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: []
+    directness: unknown
+    support_category: insufficient_support
+  - key: cu_rom_acute
+    variant: mcl_heel_slide_protected
+    phase: acute_protected
+    goals: [protected range of motion]
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: []
+    directness: unknown
+    support_category: insufficient_support
+  - key: cu_closed_chain_loading
+    variant: mcl_mini_squat_protected
+    phase: progressive_loading
+    indication: Progressive closed-chain loading when PT criteria for valgus stability are met.
+    goals: [closed-chain strength, valgus control]
+    dose_envelope:
+      sets: {null_reason: "Not supplied", provenance: unknown}
+      repetitions: {null_reason: "Not supplied", provenance: unknown}
+    supporting_claims: []
+    directness: unknown
+    support_category: insufficient_support
+  - key: cu_lateral_return
+    variant: mcl_lateral_step_graded
+    phase: functional_return
+    indication: Return to lateral/cutting demands only against applicable criteria and PT approval.
+    goals: [return to sport, dynamic valgus control]
+    dose_envelope:
+      session_minutes: {null_reason: "Stage-dependent; per PT", provenance: unknown}
+    supporting_claims: []
+    directness: unknown
+    support_category: insufficient_support
+rules:
+  - key: req_side
+    name: Injured side must be established
+    kind: required_input
+    expression: {op: known, field: affected_side}
+    action: {type: require_field, field: affected_side, reason: Laterality is not established}
+    severity: block
+  - key: req_injury
+    name: Injury date and location are required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: onset_date}, {op: known, field: injury_location}]}
+    action: {type: require_field, fields: [onset_date, injury_location], reason: Injury date and anatomical location are required}
+    severity: block
+  - key: req_severity
+    name: Assessed grade and diagnosis are required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: severity}, {op: known, field: diagnosis_confirmation}]}
+    action: {type: require_field, fields: [severity, diagnosis_confirmation], reason: "A reported \"MCL sprain\" is a candidate grade only until a clinician confirms and grades it"}
+    severity: block
+  - key: req_function
+    name: Functional deficit, symptoms and prior response are required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: functional_limitations}, {op: known, field: pain_movement}, {op: known, field: prior_session_response}]}
+    action: {type: require_field, fields: [functional_limitations, pain_movement, prior_session_response], reason: "Functional deficit, symptoms and prior response guide progression"}
+    severity: block
+  - key: req_goals
+    name: Intended activity goals are required
+    kind: required_input
+    expression: {op: known, field: intended_activity}
+    action: {type: require_field, field: intended_activity, reason: Return-to-activity target drives the functional phase}
+    severity: block
+  - key: req_concern_screen
+    name: Assessment exclusions must be screened
+    kind: required_input
+    expression: {op: known, field: concerning_findings}
+    action: {type: require_field, field: concerning_findings, reason: "Combined ligament, meniscal or bony injury must be screened before this pathway applies"}
+    severity: block
+  - key: concern_findings_present
+    name: Concerning or uncertain presentation
+    kind: concern_screen
+    expression: {op: and, args: [{op: known, field: concerning_findings}, {op: ne, field: concerning_findings, value: []}]}
+    action: {type: block_for_review, message: "Concerning or uncertain presentation follows the approved assessment/referral rule (unsigned)."}
+    severity: block
+  - key: surgical_not_this_pathway
+    name: Surgically treated MCL, or a combined-ligament injury, is a different pathway
+    kind: restriction
+    expression: {op: and, args: [{op: known, field: procedure}, {op: ne, field: procedure, value: none}]}
+    action: {type: block_for_review, message: "A surgically treated MCL injury, or one with combined-ligament involvement, needs its own approved protocol (see mcl_repair)."}
+    severity: block
+  - key: worsening_response
+    name: Worsening response or new instability after prior session
+    kind: next_day_response
+    expression: {op: eq, field: prior_session_response, value: worse}
+    action: {type: block_for_review, message: "Worsened response or new instability; routing requires an approved rule."}
+    severity: block
+  - key: branch_nonoperative
+    name: Nonoperative, confirmed sprain
+    kind: eligibility
+    expression: {op: and, args: [{op: eq, field: procedure, value: none}, {op: known, field: severity}]}
+    action: {type: inform, message: nonoperative pathway}
+  - key: return_to_cutting_criteria_slot
+    name: Return-to-cutting/lateral-loading criteria (RULE SLOT — unsigned)
+    kind: progression
+    expression: {op: eq, field: functional_criteria_met, value: true}
+    action: {type: inform, message: "Return to cutting/lateral loading requires applicable criteria and PT approval, not a scheduled week."}
+protocols:
+  - key: mcl_nonoperative
+    name: Nonoperative MCL sprain — exercise-based pathway (structure only)
+    population_description: Adults with a clinically confirmed, graded MCL sprain (grade 1-3) treated without surgery, screened for combined-ligament or bony injury
+    branch_conditions: [procedure = none, severity assessed]
+    eligibility_rules: [branch_nonoperative]
+    required_inputs: [affected_side, onset_date, injury_location, severity, diagnosis_confirmation, functional_limitations, pain_movement, prior_session_response, intended_activity, concerning_findings]
+    phases:
+      - key: p_acute
+        name: Acute, protected
+        goals: [pain-tolerated activation, protected range of motion, no valgus load]
+        window: {anchor: onset, start: 0, end: null, unit: weeks, provisional: true, text: "Not supplied", provenance: unknown}
+        items: [cu_quad_set_acute, cu_rom_acute]
+        restrictions: [no valgus loading, brace/bracing per referring clinician]
+        review_checkpoint: PT reassesses valgus stability, symptoms and gait
+        advance_criteria: [PT-confirmed criteria]
+        hold_criteria: [symptoms unchanged]
+        regress_criteria: [worsening, new instability]
+        gaps: [dose not supplied, criteria not signed, grade-specific timelines not supplied]
+      - key: p_loading
+        name: Progressive loading
+        goals: [closed-chain strength, valgus control]
+        window: {anchor: onset, start: null, end: null, unit: weeks, provisional: true, text: "Not supplied", provenance: unknown}
+        items: [cu_closed_chain_loading]
+        entry_rules: [return_to_cutting_criteria_slot]
+        review_checkpoint: PT confirms valgus-stability criteria
+        advance_criteria: [PT-confirmed criteria]
+        gaps: [criteria not signed]
+      - key: p_functional
+        name: Functional / sport return
+        goals: [return to sport, dynamic valgus control]
+        window: {anchor: onset, start: null, end: null, unit: weeks, provisional: true, text: "Not supplied", provenance: unknown}
+        items: [cu_lateral_return]
+        entry_rules: [return_to_cutting_criteria_slot]
+        review_checkpoint: PT confirms return-to-cutting/pivoting criteria
+        gaps: [criteria not signed]
+    monitoring: [pain, valgus stability, effusion, running/cutting tolerance]
+    reassessment: {timing: "per PT", provenance: unknown}
+    recovery_horizon: {text: "Return-to-sport horizon depends on grade and criteria; not supplied", provenance: unknown}
+    provenance: {kind: structure_only, refs: []}
+applicability: []
+intake_prompts:
+  affected_side: Laterality is not established
+  onset_date: Injury date is required
+  injury_location: Anatomical location is required
+  severity: Assessed grade is required
+  diagnosis_confirmation: A reported "MCL sprain" is a candidate grade only until confirmed
+  functional_limitations: Functional deficit is required
+  pain_movement: Symptoms are required
+  prior_session_response: Prior response guides progression
+  intended_activity: Intended activity goals are required
+  concerning_findings: Combined ligament, meniscal or bony injury must be screened

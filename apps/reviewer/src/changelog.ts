@@ -25,6 +25,21 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.6.0",
+    date: "2026-09-12",
+    headline: "A pathway for a plain MCL sprain",
+    changes: [
+      {
+        kind: "added",
+        text: "A grade 1–3 MCL sprain treated without surgery is now recognised. It previously matched nothing — the only MCL pathway in the system was for a surgically repaired tear, a different injury with a different plan, so the system correctly refused to guess rather than routing a sprain into a surgery pathway. It is still an unsigned placeholder like every other pathway: no doses until a clinical lead reviews it.",
+      },
+      {
+        kind: "fixed",
+        text: "A diagnosis code shared between two different pathways (as a knee-sprain code is, whether or not it was later treated surgically) no longer makes a campaign refuse to start as \"ambiguous.\" The code alone was never enough to tell the two apart — what you write about the injury is.",
+      },
+    ],
+  },
+  {
     version: "0.5.3",
     date: "2026-09-12",
     headline: "The default sign-in can do everything, for now",
