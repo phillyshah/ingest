@@ -56,6 +56,13 @@ fi
 step "Building"
 GIT_SHA=$(git rev-parse --short HEAD) BUILT_AT=$(date -u '+%Y-%m-%dT%H:%M:%SZ') $COMPOSE build || die "the build failed. Nothing was restarted; the previous version is still serving."
 
+# The database and the application are deployed separately, and nothing used to compare them. Deploying code
+# whose migrations had not been applied took the site down with 500s that surfaced in the browser as an unrelated
+# JSON parse error. Check before restarting: a failure here leaves the running version serving.
+step "Checking the database has the migrations this build needs"
+$COMPOSE run --rm --no-deps -T api /app/.venv/bin/python scripts/check_migrations.py </dev/null \
+  || die "the database is behind this build. Nothing was restarted; the previous version is still serving."
+
 step "Restarting"
 $COMPOSE up -d --remove-orphans
 

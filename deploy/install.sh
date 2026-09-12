@@ -160,6 +160,12 @@ fi
 step "Building (a few minutes on first run)"
 GIT_SHA=$(git rev-parse --short HEAD) BUILT_AT=$(date -u '+%Y-%m-%dT%H:%M:%SZ') $COMPOSE build
 
+step "Checking the database has the migrations this build needs"
+# A first install against a database that was migrated at an older commit fails exactly the same way as an
+# upgrade does, so the same check runs here.
+$COMPOSE run --rm --no-deps -T api /app/.venv/bin/python scripts/check_migrations.py </dev/null \
+  || die "the database is behind this build; apply the migrations and run this again. Nothing was started."
+
 step "Starting"
 $COMPOSE up -d
 
