@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import hashlib
 from typing import Any
 
 import psycopg
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from moveai_contracts.api import PERMISSION_OPS, IngestionJobCreate, SourceCreate
 from moveai_db import J
 from moveai_ingestion import queue as q
+from moveai_ingestion.config import MAX_DOCUMENT_BYTES, allowed_file_roots
 from moveai_ingestion.fetch import FetchError, canonicalize
 from moveai_ingestion.pipeline import register_source_version
 
@@ -15,6 +17,11 @@ from ..db import get_conn
 from ..util import as_uuid, clean, clean_all, paginate
 
 router = APIRouter(tags=["sources", "ingestion-jobs"])
+
+# What an uploaded PDF is granted, without asking: the operator uploaded it, so it is treated as owned content,
+# the same posture the seed fixtures use for "MoveAI (owned)" sources (kind: ownership). can_train_model is the
+# one exception, denied project-wide regardless of ownership (see fixtures/source-policies/licenses.yaml).
+_UPLOAD_RIGHTS = {op: "allowed" for op in PERMISSION_OPS} | {"can_train_model": "denied"}
 
 
 @router.post("/sources", status_code=201)
@@ -66,6 +73,63 @@ def create_source(
         "source_version_id": str(svid),
         "allowlist_state": src["allowlist_state"],
         "canonical_url": cu,
+    }
+
+
+@router.post("/sources/upload", status_code=202)
+async def upload_source(
+    file: UploadFile = File(...),
+    title: str = Form(...),
+    p: Principal = Depends(require("source_admin")),
+    conn: psycopg.Connection = Depends(get_conn),
+) -> dict[str, Any]:
+    """Upload a PDF and run it through the same pipeline as anything fetched from the web (spec §5).
+
+    Only the source differs: nothing is fetched, and rights are not a question to ask about someone else's
+    publication — the operator supplied this file, so it is treated as owned content, exactly like the "MoveAI
+    (owned)" fixtures already are. Everything downstream (parse, extract, normalize, validate, review) is the
+    same code path a URL-based source goes through, including embedded-image extraction if the PDF carries
+    exercise photos, and the same PT review queue before anything is published.
+    """
+    content = await file.read()
+    if len(content) > MAX_DOCUMENT_BYTES:
+        raise HTTPException(413, {"code": "too_large", "message": f"{len(content)} bytes exceeds the {MAX_DOCUMENT_BYTES}-byte limit"})
+    if not content.startswith(b"%PDF"):
+        raise HTTPException(422, {"code": "not_a_pdf", "message": "the uploaded file is not a PDF"})
+
+    # Content-addressed, under the same ALLOWED_FILE_ROOTS the fetch stage already trusts for file:// sources —
+    # so the pipeline reads this back exactly the way it reads any other permitted local file. Re-uploading the
+    # same bytes lands on the same path rather than accumulating duplicates.
+    sha = hashlib.sha256(content).hexdigest()
+    root = allowed_file_roots()[0]
+    path = root / "clinician-uploads" / f"{sha}.pdf"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.exists():
+        path.write_bytes(content)
+    url = f"file://{path}"
+
+    try:
+        cu = canonicalize(url)
+    except FetchError as e:
+        raise HTTPException(422, {"code": e.error_class, "message": str(e)}) from e
+    src = conn.execute(
+        """insert into source(tenant_id, canonical_url, publisher, title, source_type, owner_user_id, allowlist_state, intended_uses)
+           values (%s,%s,%s,%s,'clinician_upload',%s,'approved','{reference,clinician}')
+           on conflict (canonical_url) do update set title=excluded.title returning *""",
+        (p.tenant_id, cu, title, title, p.user_id),
+    ).fetchone()
+    svid = register_source_version(conn, src["id"], url=cu)
+    conn.execute(
+        f"insert into rights_grant(source_version_id, {','.join(_UPLOAD_RIGHTS)}, permission_evidence) "
+        f"values (%s,{','.join(['%s'] * len(_UPLOAD_RIGHTS))},%s)",
+        (svid, *_UPLOAD_RIGHTS.values(), J({"kind": "ownership", "text": f"uploaded by {p.user_id}"})),
+    )
+    job = q.enqueue(conn, stage="access_check", source_version_id=svid, payload={"url": cu, "region": "unknown"}, tenant_id=p.tenant_id)
+    return {
+        "id": str(src["id"]),
+        "source_version_id": str(svid),
+        "job_id": str(job["id"]),
+        "allowlist_state": src["allowlist_state"],
     }
 
 

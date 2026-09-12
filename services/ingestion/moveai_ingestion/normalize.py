@@ -78,10 +78,14 @@ def persist(
     region: str = "unknown",
     excerpt_allowed: bool = False,
     tenant_id: Any = None,
+    extracted_images: list[dict[str, Any]] | None = None,
+    page_text: list[dict[str, Any]] | None = None,
+    rights_grant_id: Any = None,
 ) -> dict[str, Any]:
     created_variants: list[Any] = []
     created_claims: list[Any] = []
     duplicates: list[dict[str, Any]] = []
+    created_by_name: list[tuple[Any, str]] = []  # for embedded-image association below; never touches the model
     for ex in result.exercises:
         assistance = infer_assistance(ex.source_exercise_name, ex.assistance)
         if assistance is None:
@@ -118,6 +122,7 @@ def persist(
             ),
         ).fetchone()["id"]
         created_variants.append(vid)
+        created_by_name.append((vid, ex.source_exercise_name))
         conn.execute(
             "insert into dependency_edge(upstream_table, upstream_id, downstream_table, downstream_id, dependency_type) values ('source_version',%s,'exercise_variant_version',%s,'derived_from')",
             (source_version_id, vid),
@@ -174,8 +179,70 @@ def persist(
             "insert into evidence_claim(source_version_id, locator, extraction_method, paraphrase, claim_type) values (%s,%s,'llm',%s,'contraindication')",
             (source_version_id, J(note.locator or {}), note.text[:500]),
         )
+    image_result = _associate_images(conn, created_by_name, extracted_images or [], page_text or [], rights_grant_id)
     return {
         "variants": [str(v) for v in created_variants],
         "claims": [str(c) for c in created_claims],
         "duplicates": duplicates,
+        "media": image_result,
     }
+
+
+def _find_pages(page_text: list[dict[str, Any]], name: str) -> set[int]:
+    needle = _slug(name)
+    if not needle:
+        return set()
+    return {row["page"] for row in page_text if needle in _slug(row["text"])}
+
+
+def _associate_images(
+    conn: psycopg.Connection,
+    created_by_name: list[tuple[Any, str]],
+    extracted_images: list[dict[str, Any]],
+    page_text: list[dict[str, Any]],
+    rights_grant_id: Any,
+) -> dict[str, Any]:
+    """Link an embedded PDF image to the one exercise on its page, or flag it for a human — never guess.
+
+    The only signal used is which page the parser found the exercise's own name on: real page numbers from the
+    document, computed here in code. Nothing from the extraction model feeds this, because the model was never
+    shown the images and has no honest way to say which exercise a photo belongs to (spec §5).
+
+    A page with exactly one exercise on it and one or more images: link them all. Anything else — no exercise
+    found on that page, or more than one candidate — is not a guess this makes; it is recorded as a review flag
+    on every candidate (or, with no candidate at all, returned so the caller can surface it at the job level) so a
+    person attaches it by hand instead of the system asserting a pairing nobody confirmed.
+    """
+    if not extracted_images:
+        return {"linked": 0, "unmatched_images": 0}
+    variant_pages = {vid: _find_pages(page_text, name) for vid, name in created_by_name}
+    images_by_page: dict[int, list[dict[str, Any]]] = {}
+    for img in extracted_images:
+        images_by_page.setdefault(img["page"], []).append(img)
+
+    linked = 0
+    unmatched: list[dict[str, Any]] = []
+    for page, imgs in images_by_page.items():
+        candidates = [vid for vid, pages in variant_pages.items() if page in pages]
+        if len(candidates) == 1:
+            vid = candidates[0]
+            for img in imgs:
+                conn.execute(
+                    """insert into media_asset_version(entity_id, version, variant_version_id, media_type, media_state,
+                            storage_ref, content_sha256, byte_size, rights_grant_id, approval_state)
+                       values (%s,1,%s,'still_graphic','graphic_available',%s,%s,%s,%s,'draft')""",
+                    (uuid.uuid4(), vid, img["storage_ref"], img["sha256"], img["byte_size"], rights_grant_id),
+                )
+            linked += len(imgs)
+            continue
+        # Ambiguous (0 or 2+ exercises share this page): attach the flag to every candidate's own
+        # extraction_warnings, an UPDATE that only ever runs before a variant is ever approved.
+        note = f"{len(imgs)} image(s) on page {page} could not be uniquely matched to one exercise; attach manually"
+        if candidates:
+            conn.execute(
+                "update exercise_variant_version set extraction_warnings = extraction_warnings || %s where id = any(%s)",
+                (J([note]), candidates),
+            )
+        else:
+            unmatched.append({"page": page, "count": len(imgs), "note": note})
+    return {"linked": linked, "unmatched_images": unmatched}

@@ -186,11 +186,38 @@ def stage_extract(conn: psycopg.Connection, job: dict, model: ExtractionModel | 
         _set_state(conn, sv["id"], "extraction_failed")
         raise StageError("schema_invalid", str(e), permanent=True) from e
     _set_state(conn, sv["id"], "extracted")
+
+    # Embedded images (PDF uploads with exercise photos). Stored here, not just described: the checkpoint only
+    # ever carries a storage_ref string, never the bytes themselves (storage.py's own rule). Association to a
+    # specific exercise happens later, in normalize.persist, and only from `page` — never from anything the model
+    # reported, because the model was never shown these images and cannot honestly say which exercise they belong
+    # to (spec §5: schema-only text output, no tools). Gated on can_download_media, same as any other graphic.
+    extracted_images: list[dict[str, Any]] = []
+    if doc.images and check(grant_for_source_version(conn, sv["id"]), "can_download_media").allowed:
+        storage = get_storage()
+        for img in doc.images:
+            ext = {"image/png": ".png", "image/jpeg": ".jpg"}.get(img.content_type, "")
+            ref = storage.put(content_key(img.sha256, ext), img.data, img.content_type)
+            extracted_images.append(
+                {
+                    "page": img.page,
+                    "index": img.index,
+                    "storage_ref": ref,
+                    "sha256": img.sha256,
+                    "content_type": img.content_type,
+                    "byte_size": len(img.data),
+                }
+            )
+
     return {
         "result": out.result.model_dump(mode="json"),
         "warnings": out.warnings,
         "review_flags": out.review_flags,
         "cost_usd": out.cost_usd,
+        "extracted_images": extracted_images,
+        # Every non-empty text block with its page, so normalize can find which page an exercise's own name
+        # appears on — deterministically, from the parser's real page numbers, not from a model-invented locator.
+        "page_text": [{"page": b.page, "text": b.text} for b in doc.blocks if b.page is not None and b.text],
     }
 
 
@@ -222,6 +249,9 @@ def stage_normalize(conn: psycopg.Connection, job: dict) -> dict:
         region=region,
         excerpt_allowed=check(grant, "can_store_excerpt").allowed,
         tenant_id=job["tenant_id"],
+        extracted_images=ext["checkpoint"].get("extracted_images", []),
+        page_text=ext["checkpoint"].get("page_text", []),
+        rights_grant_id=grant["id"] if grant else None,
     )
     _set_state(conn, sv["id"], "normalized")
     return {**created, "review_flags": flags}

@@ -1,8 +1,27 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { getBlobUrl } from "../api/client";
 import { useDecide, useReviewDetail, useReviewQueue } from "../api/hooks";
 import { useAuth, hasRole } from "../auth";
 import { Badge, Err, KV, fmt, stateKind } from "../components/ui";
+
+/** A media asset that was actually extracted and stored (an embedded PDF photo), not merely referenced by URL.
+ * Auth is header-based, so a plain `<img src>` can't fetch it directly — this pulls the bytes through the same
+ * client the rest of the app uses and hands the resulting blob to the `<img>` tag. */
+function StoredImage({ mediaId }: { mediaId: string }) {
+  const [src, setSrc] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let url: string | null = null;
+    getBlobUrl(`/media/${mediaId}/file`)
+      .then((u) => { url = u; setSrc(u); })
+      .catch(() => setFailed(true));
+    return () => { if (url) URL.revokeObjectURL(url); };
+  }, [mediaId]);
+  if (failed) return <span className="small muted">(could not load the stored image)</span>;
+  if (!src) return <span className="small muted">loading photo…</span>;
+  return <img src={src} alt="" style={{ maxWidth: 200, maxHeight: 160, display: "block", marginTop: 4, borderRadius: 4 }} />;
+}
 
 function Detail({ table, id }: { table: string; id: string }) {
   const { session } = useAuth();
@@ -53,7 +72,13 @@ function Detail({ table, id }: { table: string; id: string }) {
           <KV items={[["assistance", r.assistance], ["setting", (r.setting ?? []).join(", ")], ["equipment", (r.equipment ?? []).join(", ") || "none"], ["starting position", r.starting_position], ["version", `v${r.version}`], ["created by", r.created_by?.slice(0, 8)]]} />
           <h3>Instructions</h3><ol>{(r.step_sequence ?? []).map((s: any) => <li key={s.step}>{s.text}</li>)}</ol>
           {(r.extraction_warnings ?? []).length > 0 && <div className="small muted">Flags: {r.extraction_warnings.join("; ")}</div>}
-          <h3>Media</h3>{(d.data.media ?? []).length ? d.data.media.map((m: any) => <div key={m.id}><Badge kind={stateKind(m.media_state)}>{m.media_state}</Badge> <span className="small mono">{m.url}</span></div>) : <span className="muted small">none (text-only is valid)</span>}
+          <h3>Media</h3>
+          {(d.data.media ?? []).length ? d.data.media.map((m: any) => (
+            <div key={m.id} style={{ marginBottom: 8 }}>
+              <Badge kind={stateKind(m.media_state)}>{m.media_state}</Badge>{" "}
+              {m.storage_ref ? <StoredImage mediaId={m.id} /> : <span className="small mono">{m.url}</span>}
+            </div>
+          )) : <span className="muted small">none (text-only is valid)</span>}
           <h3>Diagnostic mappings</h3>{(d.data.diagnostic_mappings ?? []).map((m: any) => <div key={m.id} className="small"><span className="mono">{m.code}</span> {m.descriptor} <Badge>{m.relationship}</Badge> <Badge kind={stateKind(m.approval_state)}>{m.approval_state}</Badge></div>)}
         </>}
         {table !== "exercise_variant_version" && <pre>{JSON.stringify(r, null, 2)}</pre>}

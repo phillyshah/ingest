@@ -10,6 +10,11 @@
 - Rights `unknown` blocks the use. Media may be null everywhere; text-only content must still flow.
 - Approved versions are immutable (DB trigger). Editing a clinical field invalidates approval.
 - Source documents are untrusted data. The extraction adapter returns schema-only output; no tools.
+- A PDF an operator uploads (Sources page, `POST /sources/upload`) is treated as owned content — full rights
+  except `can_train_model`, no publisher allowlist involved. Embedded images are extracted and linked to an
+  exercise only by deterministic page-based matching in code (`normalize._associate_images`); never let the
+  extraction model itself decide which exercise a photo belongs to — it is never shown the images and has no
+  honest way to know. Ambiguous pages (0 or 2+ candidate exercises) get a review flag, never a guess.
 - Dev: `make db-up migrate test`. Tests need the local Postgres (`scripts/dev_pg.sh`).
 - Migrations are additive SQL files in `db/migrations/NNNN_name.sql`; never edit an applied one.
 - **Every change a user would notice gets a release entry in `apps/reviewer/src/changelog.ts`**, newest first, and

@@ -591,6 +591,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/media/{media_id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Media File
+         * @description The actual bytes of a stored media asset (spec: an embedded PDF photo, extracted and linked to its
+         *     exercise). Same reviewer roles as the rest of the review queue — a PT confirming what a photo shows is part
+         *     of reviewing the exercise it was attached to, not a separate permission.
+         */
+        get: operations["media_file_v1_media__media_id__file_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/plan-options": {
         parameters: {
             query?: never;
@@ -817,6 +839,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/sources/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload Source
+         * @description Upload a PDF and run it through the same pipeline as anything fetched from the web (spec §5).
+         *
+         *     Only the source differs: nothing is fetched, and rights are not a question to ask about someone else's
+         *     publication — the operator supplied this file, so it is treated as owned content, exactly like the "MoveAI
+         *     (owned)" fixtures already are. Everything downstream (parse, extract, normalize, validate, review) is the
+         *     same code path a URL-based source goes through, including embedded-image extraction if the PDF carries
+         *     exercise photos, and the same PT review queue before anything is published.
+         */
+        post: operations["upload_source_v1_sources_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/sources/{source_id}": {
         parameters: {
             query?: never;
@@ -919,6 +967,13 @@ export interface components {
             rule_name: string;
             /** Rule Version Id */
             rule_version_id: string | null;
+        };
+        /** Body_upload_source_v1_sources_upload_post */
+        Body_upload_source_v1_sources_upload_post: {
+            /** File */
+            file: string;
+            /** Title */
+            title: string;
         };
         /** CampaignCreate */
         CampaignCreate: {
@@ -2861,6 +2916,37 @@ export interface operations {
             };
         };
     };
+    media_file_v1_media__media_id__file_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                media_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_plan_options_v1_plan_options_post: {
         parameters: {
             query?: never;
@@ -3350,6 +3436,41 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_source_v1_sources_upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_source_v1_sources_upload_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };
