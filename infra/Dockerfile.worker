@@ -12,4 +12,5 @@ COPY fixtures ./fixtures
 RUN uv sync --frozen --no-dev --all-packages
 RUN useradd -r -u 10002 moveai-worker && chown -R moveai-worker /app
 USER moveai-worker
-CMD ["uv", "run", "--no-sync", "python", "-m", "moveai_ingestion.worker"]
+# See Dockerfile.api: `uv run` needs a writable $HOME cache that this system account does not have.
+CMD ["/app/.venv/bin/python", "-m", "moveai_ingestion.worker"]

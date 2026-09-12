@@ -65,9 +65,10 @@ services:
       - "traefik.http.routers.ingest-ui.tls.certresolver=letsencrypt"
       - "traefik.http.routers.ingest-ui.middlewares=ingest-auth@docker"
       - "traefik.http.services.ingest-ui.loadbalancer.server.port=8080"
-      # Defined once here, referenced by both routers. The value is user:bcrypt-hash from .env; a bcrypt hash
-      # contains '$', which is why it arrives by variable substitution rather than being written inline (compose
-      # would otherwise need every '$' doubled).
+      # Defined once here, referenced by both routers. The value is user:bcrypt-hash, supplied from .env because
+      # it is a secret. A bcrypt hash contains '$', and compose interpolates env-file values, so install.sh writes
+      # every '$' doubled; compose turns '$$' back into a literal '$' on the way in. Without that the hash is
+      # silently replaced by a blank string and the password prompt breaks.
       - "traefik.http.middlewares.ingest-auth.basicauth.users=${BASIC_AUTH_USERS}"
       - "traefik.http.middlewares.ingest-auth.basicauth.realm=MoveAI Ingest (staging)"
 
@@ -84,7 +85,7 @@ services:
     <<: *limits
     build: { context: .., dockerfile: infra/Dockerfile.worker }
     env_file: .env
-    command: ["uv", "run", "--no-sync", "python", "scripts/scheduler.py"]
+    command: ["/app/.venv/bin/python", "scripts/scheduler.py"]   # not `uv run`: no writable $HOME cache in the image
     mem_limit: 192m
     cpus: 0.25
 
