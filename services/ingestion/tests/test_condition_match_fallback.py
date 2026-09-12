@@ -32,7 +32,16 @@ def with_mcl_pack(conn, users):
 
 
 def _preview(**scope):
-    return {"ailment_text": None, "codes": [], "limits": LIMITS, "supplied_source_urls": [], "scope_confirmed": False, "exclusion": {}, "refinements": {}, **scope}
+    return {
+        "ailment_text": None,
+        "codes": [],
+        "limits": LIMITS,
+        "supplied_source_urls": [],
+        "scope_confirmed": False,
+        "exclusion": {},
+        "refinements": {},
+        **scope,
+    }
 
 
 def test_a_typo_close_to_the_exact_wording_is_suggested_not_matched(with_mcl_pack, conn):
