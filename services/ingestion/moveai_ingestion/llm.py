@@ -178,7 +178,112 @@ class AnthropicExtractionModel:
         return validate_output(raw), cost
 
 
+class OpenRouterExtractionModel:
+    """OpenRouter adapter, for running extraction on an open-weight model.
+
+    Same contract as every other adapter: one document in, schema-valid facts out, no tools, source text framed as
+    untrusted evidence. `validate_output` is what actually holds the line — anything outside the schema is
+    rejected whatever produced it, which matters more here because open-weight models adhere to a schema less
+    reliably than frontier ones.
+
+    Structured output is negotiated rather than assumed. OpenRouter fronts many providers with uneven support, so
+    this asks for a strict JSON schema, falls back to plain JSON mode, then to neither, rather than failing
+    outright on a model that does not implement the stricter mode.
+
+    Cost comes from OpenRouter's own reported figure when available. Per-model rates there span two orders of
+    magnitude, so a local price table would be wrong more often than right.
+    """
+
+    name = "openrouter-1"
+    ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
+
+    def __init__(self, model: str | None = None, client: Any = None):
+        import httpx
+
+        key = os.environ.get("OPENROUTER_API_KEY")
+        if not key and client is None:
+            raise RuntimeError("OPENROUTER_API_KEY is not set")
+        self._model = model or os.environ.get("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct")
+        self._client = client or httpx.Client(
+            timeout=httpx.Timeout(180.0, connect=10.0),
+            headers={
+                "Authorization": f"Bearer {key}",
+                # OpenRouter uses these for attribution on its dashboard; neither carries any content.
+                "HTTP-Referer": os.environ.get("APP_ORIGIN", "https://ingest.phillyshah.com"),
+                "X-Title": "MoveAI Ingest",
+            },
+        )
+
+    def _body(self, user: str, schema: dict[str, Any], mode: str) -> dict[str, Any]:
+        body: dict[str, Any] = {
+            "model": self._model,
+            "max_tokens": 8000,
+            "messages": [
+                {"role": "system", "content": EXTRACTION_SYSTEM_INSTRUCTION},
+                {"role": "user", "content": user},
+            ],
+            # Ask OpenRouter to report what the call actually cost, rather than inferring it.
+            "usage": {"include": True},
+        }
+        if mode == "schema":
+            body["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {"name": "extraction", "strict": True, "schema": schema},
+            }
+        elif mode == "json":
+            body["response_format"] = {"type": "json_object"}
+        return body
+
+    def extract(self, doc: ParsedDocument, *, source_hint: str | None = None) -> tuple[ExtractionResult, float]:
+        schema = ExtractionResult.model_json_schema()
+        user = (
+            "<untrusted_source_document>\n" + doc.text()[:120_000] + "\n</untrusted_source_document>\n"
+            "Return ONLY a JSON object matching this schema:\n" + json.dumps(schema)
+        )
+
+        data: dict[str, Any] | None = None
+        last: Exception | None = None
+        for mode in ("schema", "json", "none"):
+            resp = self._client.post(self.ENDPOINT, json=self._body(user, schema, mode))
+            if resp.status_code == 400:
+                # Almost always "this model does not support that response_format". Step down and retry.
+                last = RuntimeError(f"openrouter rejected response_format={mode}: {resp.text[:300]}")
+                continue
+            resp.raise_for_status()
+            data = resp.json()
+            break
+        if data is None:
+            raise last or RuntimeError("openrouter returned no usable response")
+
+        choices = data.get("choices") or []
+        text = (choices[0].get("message", {}).get("content") if choices else "") or ""
+        start, end = text.find("{"), text.rfind("}")
+        raw = json.loads(text[start : end + 1]) if start >= 0 else {}
+
+        usage = data.get("usage") or {}
+        cost = usage.get("cost")
+        if cost is None:
+            into, out = price_per_mtok(self._model)
+            cost = (usage.get("prompt_tokens", 0) * into + usage.get("completion_tokens", 0) * out) / 1_000_000
+        return validate_output(raw), float(cost)
+
+
 def get_model() -> ExtractionModel:
-    if os.environ.get("ANTHROPIC_API_KEY") and os.environ.get("EXTRACTION_MODEL", "mock-1") != "mock-1":
+    """Pick the adapter named by EXTRACTION_MODEL.
+
+    Asking for a real provider without its key raises rather than quietly returning the mock. The mock returns
+    fixture output that looks exactly like a real extraction, so a silent downgrade would fill the review queue
+    with confident-looking findings that were read from nothing.
+    """
+    choice = os.environ.get("EXTRACTION_MODEL", "mock-1")
+    if choice == "mock-1":
+        return MockExtractionModel()
+    if choice == "openrouter-1":
+        if not os.environ.get("OPENROUTER_API_KEY"):
+            raise RuntimeError("EXTRACTION_MODEL=openrouter-1 but OPENROUTER_API_KEY is not set")
+        return OpenRouterExtractionModel()
+    if choice == "anthropic-1":
+        if not os.environ.get("ANTHROPIC_API_KEY"):
+            raise RuntimeError("EXTRACTION_MODEL=anthropic-1 but ANTHROPIC_API_KEY is not set")
         return AnthropicExtractionModel()
-    return MockExtractionModel()
+    raise RuntimeError(f"unknown EXTRACTION_MODEL {choice!r}; expected mock-1, anthropic-1 or openrouter-1")
