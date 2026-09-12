@@ -61,12 +61,15 @@ def _is_private(host: str) -> bool:
     return False
 
 
-def _check_url_allowed(url: str) -> None:
+def _check_url_allowed(url: str, extra_domains: set[str] | None = None) -> None:
     p = urlparse(url)
     if p.scheme == "file":
         return
     host = (p.hostname or "").lower()
-    if host not in allowed_domains():
+    # Two allowlists, unioned. The environment variable is an operator escape hatch for a one-off; `extra_domains`
+    # is the curated `source_policy` table, which is the path that scales and the only one that carries terms a
+    # rights reviewer has signed. Neither weakens the SSRF check below.
+    if host not in allowed_domains() | (extra_domains or set()):
         raise FetchError("not_allowlisted", f"domain {host!r} is not allowlisted")
     if _is_private(host):
         raise FetchError("ssrf_blocked", f"{host} resolves to a private/loopback address")
@@ -100,8 +103,8 @@ def fetch_file(url: str) -> Fetched:
     return Fetched(final_url=url, content=content, content_type=ct, sha256=hashlib.sha256(content).hexdigest())
 
 
-def fetch_http(url: str) -> Fetched:
-    _check_url_allowed(url)
+def fetch_http(url: str, extra_domains: set[str] | None = None) -> Fetched:
+    _check_url_allowed(url, extra_domains)
     warnings: list[str] = []
     current = url
     for _ in range(MAX_REDIRECTS + 1):
@@ -116,7 +119,7 @@ def fetch_http(url: str) -> Fetched:
                     if not nxt:
                         raise FetchError("fetch_failed", "redirect without location")
                     current = httpx.URL(current).join(nxt).__str__()
-                    _check_url_allowed(current)  # redirect target must itself be allowlisted and non-private
+                    _check_url_allowed(current, extra_domains)  # the redirect target must itself be allowlisted and non-private
                     warnings.append(f"redirected to {current}")
                     continue
                 if resp.status_code != 200:
@@ -144,8 +147,8 @@ def fetch_http(url: str) -> Fetched:
     raise FetchError("fetch_failed", "too many redirects")
 
 
-def fetch(url: str) -> Fetched:
+def fetch(url: str, extra_domains: set[str] | None = None) -> Fetched:
     url = canonicalize(url)
     if url.startswith("file:"):
         return fetch_file(url)
-    return fetch_http(url)
+    return fetch_http(url, extra_domains)

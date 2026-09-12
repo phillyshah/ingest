@@ -3,6 +3,9 @@
 - Spec: `docs/spec/MoveAI_Exercise_Ingestion_Engine_Build_Spec.md`. Section numbers in code comments refer to it.
 - Never hardcode doses, symptom thresholds, phase timings, or routing rules in code. They live in content packs
   under `fixtures/content-packs/` and are `unsigned_placeholder` until a clinical lead signs them.
+- The allowlist of publishers lives in `fixtures/source-policies/` and in the `source_policy` table. A domain is
+  readable only when its licence terms have been fetched from its own site AND a rights reviewer has signed that
+  exact text. Never widen a licence in a publisher entry; never add a domain whose articles are licensed per-article.
 - `unknown` is never a negative finding. Laterality never defaults. Passive/assisted/resisted are distinct variants.
 - Rights `unknown` blocks the use. Media may be null everywhere; text-only content must still flow.
 - Approved versions are immutable (DB trigger). Editing a clinical field invalidates approval.

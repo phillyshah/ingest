@@ -1,0 +1,247 @@
+# Licence catalogue: what each well-known licence permits, expressed in this system's twelve operations.
+#
+# This file is data, not code, for the same reason clinical doses are: the mapping from "CC BY-NC" to "we may not
+# show this to a patient" is a judgement, and judgements that govern what the system may do belong somewhere a
+# reviewer can read and change without a deploy.
+#
+# Three rules hold throughout:
+#
+#   * `unknown` is not a soft no. It blocks, exactly like `denied`, and it is the honest answer whenever the
+#     licence does not settle the question. Several entries below are mostly `unknown` on purpose.
+#   * Nothing here is publisher-specific. A publisher entry names a licence and may narrow it; it may never widen
+#     a `denied` to an `allowed`.
+#   * `can_train_model` is `denied` everywhere except public-domain dedications. Not because the licences all
+#     forbid it, but because attribution and share-alike obligations cannot survive being absorbed into model
+#     weights, so we do not rely on the question being settled.
+#
+# `url` is the licence text itself and is fetched and hashed alongside each publisher's terms page.
+
+licenses:
+  - id: us-gov-public-domain
+    name: United States Government work (17 U.S.C. §105)
+    url: https://www.copyright.gov/title17/92chap1.html#105
+    summary: >-
+      A work prepared by an officer or employee of the US Government as part of their official duties carries no
+      copyright protection in the United States. Federal health agencies publish most of their patient and
+      clinician material this way.
+    attribution_required: false
+    permissions:
+      can_fetch: allowed
+      can_store_fulltext: allowed
+      can_store_excerpt: allowed
+      can_embed_for_search: allowed
+      can_process_with_model: allowed
+      can_store_transcript: allowed
+      # Federal sites routinely license photographs and anatomical illustrations from third parties, and those are
+      # not public domain. Per-asset, and not answerable from the site's own notice, so it blocks.
+      can_download_media: unknown
+      can_display_to_clinician: allowed
+      can_display_to_patient: allowed
+      can_redistribute: allowed
+      can_transform: allowed
+      can_train_model: allowed
+    notes:
+      - Section 105 removes US copyright only. The work may still be protected in other territories.
+      - Agency names and logos are protected separately and may not be used in a way that implies endorsement.
+
+  - id: cc0-1.0
+    name: Creative Commons CC0 1.0 Universal
+    url: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+    summary: The rights holder waives copyright and related rights worldwide, to the extent the law allows.
+    attribution_required: false
+    permissions:
+      can_fetch: allowed
+      can_store_fulltext: allowed
+      can_store_excerpt: allowed
+      can_embed_for_search: allowed
+      can_process_with_model: allowed
+      can_store_transcript: allowed
+      can_download_media: allowed
+      can_display_to_clinician: allowed
+      can_display_to_patient: allowed
+      can_redistribute: allowed
+      can_transform: allowed
+      can_train_model: allowed
+
+  - id: cc-by-4.0
+    name: Creative Commons Attribution 4.0 International
+    url: https://creativecommons.org/licenses/by/4.0/legalcode
+    summary: Any use, including commercial use and adaptation, provided the source is credited.
+    attribution_required: true
+    permissions:
+      can_fetch: allowed
+      can_store_fulltext: allowed
+      can_store_excerpt: allowed
+      can_embed_for_search: allowed
+      can_process_with_model: allowed
+      can_store_transcript: allowed
+      can_download_media: allowed
+      can_display_to_clinician: allowed
+      can_display_to_patient: allowed
+      can_redistribute: allowed
+      can_transform: allowed
+      can_train_model: denied
+    notes:
+      - Attribution must travel with anything shown to a clinician or a patient, not only with redistribution.
+
+  - id: cc-by-sa-4.0
+    name: Creative Commons Attribution-ShareAlike 4.0 International
+    url: https://creativecommons.org/licenses/by-sa/4.0/legalcode
+    summary: As CC BY, but adaptations must themselves be released under the same licence.
+    attribution_required: true
+    permissions:
+      can_fetch: allowed
+      can_store_fulltext: allowed
+      can_store_excerpt: allowed
+      can_embed_for_search: allowed
+      can_process_with_model: allowed
+      can_store_transcript: allowed
+      can_download_media: allowed
+      can_display_to_clinician: allowed
+      can_display_to_patient: allowed
+      # An exercise record derived from a ShareAlike source would have to be published under ShareAlike too.
+      # Whether a normalised clinical record counts as an adaptation is a question for a rights reviewer.
+      can_redistribute: unknown
+      can_transform: unknown
+      can_train_model: denied
+    notes:
+      - ShareAlike is the reason redistribution and transformation block. Signing this licence means accepting a
+        copyleft obligation on whatever is derived, so a reviewer must decide it deliberately.
+
+  - id: ogl-uk-3.0
+    name: Open Government Licence v3.0 (United Kingdom)
+    url: https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+    summary: >-
+      Copy, publish, adapt and exploit the information, including commercially, provided the source is
+      acknowledged. Excludes personal data, third-party rights, logos and departmental identities.
+    attribution_required: true
+    permissions:
+      can_fetch: allowed
+      can_store_fulltext: allowed
+      can_store_excerpt: allowed
+      can_embed_for_search: allowed
+      can_process_with_model: allowed
+      can_store_transcript: allowed
+      can_download_media: unknown
+      can_display_to_clinician: allowed
+      can_display_to_patient: allowed
+      can_redistribute: allowed
+      can_transform: allowed
+      can_train_model: denied
+    notes:
+      - The licence explicitly excludes third-party rights, which is why media blocks.
+      - Use must not suggest official status or endorsement by the information provider.
+
+  - id: cc-by-nc-4.0
+    name: Creative Commons Attribution-NonCommercial 4.0 International
+    url: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+    summary: Non-commercial use only, with attribution.
+    attribution_required: true
+    permissions:
+      # Whether a commercial company ingesting material for internal clinical research is making "commercial use"
+      # is a legal question, not an engineering one. It is left unknown, which blocks, until someone qualified
+      # answers it for this organisation.
+      can_fetch: unknown
+      can_store_fulltext: unknown
+      can_store_excerpt: unknown
+      can_embed_for_search: unknown
+      can_process_with_model: unknown
+      can_store_transcript: unknown
+      can_download_media: denied
+      # These are not borderline. Delivering content inside a paid product is commercial use.
+      can_display_to_clinician: denied
+      can_display_to_patient: denied
+      can_redistribute: denied
+      can_transform: denied
+      can_train_model: denied
+    notes:
+      - Do not sign a NonCommercial policy expecting to use the content in the product. Signing it only settles
+        that the licence was read; most operations still refuse.
+
+  - id: cc-by-nc-sa-3.0-igo
+    name: Creative Commons Attribution-NonCommercial-ShareAlike 3.0 IGO
+    url: https://creativecommons.org/licenses/by-nc-sa/3.0/igo/legalcode
+    summary: The licence used by several intergovernmental organisations. Non-commercial, attribution, share-alike.
+    attribution_required: true
+    permissions:
+      can_fetch: unknown
+      can_store_fulltext: unknown
+      can_store_excerpt: unknown
+      can_embed_for_search: unknown
+      can_process_with_model: unknown
+      can_store_transcript: unknown
+      can_download_media: denied
+      can_display_to_clinician: denied
+      can_display_to_patient: denied
+      can_redistribute: denied
+      can_transform: denied
+      can_train_model: denied
+    notes:
+      - Carries both the NonCommercial restriction and a ShareAlike obligation, plus an IGO dispute-resolution clause.
+
+  - id: bespoke-requires-review
+    name: Publisher's own licence, not a standard one
+    url: null
+    summary: >-
+      The publisher grants some reuse under terms it wrote itself. Bespoke terms cannot be mapped to operations in
+      advance, so every operation blocks until a rights reviewer reads them and sets the permissions explicitly.
+    attribution_required: true
+    permissions:
+      can_fetch: unknown
+      can_store_fulltext: unknown
+      can_store_excerpt: unknown
+      can_embed_for_search: unknown
+      can_process_with_model: unknown
+      can_store_transcript: unknown
+      can_download_media: unknown
+      can_display_to_clinician: unknown
+      can_display_to_patient: unknown
+      can_redistribute: unknown
+      can_transform: unknown
+      can_train_model: denied
+
+  - id: undetermined
+    name: Terms not yet determined
+    url: null
+    summary: >-
+      The publisher is worth using and nobody has established what its terms are. Recorded so the gap is visible
+      on a list rather than rediscovered each time a campaign fails.
+    attribution_required: null
+    permissions:
+      can_fetch: unknown
+      can_store_fulltext: unknown
+      can_store_excerpt: unknown
+      can_embed_for_search: unknown
+      can_process_with_model: unknown
+      can_store_transcript: unknown
+      can_download_media: unknown
+      can_display_to_clinician: unknown
+      can_display_to_patient: unknown
+      can_redistribute: unknown
+      can_transform: unknown
+      can_train_model: denied
+
+  - id: all-rights-reserved
+    name: All rights reserved
+    url: null
+    summary: >-
+      Conventional copyright with no reuse grant. Recorded deliberately: a named refusal with a reason is more
+      useful than silence, and it stops the same domain being proposed again every quarter.
+    attribution_required: true
+    permissions:
+      # Reading a page a publisher serves publicly is ordinary browsing; everything after that needs a licence.
+      can_fetch: unknown
+      can_store_fulltext: denied
+      can_store_excerpt: denied
+      can_embed_for_search: denied
+      can_process_with_model: denied
+      can_store_transcript: denied
+      can_download_media: denied
+      can_display_to_clinician: denied
+      can_display_to_patient: denied
+      can_redistribute: denied
+      can_transform: denied
+      can_train_model: denied
+    notes:
+      - A negotiated agreement with the publisher would be recorded as a per-source rights grant, not by editing
+        this licence.

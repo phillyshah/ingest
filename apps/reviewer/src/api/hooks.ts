@@ -42,6 +42,26 @@ export const useExercises = (params = "") => useQuery({ queryKey: ["exercises", 
 export const useExercise = (entityId?: string) => useQuery({ queryKey: ["exercise", entityId], queryFn: () => get<Record<string, any>>(`/exercises/${entityId}`), enabled: !!entityId });
 export const useConditions = () => useQuery({ queryKey: ["conditions"], queryFn: () => get<{ items: { id: string; internal_code: string; preferred_name: string }[] }>("/conditions") });
 
+export interface SourcePolicy {
+  domain: string; publisher: string; license_id: string; policy_reference: string; scope_note: string | null;
+  evidence_state: "uncaptured" | "captured" | "drifted" | "unreachable";
+  review_state: "pending" | "signed" | "rejected"; review_note: string | null; reviewed_at: string | null;
+  effective: boolean; blocked_by: string | null; terms_excerpt: string | null; terms_fetched_at: string | null;
+  permissions: Record<string, "allowed" | "denied" | "unknown">;
+  license: { id: string; name: string; url: string | null; summary: string | null; notes: string[] };
+}
+export const useSourcePolicies = () =>
+  useQuery({ queryKey: ["source-policies"], queryFn: () => get<{ items: SourcePolicy[]; readable: number; total: number }>("/source-policies") });
+
+export function useSourcePolicyDecision() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ domain, decision, note }: { domain: string; decision: "sign" | "reject"; note?: string }) =>
+      post<SourcePolicy>(`/source-policies/${domain}/decision`, { decision, note }),
+    onSettled: () => void qc.invalidateQueries({ queryKey: ["source-policies"] }),
+  });
+}
+
 export const patchCampaign = (id: string, body: unknown) => patch(`/ingestion-campaigns/${id}`, body);
 export const createCampaign = (body: unknown) => post<Card>("/ingestion-campaigns", body);
 export const previewScope = (id: string | null, body: unknown) => post<Record<string, any>>(id ? `/ingestion-campaigns/${id}/scope-preview` : "/ingestion-campaigns/preview-unsaved", body);

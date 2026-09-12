@@ -25,6 +25,19 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.5.0",
+    date: "2026-09-12",
+    headline: "A curated list of publishers the system may read",
+    changes: [
+      { kind: "added", text: "A Sources page listing every publisher the system may read, the licence each one publishes under, and exactly what that licence permits — down to whether a picture may be shown to a patient." },
+      { kind: "added", text: "Thirteen publishers to start with, including the US federal health agencies, the NHS, NICE and the VA/DoD clinical practice guidelines." },
+      { kind: "added", text: "A publisher becomes readable only after its licence terms have been fetched from its own site and a rights reviewer has accepted that exact wording. Accepting terms nobody has read is not possible." },
+      { kind: "added", text: "If a publisher rewrites its terms, the acceptance lapses on its own and that publisher stops being readable until someone reads the new wording. Terms are re-read weekly." },
+      { kind: "changed", text: "A campaign that cannot reach a source now says which publisher is involved and what it is waiting for, instead of “pending allowlist approval”." },
+      { kind: "changed", text: "Campaigns can reach an accepted publisher without anyone entering that source by hand first." },
+    ],
+  },
+  {
     version: "0.4.0",
     date: "2026-09-12",
     headline: "Easier to sign in, and far less to fill in",
