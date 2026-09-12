@@ -25,6 +25,26 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.5.3",
+    date: "2026-09-12",
+    headline: "The default sign-in can do everything, for now",
+    changes: [
+      {
+        kind: "changed",
+        text: "Signed in as the default admin user, you can now accept publishers' terms, approve exercises and plans, and everything else — no more switching roles first. This is a staging convenience for the single-operator period; it goes away once real per-person sign-in and roles are added.",
+      },
+    ],
+  },
+  {
+    version: "0.5.2",
+    date: "2026-09-12",
+    headline: "Clearer about who can accept a publisher's terms",
+    changes: [
+      { kind: "fixed", text: "The Sources page now says plainly when your current role cannot accept or reject a publisher, and which role to switch to, instead of a easy-to-miss note at the bottom." },
+      { kind: "changed", text: "For a rights reviewer or clinical lead, a publisher's terms open automatically so the accept/reject buttons are visible straight away, rather than hidden behind a details toggle." },
+    ],
+  },
+  {
     version: "0.5.1",
     date: "2026-09-12",
     headline: "Reading real web pages, and a way to confirm a campaign",

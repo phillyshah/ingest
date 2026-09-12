@@ -28,9 +28,12 @@ function permKind(v: string): "ok" | "bad" | "warn" {
 function Policy({ p }: { p: SourcePolicy }) {
   const { session } = useAuth();
   const decide = useSourcePolicyDecision();
-  const [open, setOpen] = useState(false);
-  const [note, setNote] = useState("");
   const canDecide = hasRole(session, "rights_reviewer", "clinical_lead");
+  // Open by default for whoever can actually act on this page. The buttons live inside this section because
+  // signing without the terms on screen would make the signature a formality — so a reviewer has to see them
+  // expanded to do anything anyway; not expanding automatically just hid the one thing they came here to do.
+  const [open, setOpen] = useState(canDecide);
+  const [note, setNote] = useState("");
   // Signing means "I read these terms and accept them", so the terms have to be on screen to sign. Enabling the
   // button before anything was fetched would make the signature a formality, which is the one thing it must not be.
   const signable = p.evidence_state === "captured" || p.evidence_state === "drifted";
@@ -137,14 +140,21 @@ export default function Sources() {
         readable below — there is no crawling of anything else.
       </p>
 
+      {!hasRole(session, "rights_reviewer", "clinical_lead") && (
+        <div className="error" style={{ marginBottom: 10 }}>
+          <b>You cannot accept or reject anything on this page right now.</b> Your current role is{" "}
+          <span className="mono">{session?.role}</span>, and accepting a publisher's licence requires{" "}
+          <span className="mono">rights_reviewer</span> or <span className="mono">clinical_lead</span>. Switch to
+          one of those in the role dropdown at the top of the page — your account holds every role, this just picks
+          which one is active — then come back here.
+        </div>
+      )}
+
       <div className="notice">
         <b>{q.data.readable} of {q.data.total} publishers can be read.</b>{" "}
         A publisher becomes readable when its licence terms have been fetched from its own site <i>and</i> a rights
         reviewer has accepted that exact text. If a publisher rewrites its terms, the acceptance lapses by itself
         and the publisher stops being readable until someone reads the new wording.
-        {!hasRole(session, "rights_reviewer", "clinical_lead") && (
-          <> You are signed in without the rights reviewer role, so you can read this list but not decide on it.</>
-        )}
       </div>
 
       {readable.length > 0 && <h2>Readable</h2>}
