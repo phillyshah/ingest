@@ -5,15 +5,18 @@
 # `proxy`. So this file publishes no ports of its own and joins `proxy`, exactly like the eight sites already
 # running there. The labels below copy that convention rather than inventing one.
 #
-# Access control: the reviewer UI has no Supabase sign-in yet, only the development header shim, which must never
-# face the open internet — anyone could select clinical_lead and approve content. Until real sign-in lands, the
-# whole hostname sits behind one Traefik basic-auth prompt, and the environment is declared `staging` rather than
-# production because that is what it is. The credential hash is read from .env (written by deploy/install.sh at
-# mode 600) and never appears in this repository.
+# Access control: NONE at the edge, by the owner's explicit decision. This hostname is reachable by anyone, and
+# the reviewer UI's development sign-in lets a visitor pick any role, clinical_lead included.
 #
-# Trade-off worth knowing: one shared door means the audit trail records which ROLE acted, not which PERSON.
-# Acceptable while every content pack is unsigned_placeholder and no real patient data exists. Not acceptable
-# afterwards; see task "Supabase login in the reviewer UI".
+# An earlier revision put the whole site behind a Traefik basic-auth prompt. That was removed because it was not
+# wanted, and because it also broke the application: a browser will not preemptively send basic-auth credentials
+# to a path scope it has not authenticated, so the SPA's calls to /api were refused before reaching the API.
+#
+# This is tolerable only while both of these hold:
+#   * every content pack is unsigned_placeholder, so no plan can be prescribed, and
+#   * there is no patient data.
+# When either changes, this needs a real boundary. MOVEAI_ENV stays `staging`, which keeps the API's own guard
+# intact: it refuses the development shim outright when told it is production.
 name: ingest
 
 x-limits: &limits
@@ -46,7 +49,7 @@ services:
       - "traefik.http.routers.ingest-api.tls.certresolver=letsencrypt"
       # Explicit, rather than relying on Traefik ranking this longer rule above the UI's bare Host() match.
       - "traefik.http.routers.ingest-api.priority=100"
-      - "traefik.http.routers.ingest-api.middlewares=ingest-auth@docker,ingest-api-strip@docker"
+      - "traefik.http.routers.ingest-api.middlewares=ingest-api-strip@docker"
       # The SPA calls /api/v1/*; the API serves /v1/*.
       - "traefik.http.middlewares.ingest-api-strip.stripprefix.prefixes=/api"
       - "traefik.http.services.ingest-api.loadbalancer.server.port=8000"
@@ -63,14 +66,7 @@ services:
       - "traefik.http.routers.ingest-ui.rule=Host(`${INGEST_HOST}`)"
       - "traefik.http.routers.ingest-ui.entrypoints=websecure"
       - "traefik.http.routers.ingest-ui.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.ingest-ui.middlewares=ingest-auth@docker"
       - "traefik.http.services.ingest-ui.loadbalancer.server.port=8080"
-      # Defined once here, referenced by both routers. The value is user:bcrypt-hash, supplied from .env because
-      # it is a secret. A bcrypt hash contains '$', and compose interpolates env-file values, so install.sh writes
-      # every '$' doubled; compose turns '$$' back into a literal '$' on the way in. Without that the hash is
-      # silently replaced by a blank string and the password prompt breaks.
-      - "traefik.http.middlewares.ingest-auth.basicauth.users=${BASIC_AUTH_USERS}"
-      - "traefik.http.middlewares.ingest-auth.basicauth.realm=MoveAI Ingest (staging)"
 
   # No proxy network: these reach Supabase outbound and are never addressed from outside.
   worker:
