@@ -47,7 +47,7 @@ publishers:
   - domain: www.niams.nih.gov
     publisher: National Institute of Arthritis and Musculoskeletal and Skin Diseases
     license_id: us-gov-public-domain
-    policy_reference: https://www.niams.nih.gov/policies
+    policy_reference: https://www.niams.nih.gov/disclaimer
     scope_note: The institute most directly relevant to musculoskeletal rehabilitation.
 
   - domain: www.ninds.nih.gov
@@ -68,7 +68,7 @@ publishers:
   - domain: www.nhs.uk
     publisher: NHS website (NHS England)
     license_id: ogl-uk-3.0
-    policy_reference: https://www.nhs.uk/our-policies/copyright/
+    policy_reference: https://www.nhs.uk/our-policies/
     scope_note: >-
       Patient-facing condition and self-management content. The NHS logo and the NHS identity are excluded from
       the licence and may not be reproduced.
