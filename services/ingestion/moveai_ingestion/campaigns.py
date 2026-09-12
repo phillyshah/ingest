@@ -188,6 +188,61 @@ def _scope_version(conn: psycopg.Connection, campaign_id: Any, version: int, sco
     ).fetchone()
 
 
+def confirm_scope(conn: psycopg.Connection, tenant_id: Any, user_id: Any, campaign_id: Any) -> dict[str, Any]:
+    """Authorize the campaign's current scope version so a run may start (spec §21B).
+
+    A separate operation from revising, because it is a separate act: the operator is saying "your reading of what
+    I asked for is correct", not changing what they asked for. Routing it through revise_scope would mean the UI
+    had to reconstruct and resend the entire scope to tick one box, and any field it failed to round-trip — the
+    resolved codes are stored as objects, not the strings the revision expects — would be silently reset.
+
+    Authorization is recorded on the version it applies to, so a later revision arrives unconfirmed and has to be
+    confirmed again. That is the point: the person signed off on one interpretation, not on the campaign forever.
+    """
+    camp = _camp(conn, tenant_id, campaign_id)
+    scope = conn.execute("select * from campaign_scope_version where id=%s", (camp["current_scope_version_id"],)).fetchone()
+    if scope["authorized_by"]:
+        return get(conn, tenant_id, campaign_id)  # idempotent: confirming twice is not an error
+
+    preview = preview_for_scope_version(conn, tenant_id, scope)
+    # `can_start` includes "scope not confirmed", which is exactly what this call resolves; the other reasons are
+    # real and must still block. Confirming an ambiguous or uninterpretable scope would authorize spending against
+    # a request the system does not understand.
+    remaining = [r for r in preview["blocking_reasons"] if r != "scope not confirmed"]
+    if remaining:
+        raise CampaignError("scope_blocked", "; ".join(remaining), 422)
+
+    conn.execute(
+        "update campaign_scope_version set authorized_by=%s, authorized_at=now() where id=%s",
+        (user_id, scope["id"]),
+    )
+    _event(conn, camp["id"], None, "scope_confirmed", user_id, {"version": scope["version"]})
+    return get(conn, tenant_id, campaign_id)
+
+
+def preview_for_scope_version(conn: psycopg.Connection, tenant_id: Any, scope: dict[str, Any]) -> dict[str, Any]:
+    """Re-run the scope preview for a stored scope version.
+
+    Stored codes are resolution results (objects), while scope_preview takes the codes as the operator typed them,
+    so they are mapped back. Both `start` and `confirm_scope` need this, and they must agree — a campaign that
+    confirms and then refuses to start would be worse than one that never confirmed.
+    """
+    return scope_preview(
+        conn,
+        tenant_id,
+        {
+            "ailment_text": scope["ailment_text"],
+            "codes": [c["code"] for c in scope["codes"]],
+            "limits": scope["limits"],
+            "supplied_source_urls": scope["supplied_source_urls"],
+            "source_policy": scope["source_policy"],
+            "scope_confirmed": bool(scope["authorized_by"]),
+            "exclusion": scope["exclusion"],
+            "refinements": scope["refinements"],
+        },
+    )
+
+
 def revise_scope(conn: psycopg.Connection, tenant_id: Any, user_id: Any, campaign_id: Any, scope: dict[str, Any]) -> dict[str, Any]:
     camp = _camp(conn, tenant_id, campaign_id)
     n = conn.execute("select coalesce(max(version),0) as v from campaign_scope_version where campaign_id=%s", (camp["id"],)).fetchone()["v"]
@@ -244,21 +299,12 @@ def start(conn: psycopg.Connection, tenant_id: Any, user_id: Any, campaign_id: A
         raise CampaignError("already_running", "a run is already active")
     scope = conn.execute("select * from campaign_scope_version where id=%s", (camp["current_scope_version_id"],)).fetchone()
     if not scope["authorized_by"]:
-        raise CampaignError("scope_not_confirmed", "confirm the scope preview before starting", 422)
-    preview = scope_preview(
-        conn,
-        tenant_id,
-        {
-            "ailment_text": scope["ailment_text"],
-            "codes": [c["code"] for c in scope["codes"]],
-            "limits": scope["limits"],
-            "supplied_source_urls": scope["supplied_source_urls"],
-            "source_policy": scope["source_policy"],
-            "scope_confirmed": True,
-            "exclusion": scope["exclusion"],
-            "refinements": scope["refinements"],
-        },
-    )
+        raise CampaignError(
+            "scope_not_confirmed",
+            "check the scope preview on this campaign and confirm the interpretation is right before starting",
+            422,
+        )
+    preview = preview_for_scope_version(conn, tenant_id, scope)
     if not preview["can_start"]:
         raise CampaignError("scope_blocked", "; ".join(preview["blocking_reasons"]), 422)
     n = conn.execute("select coalesce(max(run_number),0) as n from campaign_run where campaign_id=%s", (camp["id"],)).fetchone()["n"]
@@ -583,7 +629,13 @@ def derive_lifecycle(conn: psycopg.Connection, camp: dict, run: dict | None, cnt
             "propose a new run if the request is still needed",
         )
     if not run:
-        return "draft", [], "confirm scope and start"
+        # Say which of the two it is. "confirm scope and start" was shown whether or not the scope was already
+        # confirmed, so a draft waiting on confirmation looked identical to one ready to go — and pressing Start
+        # was the only way to discover the difference.
+        scope = conn.execute("select authorized_by from campaign_scope_version where id=%s", (camp["current_scope_version_id"],)).fetchone()
+        if not (scope and scope["authorized_by"]):
+            return "draft", ["the scope has not been confirmed"], "check the interpretation and confirm the scope"
+        return "draft", [], "start the run"
     if run["state"] == "pending":
         return "queued", [], None
     if run["state"] in ("running", "paused"):
@@ -687,6 +739,10 @@ def allowed_actions(camp: dict, run: dict | None, scope: dict | None) -> list[st
     if camp["control"] == "cancelled":
         return a
     if not run or run["state"] in ("finished", "cancelled"):
+        # Offered alongside start, not instead of it: pressing start on an unconfirmed scope still gives a clear
+        # refusal, and hiding the button people are looking for is its own kind of dead end.
+        if scope is not None and not scope["authorized_by"]:
+            a.append("confirm_scope")
         a.append("start")
     elif run["state"] == "running":
         a += ["pause", "cancel", "retry_failed"]

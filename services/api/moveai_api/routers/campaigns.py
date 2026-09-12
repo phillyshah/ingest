@@ -195,20 +195,24 @@ def scope_preview(
 ) -> dict[str, Any]:
     camp = _wrap(svc._camp, conn, _tenant(p), as_uuid(campaign_id))
     if body is None:
+        # One helper shared with start and confirm_scope. Three copies of this mapping is how a campaign ends up
+        # able to confirm and then refuse to start.
         sv = conn.execute("select * from campaign_scope_version where id=%s", (camp["current_scope_version_id"],)).fetchone()
-        scope = {
-            "ailment_text": sv["ailment_text"],
-            "codes": [c["code"] for c in sv["codes"]],
-            "limits": sv["limits"],
-            "supplied_source_urls": sv["supplied_source_urls"],
-            "source_policy": sv["source_policy"],
-            "scope_confirmed": bool(sv["authorized_by"]),
-            "exclusion": sv["exclusion"],
-            "refinements": sv["refinements"],
-        }
-    else:
-        scope = body.model_dump(mode="json")
-    return svc.scope_preview(conn, _tenant(p), scope)
+        return svc.preview_for_scope_version(conn, _tenant(p), sv)
+    return svc.scope_preview(conn, _tenant(p), body.model_dump(mode="json"))
+
+
+@router.post("/{campaign_id}/confirm-scope")
+def confirm_scope(
+    campaign_id: str,
+    p: Principal = Depends(require("source_admin")),
+    conn: psycopg.Connection = Depends(get_conn),
+) -> dict[str, Any]:
+    """Authorize the current scope version so a run may start (spec §21B).
+
+    Separate from PATCH: confirming is accepting the system's reading of the request, not changing the request.
+    """
+    return _wrap(svc.confirm_scope, conn, _tenant(p), p.user_id, as_uuid(campaign_id))
 
 
 @router.post("/{campaign_id}/runs", status_code=202)

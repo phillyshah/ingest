@@ -25,6 +25,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.5.1",
+    date: "2026-09-12",
+    headline: "Reading real web pages, and a way to confirm a campaign",
+    changes: [
+      { kind: "fixed", text: "Text was not being read from real web pages at all. Only the outermost layer of a page was looked at, and since every real site nests its content, ingesting one produced an empty result that looked just like a page with nothing in it. Every kind of page is now read properly." },
+      { kind: "added", text: "A campaign waiting to be confirmed now shows what the system understood you to be asking for, with a button to confirm it. Previously that could only be done while first creating the campaign, so a saved draft could never be started." },
+      { kind: "changed", text: "The board says whether a draft is waiting for confirmation or ready to start, instead of showing the same message for both." },
+      { kind: "fixed", text: "When a publisher's terms page cannot be read, the reason now says what happened — refused, moved, or rate limited — rather than reporting it as an empty page." },
+    ],
+  },
+  {
     version: "0.5.0",
     date: "2026-09-12",
     headline: "A curated list of publishers the system may read",

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { get, post } from "../api/client";
-import { patchCampaign, useCampaign, useCampaignAction } from "../api/hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import { patchCampaign, previewScope, useCampaign, useCampaignAction } from "../api/hooks";
 import { useAuth, hasRole } from "../auth";
 import { Badge, Err, KV, fmt, stateKind } from "../components/ui";
 import { funnel } from "../lib/kanban";
@@ -13,6 +14,67 @@ function useSub<T>(path: string | null, deps: unknown[] = []) {
   const [err, setErr] = useState<unknown>(null);
   useEffect(() => { if (!path) return; get<T>(path).then(setData).catch(setErr); }, [path, ...deps]);
   return { data, err };
+}
+
+/** The gate that lets a run start (spec §21B).
+ *
+ * It used to live only inside the New campaign dialog, behind a "Preview scope" button, so a campaign saved
+ * straight to draft could never be confirmed afterwards: Start refused, and there was nowhere to say yes. It
+ * belongs here, where someone looks when Start refuses.
+ *
+ * The interpretation is fetched and shown before the button is offered. Confirming without seeing what you are
+ * confirming would make the gate decorative.
+ */
+function ConfirmScope({ id }: { id: string }) {
+  const qc = useQueryClient();
+  const [preview, setPreview] = useState<Record<string, any> | null>(null);
+  const [err, setErr] = useState<unknown>(null);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { previewScope(id, undefined).then(setPreview).catch(setErr); }, [id]);
+  const confirm = async () => {
+    setErr(null);
+    setBusy(true);
+    try {
+      await post(`/ingestion-campaigns/${id}/confirm-scope`);
+      await qc.invalidateQueries({ queryKey: ["campaign", id] });
+      await qc.invalidateQueries({ queryKey: ["campaigns"] });
+    } catch (e) { setErr(e); } finally { setBusy(false); }
+  };
+  // "scope not confirmed" is the thing this panel resolves; anything else is a real problem to fix first.
+  const other = (preview?.blocking_reasons ?? []).filter((r: string) => r !== "scope not confirmed");
+  return (
+    <div className="panel" data-testid="confirm-scope" style={{ borderLeft: "3px solid #b58900" }}>
+      <h2 style={{ marginTop: 0 }}>Before this can start, check the interpretation</h2>
+      <p className="small muted">
+        This is what the system understood you to be asking for. Confirming records that you agree, and is what
+        allows the run to spend against its cap.
+      </p>
+      <Err e={err} />
+      {!preview && !err && <p className="muted">reading the scope…</p>}
+      {preview && (
+        <>
+          <p><b>Interpreted as:</b>{" "}
+            {preview.interpreted_conditions?.length
+              ? preview.interpreted_conditions.map((x: any) => `${x.name} (${x.code})`).join(", ")
+              : <span className="muted">nothing recognised</span>}
+          </p>
+          {preview.unresolved_text?.length > 0 && <p className="small"><b>Not recognised:</b> {preview.unresolved_text.join("; ")}</p>}
+          {preview.missing?.length > 0 && (
+            <details><summary className="small">Known gaps ({preview.missing.length})</summary>
+              <ul className="small">{preview.missing.map((m: string) => <li key={m}>{m}</li>)}</ul>
+            </details>
+          )}
+          <details><summary className="small">Where it will look ({preview.proposed_strategy?.length ?? 0})</summary>
+            <ul className="small">{(preview.proposed_strategy ?? []).map((m: string) => <li key={m}>{m}</li>)}</ul>
+          </details>
+          {other.length > 0 && <div className="error small" style={{ marginTop: 8 }}><b>Fix before confirming:</b> {other.join("; ")}</div>}
+          <button className="primary" style={{ marginTop: 10 }} onClick={confirm} disabled={busy || other.length > 0} data-testid="action-confirm_scope">
+            {busy ? "Confirming…" : "Yes, this is right — allow it to start"}
+          </button>
+        </>
+      )}
+    </div>
+  );
 }
 
 export default function CampaignDetail() {
@@ -52,6 +114,7 @@ export default function CampaignDetail() {
         ))}
       </div>
       <Err e={act.error} />
+      {c.allowed_actions.includes("confirm_scope") && isAdmin && <ConfirmScope id={id} />}
       {c.blockers.length > 0 && <div className="notice"><b>Blockers:</b> {c.blockers.join(" · ")} {c.next_human_action && <> — <b>next:</b> {c.next_human_action}</>}</div>}
       <div className="tabs">{TABS.map((t) => <button key={t} className={tab === t ? "active" : ""} onClick={() => setTab(t)}>{t}</button>)}</div>
 

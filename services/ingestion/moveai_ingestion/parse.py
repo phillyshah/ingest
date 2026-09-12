@@ -45,9 +45,32 @@ def parse_html(content: bytes) -> ParsedDocument:
     body = tree.body or tree.root
     if body is None:
         return ParsedDocument([], title, None, ["empty document"])
-    for node in body.iter():
+
+    # `traverse`, not `iter`: iter() yields only the DIRECT children of <body>. Every fixture in this repo puts its
+    # headings and paragraphs straight under <body>, so the tests passed while any real page — which always wraps
+    # its content in at least one <div> — produced zero blocks and therefore no claims, no dose fields, nothing.
+    # The failure was silent: an empty parse is indistinguishable from a page with nothing to say.
+    #
+    # Removing script/style up front rather than skipping them in the loop, because a skipped node's children are
+    # still traversed and script text would otherwise be read as prose.
+    for junk in body.css("script, style, noscript, template"):
+        junk.decompose()
+
+    # A table's cells and a list's items are already captured whole by their container block below. Without this,
+    # descending into them would emit every <p> inside a <td> a second time, duplicating claims and their locators.
+    # Ancestor tags rather than node identity: selectolax builds a fresh Python wrapper on each access, so `id()`
+    # and `is` are not stable across `.parent` walks — only `==` is, and tag names are enough here.
+    def inside_container(node: Any) -> bool:
+        parent = node.parent
+        while parent is not None:
+            if parent.tag in ("table", "ol", "ul"):
+                return True
+            parent = parent.parent
+        return False
+
+    for node in body.traverse(include_text=False):
         tag = node.tag
-        if tag in ("script", "style"):
+        if inside_container(node):
             continue
         if tag in ("h1", "h2", "h3", "h4"):
             level = int(tag[1])

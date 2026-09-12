@@ -3220,6 +3220,51 @@
         ]
       }
     },
+    "/v1/ingestion-campaigns/{campaign_id}/confirm-scope": {
+      "post": {
+        "description": "Authorize the current scope version so a run may start (spec \u00a721B).\n\nSeparate from PATCH: confirming is accepting the system's reading of the request, not changing the request.",
+        "operationId": "confirm_scope_v1_ingestion_campaigns__campaign_id__confirm_scope_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Confirm Scope V1 Ingestion Campaigns  Campaign Id  Confirm Scope Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Confirm Scope",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
     "/v1/ingestion-campaigns/{campaign_id}/costs": {
       "get": {
         "operationId": "costs_v1_ingestion_campaigns__campaign_id__costs_get",
