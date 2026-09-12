@@ -64,7 +64,10 @@ $COMPOSE run --rm --no-deps -T api /app/.venv/bin/python scripts/check_migration
   || die "the database is behind this build. Nothing was restarted; the previous version is still serving."
 
 step "Restarting"
-$COMPOSE up -d --remove-orphans
+# --force-recreate because `up -d` does not reliably recreate a container when only the contents of the env file
+# changed. Editing infra/.env and redeploying is the normal way to change configuration, and silently keeping the
+# old values is worse than the second of rebuild time this costs.
+$COMPOSE up -d --remove-orphans --force-recreate
 
 step "Checking health"
 ok=0
