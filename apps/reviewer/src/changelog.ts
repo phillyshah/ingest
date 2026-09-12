@@ -36,6 +36,9 @@ export const RELEASES: Release[] = [
       { kind: "added", text: "Campaigns can be deleted. They disappear from the board; their history is kept, because the record of what was ingested cannot be erased." },
       { kind: "added", text: "This What’s new panel, plus a version number and the running build shown in the footer." },
       { kind: "fixed", text: "Campaign spend was being charged at roughly 50% over the real rate. Extraction now runs on the cheapest current model and is priced from that model’s own published rate." },
+      { kind: "added", text: "Extraction can run through OpenRouter on an open-weight model, billed at the rate OpenRouter reports for each call." },
+      { kind: "fixed", text: "Errors from the server are reported as what they are. A server error used to appear as a confusing \u201cJSON Parse error\u201d that pointed at the wrong thing entirely." },
+      { kind: "fixed", text: "Deploying a version whose database changes have not been applied is now refused, leaving the working version running instead of taking the site down." },
     ],
   },
   {

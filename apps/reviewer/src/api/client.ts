@@ -54,10 +54,34 @@ export async function api<T = unknown>(path: string, init: RequestInit & { json?
   if (init.idempotencyKey) headers["idempotency-key"] = init.idempotencyKey;
   const res = await fetch(API_BASE + path, { ...init, headers, body });
   const text = await res.text();
-  const data = text ? (JSON.parse(text) as unknown) : null;
+
+  // Not every failure answers in JSON. A 500 from the server, or an error page from the proxy, arrives as plain
+  // text — and parsing that unconditionally reported "JSON Parse error: Unexpected identifier" instead of the
+  // actual status, which sent us looking in entirely the wrong place. Parse defensively and let the real status
+  // through.
+  let data: unknown = null;
+  let parseFailed = false;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      parseFailed = true;
+    }
+  }
+
   if (!res.ok) {
-    const e = (data ?? {}) as { code?: string; message?: string; details?: unknown };
-    throw new ApiError(res.status, e.code ?? "http_error", e.message ?? res.statusText, e.details);
+    const e = (parseFailed ? {} : ((data ?? {}) as { code?: string; message?: string; details?: unknown })) as {
+      code?: string;
+      message?: string;
+      details?: unknown;
+    };
+    const fallback = parseFailed ? `${res.status} ${res.statusText}: ${text.slice(0, 200)}` : res.statusText;
+    throw new ApiError(res.status, e.code ?? "http_error", e.message ?? fallback, e.details);
+  }
+
+  if (parseFailed) {
+    // A 2xx that is not JSON means something between here and the API answered instead of the API.
+    throw new ApiError(res.status, "bad_response", `expected JSON from ${path} but got: ${text.slice(0, 200)}`);
   }
   return data as T;
 }
