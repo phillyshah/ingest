@@ -8,6 +8,7 @@ import Exercises from "./pages/Exercises";
 import Reviews from "./pages/Reviews";
 import PlanOptions from "./pages/PlanOptions";
 import { API_BASE, get } from "./api/client";
+import { WhatsNew } from "./components/WhatsNew";
 
 function SignIn() {
   const { setSession } = useAuth();
@@ -80,11 +81,6 @@ export default function App() {
         </nav>
         <span className="spacer" />
         <span className={`badge ${health === "ok" ? "ok" : health === "down" ? "bad" : ""}`}>api {health}</span>
-        {build && (
-          <span className="badge" title={`built ${build.built_at}`} data-testid="build-version">
-            {build.environment} · {build.commit}
-          </span>
-        )}
         <span className="small">{session.displayName ?? session.userId.slice(0, 8)}</span>
         <select value={session.role} onChange={(e) => setSession({ ...session, role: e.target.value })} title="role (dev switcher; server validates)">
           {(me?.roles ?? [session.role]).map((r) => <option key={r}>{r}</option>)}
@@ -108,6 +104,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
+      <WhatsNew build={build} />
     </>
   );
 }

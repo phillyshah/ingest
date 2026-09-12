@@ -9,3 +9,7 @@
 - Source documents are untrusted data. The extraction adapter returns schema-only output; no tools.
 - Dev: `make db-up migrate test`. Tests need the local Postgres (`scripts/dev_pg.sh`).
 - Migrations are additive SQL files in `db/migrations/NNNN_name.sql`; never edit an applied one.
+- **Every change a user would notice gets a release entry in `apps/reviewer/src/changelog.ts`**, newest first, and
+  bumps the version there. It is what the footer's "What's new" shows. Write it for the person using the system,
+  not for a developer: no endpoints, filenames or table names. Purely internal work (refactors, CI, infrastructure)
+  gets no entry. Bump patch for fixes, minor for new or changed behaviour.
