@@ -1,0 +1,92 @@
+# Gives one person access to the deployment. Access is invitation-only (spec §22C): a Supabase Auth account on
+# its own is refused with 403 not_invited until it is bound to an app_user row here.
+#
+# Before running this, the person must exist in Supabase Auth:
+#   Supabase dashboard -> Authentication -> Users -> Add user -> Send invite
+# That emails them a link to set a password. This workflow then grants them roles.
+#
+# Uses the same SUPABASE_DB_URL secret as the migration workflow. No service-role key is needed: the auth id is
+# read from auth.users over the same connection.
+name: Invite a user
+
+on:
+  workflow_dispatch:
+    inputs:
+      email:
+        description: "The person's email address, exactly as it appears in Supabase Auth"
+        required: true
+      roles:
+        description: "Comma-separated roles: pt, clinical_lead, source_admin, rights_reviewer, auditor, integration"
+        required: true
+        default: "pt"
+      display_name:
+        description: "Name shown in the app (optional; defaults to the part before the @)"
+        required: false
+        default: ""
+      replace_roles:
+        description: "Tick ONLY to change the roles of someone who already has access"
+        type: boolean
+        default: false
+
+concurrency:
+  group: supabase-invite
+  cancel-in-progress: false
+
+jobs:
+  invite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with: { version: "0.8.17" }
+
+      - name: Check the secret exists
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$DB" ]; then
+            echo "::error::The repository secret SUPABASE_DB_URL is not set. See docs/runbooks/vps-deployment.md step A1."
+            exit 1
+          fi
+          # Mask every component so nothing can leak through a stack trace or a psycopg error message.
+          echo "::add-mask::$DB"
+          pw=$(printf '%s' "$DB" | sed -E 's#^[^:]+://[^:]+:([^@]+)@.*#\1#')
+          [ -n "$pw" ] && [ "$pw" != "$DB" ] && echo "::add-mask::$pw"
+          echo "Target host: $(printf '%s' "$DB" | sed -E 's#.*@([^:/?]+).*#\1#')"
+
+      - run: uv sync --all-packages
+
+      - name: Grant access
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+          # Passed as environment variables, never interpolated into the command line: a ${{ }} expression is
+          # pasted into the shell verbatim, so an input containing a quote or a semicolon would run as script.
+          EMAIL: ${{ inputs.email }}
+          ROLES: ${{ inputs.roles }}
+          DISPLAY_NAME: ${{ inputs.display_name }}
+          REPLACE: ${{ inputs.replace_roles }}
+        run: |
+          # `if`, not `[ ... ] && ...`: steps run under `bash -e`, where a false test as the last command of a
+          # line ends the step.
+          args=(--email "$EMAIL" --roles "$ROLES")
+          if [ -n "$DISPLAY_NAME" ]; then args+=(--display-name "$DISPLAY_NAME"); fi
+          if [ "$REPLACE" = "true" ]; then args+=(--replace-roles); fi
+          uv run python scripts/invite.py "${args[@]}"
+
+      - name: Summary
+        if: always()
+        env:
+          EMAIL: ${{ inputs.email }}
+          ROLES: ${{ inputs.roles }}
+        run: |
+          {
+            echo "### Invitation"
+            echo ""
+            echo "- Email: $EMAIL"
+            echo "- Roles requested: $ROLES"
+            echo "- Result: ${{ job.status }}"
+            echo ""
+            echo "If this failed with *no Supabase Auth account yet*, add the person in the Supabase dashboard"
+            echo "(Authentication -> Users -> Add user -> Send invite) and run this again."
+          } >> "$GITHUB_STEP_SUMMARY"

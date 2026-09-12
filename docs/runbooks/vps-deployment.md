@@ -159,30 +159,53 @@ deliberate. Run this workflow any time you want reassurance; it changes nothing.
 
 ## Part E — Give people access
 
-Signing up in Supabase grants nothing on its own. Access is invitation only, on purpose.
+Signing up in Supabase grants nothing on its own. Access is invitation only, on purpose: a Supabase account with
+no invitation is turned away with "this account has no access". Giving someone access is two steps, and neither
+of them needs the terminal.
 
-For each person, in Supabase:
+### E1. Create their account in Supabase
 
-1. **Authentication → Users → Add user**, with their email.
-2. Copy the user's **UID**.
-3. Go to **SQL Editor** and run this, replacing the two values:
+In the Supabase dashboard for the `ingest` project:
 
-```sql
-update app_user
-   set auth_user_id = 'PASTE-THE-UID-HERE'
- where email = 'their@email.com';
-```
+1. **Authentication** in the left sidebar → **Users**.
+2. **Add user** → **Send invitation**.
+3. Type their email address and confirm.
 
-If that email is not in `app_user` yet, create them first:
+They get an email with a link to choose a password. Nothing else is needed from them.
 
-```sql
-insert into app_user (tenant_id, email, display_name, roles, auth_user_id)
-select id, 'their@email.com', 'Their Name', '{pt}', 'PASTE-THE-UID-HERE'
-  from tenant limit 1;
-```
+### E2. Give them a role
 
-Change `{pt}` to the role you want: `{pt}` for a physical therapist, `{clinical_lead}` for the person who signs off
-clinical content, `{source_admin}` for someone managing ingestion campaigns, `{rights_reviewer}` for licensing.
+In GitHub: **Actions** tab → **Invite a user** in the left sidebar → **Run workflow**.
+
+| Box | What to put |
+| --- | --- |
+| Email | the same address you invited in Supabase |
+| Roles | one of the roles below, or several separated by commas |
+| Name shown in the app | optional — leave blank and it uses the part before the @ |
+| Tick to change roles | leave unticked (see below) |
+
+Press **Run workflow**, then click into the run. A green tick means they can sign in.
+
+The roles:
+
+| Role | What it lets them do |
+| --- | --- |
+| `pt` | a physical therapist: review exercises, draft and approve patient plans |
+| `clinical_lead` | signs off clinical content; the only role that can approve a content pack |
+| `source_admin` | manages sources and ingestion campaigns |
+| `rights_reviewer` | records what each source's licence permits |
+| `auditor` | read-only across the system |
+| `integration` | the MoveAI adapter's own service account, not a person |
+
+Give the narrowest role that does the job. `clinical_lead` in particular carries the authority to publish clinical
+content, so it should go to the clinician who is actually accountable for it and to nobody else.
+
+**Changing someone's roles later.** Run the same workflow with the new roles and tick **replace_roles**. Without
+that tick it refuses and changes nothing — that guard exists so a typo in the email box cannot quietly hand the
+wrong person clinical authority.
+
+**Common messages.** "no Supabase Auth account yet" means E1 has not been done for that address — do it and run
+this again. "already exists with roles [...]" means you are changing an existing person and need the tick.
 
 ---
 
