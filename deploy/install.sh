@@ -11,7 +11,14 @@
 #
 # Safe to run again: it updates the checkout, keeps the existing .env unless told otherwise, and rebuilds.
 #
-# Run:  curl -fsSL https://raw.githubusercontent.com/phillyshah/ingest/main/deploy/install.sh | sudo bash
+# Run it by downloading first, NOT by piping into bash:
+#
+#   curl -fsSL https://raw.githubusercontent.com/phillyshah/ingest/main/deploy/install.sh -o /tmp/install-ingest.sh
+#   sudo bash /tmp/install-ingest.sh
+#
+# Piping works right up until a `docker compose exec` succeeds, at which point it inherits the pipe as its stdin,
+# swallows the rest of the script, and bash exits silently at EOF part way through. Running from a file removes
+# that whole class of failure rather than guarding each command against it.
 
 set -euo pipefail
 
@@ -21,7 +28,7 @@ DIR="${DIR:-/opt/sites/ingest}"
 HOSTNAME_DEFAULT="${INGEST_HOST:-ingest.phillyshah.com}"
 COMPOSE="docker compose -f infra/docker-compose.prod.yml"
 
-# Prompts must read from the terminal: this script is normally run through a pipe, so stdin is the script itself.
+# Prompts read from the terminal explicitly, so they work whether the script is run from a file or a pipe.
 TTY=/dev/tty
 ask() { # ask VAR "prompt" ["default"]
   local __var=$1 __prompt=$2 __default=${3:-} __reply=""
@@ -162,7 +169,10 @@ sleep 5
 $COMPOSE ps
 echo
 for i in $(seq 1 24); do
-  if $COMPOSE exec -T api python -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz')" >/dev/null 2>&1; then
+  # `</dev/null` is load-bearing: `docker compose exec -T` inherits this script's stdin, and when the script is
+  # piped from curl that stdin IS the rest of the script. A successful exec swallows it and bash exits silently
+  # at EOF, half way through the install. Every later step simply never runs.
+  if $COMPOSE exec -T api python -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz')" </dev/null >/dev/null 2>&1; then
     echo "  the API is healthy inside its container."
     break
   fi

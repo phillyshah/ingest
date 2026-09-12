@@ -119,7 +119,8 @@ installer checks this and refuses to continue if the name does not resolve, so n
 In the Hostinger browser terminal:
 
 ```
-curl -fsSL https://raw.githubusercontent.com/phillyshah/ingest/main/deploy/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/phillyshah/ingest/main/deploy/install.sh -o /tmp/install-ingest.sh \
+  && sudo bash /tmp/install-ingest.sh
 ```
 
 It asks for one thing, typed straight into your own terminal so it is never sent anywhere else: the Supabase
