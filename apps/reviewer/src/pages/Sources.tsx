@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { upload } from "../api/client";
-import { useSourcePolicies, useSourcePolicyDecision, useSources, type SourcePolicy, type SourceRow } from "../api/hooks";
+import { useCaptureTerms, useSourcePolicies, useSourcePolicyDecision, useSources, type PolicyStatus, type SourcePolicy, type SourceRow } from "../api/hooks";
 import { useAuth, hasRole } from "../auth";
 import { Badge, Err, fmt } from "../components/ui";
 
@@ -27,10 +27,20 @@ function permKind(v: string): "ok" | "bad" | "warn" {
   return v === "allowed" ? "ok" : v === "denied" ? "bad" : "warn";
 }
 
+const STATUS: Record<PolicyStatus, { label: string; kind: "ok" | "warn" | "bad" | "info" | "hold" }> = {
+  readable: { label: "accepted · readable", kind: "ok" },
+  awaiting_acceptance: { label: "waiting for you to accept", kind: "info" },
+  terms_unread: { label: "their terms could not be read", kind: "warn" },
+  accepted_but_unusable: { label: "accepted, but the licence forbids reading", kind: "hold" },
+  rejected: { label: "rejected", kind: "bad" },
+};
+
 function Policy({ p }: { p: SourcePolicy }) {
   const { session } = useAuth();
   const decide = useSourcePolicyDecision();
+  const recapture = useCaptureTerms();
   const canDecide = hasRole(session, "rights_reviewer", "clinical_lead");
+  const canRead = hasRole(session, "rights_reviewer", "clinical_lead", "source_admin");
   // Open by default for whoever can actually act on this page. The buttons live inside this section because
   // signing without the terms on screen would make the signature a formality — so a reviewer has to see them
   // expanded to do anything anyway; not expanding automatically just hid the one thing they came here to do.
@@ -46,9 +56,7 @@ function Policy({ p }: { p: SourcePolicy }) {
         <div>
           <strong>{p.publisher}</strong> <span className="mono small muted">{p.domain}</span>
         </div>
-        <Badge kind={p.effective ? "ok" : p.review_state === "rejected" ? "bad" : "warn"}>
-          {p.effective ? "readable" : p.review_state === "rejected" ? "rejected" : "not readable"}
-        </Badge>
+        <Badge kind={STATUS[p.status].kind}>{STATUS[p.status].label}</Badge>
       </div>
 
       <div className="small" style={{ marginTop: 6 }}>
@@ -65,9 +73,19 @@ function Policy({ p }: { p: SourcePolicy }) {
       {p.blocked_by && <div className="notice small" style={{ marginTop: 8 }}>{p.blocked_by}</div>}
       {p.scope_note && <p className="small muted" style={{ marginTop: 8 }}>{p.scope_note}</p>}
 
-      <button className="small" style={{ marginTop: 8 }} onClick={() => setOpen(!open)}>
-        {open ? "Hide" : "What this licence allows"}
-      </button>
+      <Err e={recapture.error} />
+      <div className="row" style={{ marginTop: 8 }}>
+        <button className="small" onClick={() => setOpen(!open)}>
+          {open ? "Hide" : "What this licence allows"}
+        </button>
+        {/* The terms have to be on record before anyone can accept them, and the only way to get them there used
+            to be a GitHub workflow. That is why a publisher whose page was momentarily unreachable stayed stuck. */}
+        {canRead && !p.effective && p.status !== "rejected" && (
+          <button className="small" disabled={recapture.isPending} onClick={() => recapture.mutate(p.domain)}>
+            {recapture.isPending ? "Reading…" : p.terms_fetched_at ? "Read their terms again" : "Read their terms now"}
+          </button>
+        )}
+      </div>
 
       {open && (
         <>
@@ -197,8 +215,8 @@ export default function Sources() {
   const [tab, setTab] = useState<"files" | "publishers">("files");
   if (q.error) return <Err e={q.error} />;
   if (!q.data) return <p className="muted">loading…</p>;
-  const readable = q.data.items.filter((p) => p.effective);
-  const rest = q.data.items.filter((p) => !p.effective);
+  const by = (s: PolicyStatus) => q.data!.items.filter((p) => p.status === s);
+  const counts = q.data.by_status ?? {};
 
   return (
     <>
@@ -232,6 +250,13 @@ export default function Sources() {
         </div>
       )}
 
+      {/* One line per state, so "why can I only accept five of them?" is answered before it is asked. */}
+      <div className="row" style={{ flexWrap: "wrap", gap: 8, marginBottom: 12 }} data-testid="policy-status-counts">
+        {(Object.keys(STATUS) as PolicyStatus[]).map((s) => (
+          <div className="stat" key={s}><b>{counts[s] ?? 0}</b><span>{STATUS[s].label}</span></div>
+        ))}
+      </div>
+
       <div className="notice">
         <b>{q.data.readable} of {q.data.total} publishers can be read.</b>{" "}
         A publisher becomes readable when its licence terms have been fetched from its own site <i>and</i> a rights
@@ -239,14 +264,43 @@ export default function Sources() {
         and the publisher stops being readable until someone reads the new wording.
       </div>
 
-      {readable.length > 0 && <h2>Readable</h2>}
-      {readable.map((p) => <Policy key={p.domain} p={p} />)}
-
-      <h2>Not readable{rest.length ? ` (${rest.length})` : ""}</h2>
-      {rest.length === 0 && <p className="muted">Nothing outstanding.</p>}
-      {rest.map((p) => <Policy key={p.domain} p={p} />)}
+      <Group
+        title="Waiting for you to accept"
+        blurb="Their terms have been read and are on screen below. Accepting one makes the publisher readable straight away."
+        items={by("awaiting_acceptance")}
+        empty="Nothing waiting on you."
+      />
+      <Group
+        title="Accepted and readable"
+        blurb="Campaigns may read pages from these publishers."
+        items={by("readable")}
+        empty="None yet."
+      />
+      <Group
+        title="Their terms could not be read"
+        blurb="These cannot be accepted yet — not because of a decision, but because the text nobody has read cannot be signed. Press “Read their terms now” to try again; if the site refuses automated clients or the URL is wrong, that is a change to the publisher list rather than something to fix here."
+        items={by("terms_unread")}
+        empty="None."
+      />
+      <Group
+        title="Accepted, but the licence forbids reading"
+        blurb="Someone read these terms and accepted them, and the licence still does not permit reading. Nothing further to do: using them needs a separate agreement with the publisher."
+        items={by("accepted_but_unusable")}
+        empty="None."
+      />
+      <Group title="Rejected" blurb="Decided against, with the reason recorded." items={by("rejected")} empty="None." />
       </>}
     </>
+  );
+}
+
+function Group({ title, blurb, items, empty }: { title: string; blurb: string; items: SourcePolicy[]; empty: string }) {
+  return (
+    <section style={{ marginTop: 18 }}>
+      <h2 style={{ marginBottom: 2 }}>{title} {items.length > 0 && <span className="muted">({items.length})</span>}</h2>
+      <p className="small muted" style={{ marginTop: 0 }}>{blurb}</p>
+      {items.length === 0 ? <p className="muted small">{empty}</p> : items.map((p) => <Policy key={p.domain} p={p} />)}
+    </section>
   );
 }
 

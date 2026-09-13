@@ -24,6 +24,11 @@ function CampaignCard({ c, onDelete }: { c: CardT; onDelete?: (c: CardT) => void
       </div>
       <div className="funnel">{funnel(c.counts).map((f) => <span key={f.label}><b>{f.value}</b> {f.label}</span>)}</div>
       <div className="muted">spend ${c.spend_usd.toFixed(2)} / cap ${c.cap_usd.toFixed(2)} · active {Math.round(c.active_seconds / 60)}m · {c.current_activity ?? "idle"}</div>
+      {/* Never let a run that found nothing imply the condition has nothing: the packs' exercises are already
+          in the catalog and usable whatever this campaign did. */}
+      {(c.counts.catalog_variants ?? 0) > 0 && (
+        <div className="muted">{c.counts.catalog_variants} exercise(s) already in the catalog for this condition</div>
+      )}
       {c.blockers.length > 0 && <div style={{ color: "var(--bad)" }}>{c.blockers[0]}</div>}
       {c.next_human_action && <div><Badge kind="info">next: {c.next_human_action}</Badge></div>}
       {onDelete && (

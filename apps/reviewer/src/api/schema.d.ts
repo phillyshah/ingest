@@ -804,6 +804,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/source-policies/{domain}/capture": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Capture Terms Now
+         * @description Read this publisher's terms page now, from the server.
+         *
+         *     Until this existed, a publisher whose terms page was momentarily unreachable stayed unacceptable until someone
+         *     ran a GitHub workflow — which is why only a handful of publishers could ever be accepted. Reading the terms is
+         *     not a decision and grants nothing: it fetches the text and records it with its hash. A person still has to
+         *     read it and accept it before the publisher becomes readable.
+         */
+        post: operations["capture_terms_now_v1_source_policies__domain__capture_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/source-policies/{domain}/decision": {
         parameters: {
             query?: never;
@@ -3348,6 +3373,39 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+        };
+    };
+    capture_terms_now_v1_source_policies__domain__capture_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                domain: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

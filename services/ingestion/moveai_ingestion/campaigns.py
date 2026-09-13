@@ -813,7 +813,82 @@ def counts(conn: psycopg.Connection, campaign_id: Any) -> dict[str, int]:
         "select count(*) as n from campaign_item where campaign_id=%s and item_table='exercise_variant_version' and disposition='reused'",
         (campaign_id,),
     ).fetchone()["n"]
+    # What the catalog already holds for this campaign's conditions, whatever this run produced. A campaign that
+    # extracted nothing is not the same as a condition with nothing to offer: the content packs ship exercises for
+    # these conditions, and a board that never mentions them sends the operator looking for work already done.
+    cat = conn.execute(
+        """select count(distinct cu.variant_version_id)::int as total,
+                  count(distinct cu.variant_version_id) filter (where v.approval_state in ('approved','published'))::int as approved,
+                  count(distinct cu.variant_version_id) filter (where v.approval_state = 'unsigned_placeholder')::int as placeholder
+             from clinical_use_version cu join exercise_variant_version v on v.id=cu.variant_version_id
+            where cu.condition_id = any(
+                    select unnest(condition_ids) from campaign_scope_version
+                     where id = (select current_scope_version_id from ingestion_campaign where id=%s))""",
+        (campaign_id,),
+    ).fetchone()
+    c["catalog_variants"] = cat["total"] or 0
+    c["catalog_approved"] = cat["approved"] or 0
+    c["catalog_placeholder"] = cat["placeholder"] or 0
     return c
+
+
+def _catalog_hint(cnt: dict[str, int]) -> str:
+    """A campaign that found nothing new should still point at what the catalog already has for this condition."""
+    n = cnt.get("catalog_variants", 0)
+    if not n:
+        return ""
+    if cnt.get("catalog_approved", 0):
+        return f" — meanwhile the catalog already holds {n} exercise(s) for this condition, {cnt['catalog_approved']} of them approved"
+    return f" — meanwhile the catalog already holds {n} exercise(s) for this condition, all awaiting a clinical lead's signature"
+
+
+def source_outcomes(conn: psycopg.Connection, campaign_id: Any) -> list[dict[str, Any]]:
+    """Per page this campaign actually read: what came out of it, and when nothing did, why.
+
+    The board used to show only totals ("10 sources, 0 new variants"), which says that something went wrong
+    without saying what. Nine pages about what a knee replacement is, none of which lists an exercise, is a
+    completely different situation from nine pages that failed to parse, and the operator has to be able to tell
+    them apart without reading a log.
+    """
+    rows = conn.execute(
+        """select sv.id, sv.pipeline_state, coalesce(sv.final_url, s.canonical_url) as url, s.publisher, ci.detail,
+                  (select count(*) from evidence_claim ec where ec.source_version_id=sv.id)::int as claims,
+                  (select count(*) from dependency_edge d where d.upstream_table='source_version' and d.upstream_id=sv.id
+                     and d.downstream_table='exercise_variant_version')::int as variants,
+                  (select j.stage || ': ' || coalesce(j.error_class, j.state::text) || coalesce(' — ' || left(j.last_error, 200), '')
+                     from ingestion_job j where j.source_version_id=sv.id and j.state in ('failed', 'dead_letter')
+                     order by j.finished_at desc nulls last limit 1) as problem,
+                  (select count(*) from ingestion_job j where j.source_version_id=sv.id and j.state in ('queued', 'running'))::int as active
+             from campaign_item ci join source_version sv on sv.id=ci.item_id join source s on s.id=sv.source_id
+            where ci.campaign_id=%s and ci.item_table='source_version' order by ci.created_at""",
+        (campaign_id,),
+    ).fetchall()
+    out = []
+    for r in rows:
+        if r["active"]:
+            outcome = "still being read"
+        elif r["problem"]:
+            outcome = f"could not be read — {r['problem']}"
+        elif r["variants"]:
+            outcome = f"{r['variants']} exercise(s) extracted"
+        elif r["claims"]:
+            outcome = f"read, {r['claims']} piece(s) of evidence — but no exercise instructions on this page"
+        else:
+            outcome = "read, but nothing could be extracted from it"
+        out.append(
+            {
+                "source_version_id": str(r["id"]),
+                "url": r["url"],
+                "publisher": r["publisher"],
+                "state": r["pipeline_state"],
+                "claims": r["claims"],
+                "variants": r["variants"],
+                "via": (r["detail"] or {}).get("via"),
+                "title": (r["detail"] or {}).get("title"),
+                "outcome": outcome,
+            }
+        )
+    return out
 
 
 def derive_lifecycle(conn: psycopg.Connection, camp: dict, run: dict | None, cnt: dict[str, int]) -> tuple[str, list[str], str | None]:
@@ -859,18 +934,36 @@ def derive_lifecycle(conn: psycopg.Connection, camp: dict, run: dict | None, cnt
         return "complete", [], None
     if cnt.get("awaiting_review", 0) or cnt.get("approved", 0) or cnt.get("published", 0):
         return "pt_review", blockers, "PT reviews candidates; clinical lead publishes"
+
+    # Nothing reviewable came out. Which of the three reasons it was decides what the operator should do next, and
+    # saying only "no candidates" left all three looking identical.
+    read = cnt.get("sources_processed", 0)
+    if read:
+        if cnt.get("evidence_linked", 0):
+            blockers.append(
+                f"{read} page(s) were read and {cnt['evidence_linked']} piece(s) of evidence recorded, but none of them "
+                "described an exercise — those pages explain the condition rather than the rehabilitation programme"
+            )
+        else:
+            blockers.append(f"{read} page(s) were read but nothing could be extracted from them")
+        return (
+            "needs_attention",
+            blockers,
+            "give it a page that actually lists exercises, or upload a protocol PDF on the Sources page" + _catalog_hint(cnt),
+        )
     if cnt.get("sources_pending", 0):
         blockers.append("pages were found but none could be read: every one is on a publisher whose terms are not yet accepted")
         return (
             "needs_attention",
             blockers,
-            "accept the publisher's terms on the Sources page, then start a new run — the pages found are kept",
+            "accept the publisher's terms on the Sources page, then start a new run — the pages found are kept" + _catalog_hint(cnt),
         )
     blockers.append("the run found nothing to read for this condition")
     return (
         "needs_attention",
         blockers,
-        "paste document URLs from an accepted publisher, upload a PDF on the Sources page, or widen the condition's names",
+        "paste document URLs from an accepted publisher, upload a PDF on the Sources page, or widen the condition's names"
+        + _catalog_hint(cnt),
     )
 
 
@@ -986,9 +1079,15 @@ def get(conn: psycopg.Connection, tenant_id: Any, campaign_id: Any) -> dict[str,
             (camp["id"],),
         ).fetchall()
     ]
+    conds = conn.execute(
+        "select internal_code, preferred_name from condition where id = any(%s)", (scope["condition_ids"] if scope else [],)
+    ).fetchall()
     return {
         **c,
         "pending_publishers": pending_publishers,
+        "source_outcomes": source_outcomes(conn, camp["id"]),
+        # So the page can link straight to what already exists for this condition rather than describing it.
+        "conditions": [{"code": r["internal_code"], "name": r["preferred_name"]} for r in conds],
         "scope": {k: (str(v) if isinstance(v, uuid.UUID) else v) for k, v in scope.items()} if scope else {},
         "runs": [{**r, "id": str(r["id"])} for r in runs],
         "coverage_checks": [{**k, "id": str(k["id"])} for k in checks],

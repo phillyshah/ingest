@@ -137,6 +137,39 @@ export default function CampaignDetail() {
               <td className="small">{(p.pages ?? []).map((u: string) => <div key={u}><a href={u} target="_blank" rel="noreferrer">{u.replace(/^https?:\/\/[^/]+/, "")}</a></div>)}</td></tr>)}</tbody></table>
         </div>
       )}
+      {/* What the catalog already holds for this condition. A run that extracted nothing is not the same as a
+          condition with nothing to offer, and the board used to leave that impression. */}
+      {tab === "Overview" && (c.counts.catalog_variants ?? 0) > 0 && (
+        <div className="panel" data-testid="catalog-coverage">
+          <h3 style={{ marginTop: 0 }}>Already in the catalog for this condition</h3>
+          <div className="row">
+            <div className="stat"><b>{c.counts.catalog_variants}</b><span>exercises</span></div>
+            <div className="stat"><b>{c.counts.catalog_approved ?? 0}</b><span>approved</span></div>
+            <div className="stat"><b>{c.counts.catalog_placeholder ?? 0}</b><span>awaiting a clinical lead</span></div>
+          </div>
+          <p className="small muted">
+            These came with the condition's content pack and do not depend on this campaign.{" "}
+            {(c.conditions ?? []).map((cd) => (
+              <Link key={cd.code} to={`/exercises?condition=${cd.code}`} style={{ marginRight: 8 }}>Open the {cd.name} exercises</Link>
+            ))}
+          </p>
+        </div>
+      )}
+      {tab === "Overview" && (c.source_outcomes ?? []).length > 0 && (
+        <div className="panel" data-testid="source-outcomes">
+          <h3 style={{ marginTop: 0 }}>What each page gave us</h3>
+          <table><thead><tr><th>Page</th><th>Found by</th><th>Evidence</th><th>Exercises</th><th>Outcome</th></tr></thead>
+            <tbody>{(c.source_outcomes ?? []).map((s) => (
+              <tr key={s.source_version_id}>
+                <td className="small">{s.title ?? s.url.replace(/^https?:\/\//, "").slice(0, 70)}<br /><a className="small muted" href={s.url} target="_blank" rel="noreferrer">{s.publisher ?? new URL(s.url).hostname}</a></td>
+                <td className="small">{s.via ?? "—"}</td>
+                <td>{s.claims}</td>
+                <td>{s.variants}</td>
+                <td className="small">{s.outcome}</td>
+              </tr>
+            ))}</tbody></table>
+        </div>
+      )}
       {tab === "Overview" && (
         <div className="grid2">
           <div className="panel">

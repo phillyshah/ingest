@@ -4782,6 +4782,51 @@
         ]
       }
     },
+    "/v1/source-policies/{domain}/capture": {
+      "post": {
+        "description": "Read this publisher's terms page now, from the server.\n\nUntil this existed, a publisher whose terms page was momentarily unreachable stayed unacceptable until someone\nran a GitHub workflow \u2014 which is why only a handful of publishers could ever be accepted. Reading the terms is\nnot a decision and grants nothing: it fetches the text and records it with its hash. A person still has to\nread it and accept it before the publisher becomes readable.",
+        "operationId": "capture_terms_now_v1_source_policies__domain__capture_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "domain",
+            "required": true,
+            "schema": {
+              "title": "Domain",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Capture Terms Now V1 Source Policies  Domain  Capture Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Capture Terms Now",
+        "tags": [
+          "source-policies"
+        ]
+      }
+    },
     "/v1/source-policies/{domain}/decision": {
       "post": {
         "operationId": "decide_v1_source_policies__domain__decision_post",

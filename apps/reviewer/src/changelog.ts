@@ -25,6 +25,29 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.12.0",
+    date: "2026-09-13",
+    headline: "Accept more publishers, and see what a campaign actually did",
+    changes: [
+      {
+        kind: "added",
+        text: "\"Read their terms now\" on the Sources page. Only a handful of publishers could ever be accepted, because a publisher can only be accepted once its terms have been read from its own site — and that reading only happened when someone ran a workflow by hand. It is now a button, so a publisher whose page was briefly unreachable is one click from acceptable rather than stuck.",
+      },
+      {
+        kind: "changed",
+        text: "Publishers are grouped by exactly what each one is waiting for, with a count of each: waiting for you to accept, accepted and readable, their terms could not be read, accepted but the licence forbids reading, and rejected. A publisher whose terms could not be read now says what the site actually replied — refused our request, wrong address, or a page with no text — instead of \"could not be reached\".",
+      },
+      {
+        kind: "added",
+        text: "A campaign now lists what each page gave us: the evidence found, the exercises extracted, and when nothing came out, why. Reading nine pages that explain the operation rather than the rehabilitation programme is a different problem from nine pages that failed to load, and the board used to show both as \"0 new variants\".",
+      },
+      {
+        kind: "added",
+        text: "Every campaign shows the exercises the catalog already holds for its condition, on the board and on the campaign itself, with a link straight to them. A run that finds nothing new no longer reads as a condition with nothing available — the exercises that came with the condition are there and usable regardless.",
+      },
+    ],
+  },
+  {
     version: "0.11.1",
     date: "2026-09-13",
     headline: "No more server errors with a few tabs open",
