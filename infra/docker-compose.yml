@@ -9,7 +9,9 @@ services:
     restart: unless-stopped
     healthcheck: { test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz')"], interval: 30s, timeout: 5s, retries: 3 }
     deploy: { resources: { limits: { cpus: "1.0", memory: 768M } } }
-    volumes: ["uploads:/srv/moveai/uploads:ro"]
+    # Read-write: /sources/upload writes the PDF here (content-addressed by sha256). The worker below mounts the
+    # same volume read-only — it only ever reads what the API already wrote.
+    volumes: ["uploads:/srv/moveai/uploads"]
   worker:
     build: { context: .., dockerfile: infra/Dockerfile.worker }
     env_file: .env

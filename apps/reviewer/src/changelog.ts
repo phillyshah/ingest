@@ -25,6 +25,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.8.2",
+    date: "2026-09-13",
+    headline: "Uploading a PDF source no longer fails",
+    changes: [
+      {
+        kind: "fixed",
+        text: "Uploading a PDF on the Sources page failed with a server error every time on the deployed environment: the API could not write the file where it needed to. Uploads now save correctly and flow into the review queue like any other source.",
+      },
+    ],
+  },
+  {
     version: "0.8.1",
     date: "2026-09-13",
     headline: "Fixes from the September review",

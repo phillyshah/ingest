@@ -57,6 +57,9 @@ services:
       # The SPA calls /api/v1/*; the API serves /v1/*.
       - "traefik.http.middlewares.ingest-api-strip.stripprefix.prefixes=/api"
       - "traefik.http.services.ingest-api.loadbalancer.server.port=8000"
+    # Read-write: /sources/upload writes the PDF here (content-addressed by sha256). The worker mounts the same
+    # volume read-only below — it only ever reads what the API already wrote.
+    volumes: ["uploads:/srv/moveai/uploads"]
 
   reviewer:
     <<: *limits
