@@ -168,7 +168,12 @@ def _source_refs(u: LoadedUse) -> list[SourceReference]:
 
 
 def _media_for(u: LoadedUse) -> tuple[str | None, str]:
-    """Media is optional. Patient display needs allowed rights + passed technique review; otherwise text only."""
+    """Media is optional. Patient display needs allowed rights + passed technique review; otherwise text only.
+
+    Every media row is considered before giving up: a variant commonly carries a `reference_only` URL from the
+    source alongside a later, stored, reviewed photo, and returning on the first row (as this once did) reported
+    the URL's state and hid the photo. With no displayable row the state reported is the first row's, unchanged.
+    """
     for m in u.media:
         if (
             m["media_state"] == "graphic_available"
@@ -178,7 +183,8 @@ def _media_for(u: LoadedUse) -> tuple[str | None, str]:
             and not (m.get("expires_at") and m["expires_at"] <= datetime.now(UTC))
         ):
             return str(m["id"]), "graphic_available"
-        return None, m["media_state"]
+    if u.media:
+        return None, u.media[0]["media_state"]
     return None, "not_requested"
 
 

@@ -148,8 +148,17 @@ def scope_preview(conn: psycopg.Connection, tenant_id: Any, scope: dict[str, Any
     readable = [p for p in policies if p["effective"]]
     if scope.get("source_policy") != "supplied_only":
         strategy += [f"allowlisted source: {s['canonical_url']}" for s in sources[:20]]
-        strategy += [f"allowlisted publisher: {p['publisher']} ({p['domain']}, {p['license_id']})" for p in readable]
-    strategy.append("no new-domain discovery: domains outside the allowlist are recorded as pending, never fetched")
+        # Honest about what a signed publisher means today: its pages *may be read* when a URL on it is supplied
+        # or already linked to the condition. Nothing searches the publisher for relevant pages — the earlier
+        # wording ("allowlisted publisher: …") read as if the campaign would go and look there, and it will not.
+        strategy += [
+            f"may read from {p['publisher']} ({p['domain']}, {p['license_id']}) when a URL on it is supplied — no automatic discovery yet"
+            for p in readable
+        ]
+    strategy.append(
+        "no automatic discovery: only supplied URLs and sources already linked to the condition are read; "
+        "domains outside the allowlist are recorded as pending, never fetched"
+    )
     # Only a campaign with nothing at all to read is blocked. Supplied URLs and per-source approvals are both
     # legitimate ways in, and the fixture-backed runs use them.
     if not readable and not scope.get("supplied_source_urls") and not sources:
@@ -411,6 +420,14 @@ def _dispatch_sources(conn: psycopg.Connection, tenant_id: Any, camp: dict, scop
     """Bounded, request-driven discovery: supplied URLs + allowlisted sources already linked to the scoped conditions.
     Unknown domains become pending items (Needs Attention), never fetches."""
     limits = scope["limits"]
+    # The body region every extracted exercise from this run is filed under. It was hard-coded "unknown", which
+    # left campaign-sourced exercises unfindable by region in the catalog. The scoped conditions know their region;
+    # when they agree, use it. When they do not (or there is none), "unknown" stays honest — never a guess.
+    regions = {
+        r["body_region"]
+        for r in conn.execute("select distinct body_region from condition where id = any(%s)", (list(scope["condition_ids"]),)).fetchall()
+    }
+    region = regions.pop() if len(regions) == 1 else "unknown"
     candidates: list[dict[str, Any]] = []
     for url in scope["supplied_source_urls"]:
         try:
@@ -496,7 +513,7 @@ def _dispatch_sources(conn: psycopg.Connection, tenant_id: Any, camp: dict, scop
             conn,
             stage="access_check",
             source_version_id=svid,
-            payload={"url": c["url"], "region": "unknown"},
+            payload={"url": c["url"], "region": region},
             tenant_id=tenant_id,
             campaign_id=camp["id"],
             campaign_run_id=run["id"],

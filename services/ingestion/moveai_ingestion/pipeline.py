@@ -14,7 +14,7 @@ from moveai_db import J
 from . import queue as q
 from .config import PARSER_VERSION
 from .extract import run_extraction
-from .fetch import FetchError, fetch
+from .fetch import FetchError, canonicalize, fetch
 from .llm import ExtractionModel, SchemaViolation, get_model
 from .normalize import persist
 from .parse import parse
@@ -96,6 +96,8 @@ def stage_fetch(conn: psycopg.Connection, job: dict) -> dict:
     try:
         f = fetch(url, effective_domains(conn))
     except FetchError as e:
+        if e.redirect_target and job.get("campaign_id"):
+            _park_redirect_target(conn, job, e.redirect_target)
         raise StageError(e.error_class, str(e), permanent=e.error_class in q.PERMANENT_ERRORS) from e
     prior = conn.execute(
         "select id from source_version where source_id=%s and content_sha256=%s and id<>%s and pipeline_state <> 'superseded' order by created_at desc limit 1",
@@ -140,6 +142,47 @@ def stage_fetch(conn: psycopg.Connection, job: dict) -> dict:
         "warnings": f.warnings,
         "url": url,
     }
+
+
+def _park_redirect_target(conn: psycopg.Connection, job: dict, target: str) -> None:
+    """Remember where a redirect wanted to go, so `run_job` can park it as a pending campaign item.
+
+    Only noted here, not written: the failing stage's savepoint rolls back everything it wrote, and the parked
+    item has to outlive that. `_record_parked_targets` does the write after the rollback.
+    """
+    job.setdefault("_parked", []).append(target)
+
+
+def _record_parked_targets(conn: psycopg.Connection, job: dict) -> None:
+    """After the failed stage rolled back: park each redirect target as a pending source on its own domain, with a
+    reason the operator can act on (add a publisher policy), the same way an unknown supplied domain is parked."""
+    for target in job.pop("_parked", []):
+        try:
+            cu = canonicalize(target)
+        except FetchError:
+            continue
+        src = conn.execute("select * from source where canonical_url=%s", (cu,)).fetchone()
+        if not src:
+            src = conn.execute(
+                "insert into source(tenant_id, canonical_url, source_type, allowlist_state) values (%s,%s,%s,'pending') returning *",
+                (job["tenant_id"], cu, "pdf" if cu.lower().endswith(".pdf") else "html"),
+            ).fetchone()
+        conn.execute(
+            """insert into campaign_item(campaign_id, run_id, item_table, item_id, disposition, detail) values (%s,%s,'source',%s,'pending',%s)
+               on conflict (campaign_id, item_table, item_id) do update set disposition=excluded.disposition, detail=excluded.detail""",
+            (
+                job["campaign_id"],
+                job["campaign_run_id"],
+                src["id"],
+                J(
+                    {
+                        "reason": f"{urlparse(cu).hostname}: reached by redirect from a supplied URL; no publisher policy covers this domain",
+                        "domain": urlparse(cu).hostname,
+                        "redirected_from": job["payload"].get("url"),
+                    }
+                ),
+            ),
+        )
 
 
 def _load_bytes(conn: psycopg.Connection, sv: dict, src: dict, job: dict) -> tuple[bytes, str]:
@@ -331,8 +374,9 @@ def run_job(conn: psycopg.Connection, job: dict, *, model: ExtractionModel | Non
         except StageError as e:
             with conn.transaction():
                 # the stage's own writes were rolled back with the savepoint; re-apply the hold state explicitly
-                if e.error_class in ("not_allowlisted", "rights_unknown", "rights_denied"):
+                if e.error_class in ("not_allowlisted", "redirected_off_allowlist", "rights_unknown", "rights_denied"):
                     _set_state(conn, job["source_version_id"], "rights_hold")
+                    _record_parked_targets(conn, job)
                 elif e.error_class == "parse_failed":
                     _set_state(conn, job["source_version_id"], "parse_failed")
                 elif e.error_class == "schema_invalid":

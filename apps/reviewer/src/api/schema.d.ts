@@ -1509,7 +1509,7 @@ export interface components {
          * ReviewDecision
          * @enum {string}
          */
-        ReviewDecision: "accept" | "edit" | "split" | "merge" | "reject" | "request_clarification" | "approve" | "withdraw" | "rights_allow" | "rights_deny";
+        ReviewDecision: "accept" | "edit" | "split" | "merge" | "reject" | "request_clarification" | "approve" | "withdraw" | "rights_allow" | "rights_deny" | "technique_review";
         /** RightsInput */
         RightsInput: {
             /** Attribution Required */

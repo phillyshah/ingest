@@ -6,7 +6,7 @@
 # publishers, in an environment with no access to the open internet, so not one of these terms pages has been
 # read. That is why every entry ships unsigned and every entry blocks.
 #
-# The gap is closed by machine, not by trust: `scripts/capture_policy_evidence.py` runs on a GitHub runner, which
+# The gap is closed by machine, not by trust: `scripts/source_policies.py capture` runs on a GitHub runner, which
 # does have internet access, fetches each `policy_reference`, and records the terms text with its hash. A rights
 # reviewer then reads the captured text and signs. The signature covers that exact text, so if the publisher
 # changes its terms the policy stops being effective on its own.

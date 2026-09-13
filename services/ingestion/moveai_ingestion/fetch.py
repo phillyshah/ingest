@@ -15,9 +15,23 @@ from .config import FETCH_TIMEOUT_S, MAX_DOCUMENT_BYTES, MAX_REDIRECTS, allowed_
 
 
 class FetchError(Exception):
-    def __init__(self, error_class: str, message: str):
+    def __init__(self, error_class: str, message: str, *, redirect_target: str | None = None):
         super().__init__(message)
         self.error_class = error_class
+        # Set when a redirect landed on a host with no signed policy: the caller can park that host as a pending
+        # candidate instead of the operator having to work it out from a "not allowlisted" message about a URL
+        # they never typed.
+        self.redirect_target = redirect_target
+
+
+# Identify honestly and send the headers any well-formed HTTP client sends. The terms-capture script learned that
+# several publishers answer a bare User-Agent with 403 (scripts/source_policies.py); the campaign fetcher never got
+# the same fix, so real fetches hit the same refusals. Not a disguise: the agent string still says what this is.
+HTTP_HEADERS = {
+    "User-Agent": "MoveAI-Ingest/0.1 (+policy: allowlist only)",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,application/pdf;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-GB,en;q=0.9",
+}
 
 
 @dataclass
@@ -108,18 +122,26 @@ def fetch_http(url: str, extra_domains: set[str] | None = None) -> Fetched:
     warnings: list[str] = []
     current = url
     for _ in range(MAX_REDIRECTS + 1):
-        with httpx.Client(
-            follow_redirects=False,
-            timeout=FETCH_TIMEOUT_S,
-            headers={"User-Agent": "MoveAI-Ingest/0.1 (+policy: allowlist only)"},
-        ) as client:
+        with httpx.Client(follow_redirects=False, timeout=FETCH_TIMEOUT_S, headers=HTTP_HEADERS) as client:
             with client.stream("GET", current) as resp:
                 if resp.status_code in (301, 302, 303, 307, 308):
                     nxt = resp.headers.get("location")
                     if not nxt:
                         raise FetchError("fetch_failed", "redirect without location")
                     current = httpx.URL(current).join(nxt).__str__()
-                    _check_url_allowed(current, extra_domains)  # the redirect target must itself be allowlisted and non-private
+                    try:
+                        _check_url_allowed(current, extra_domains)  # the redirect target must itself be allowlisted and non-private
+                    except FetchError as e:
+                        if e.error_class != "not_allowlisted":
+                            raise
+                        # A publisher moving hosts (orthoinfo.aaos.org → www.orthoinfo.org) is a policy question
+                        # for a rights reviewer, not a fetch failure. Name the host so it can be parked as pending.
+                        host = urlparse(current).hostname
+                        raise FetchError(
+                            "redirected_off_allowlist",
+                            f"redirected to {current}; {host!r} has no signed publisher policy — add it to the allowlist",
+                            redirect_target=current,
+                        ) from e
                     warnings.append(f"redirected to {current}")
                     continue
                 if resp.status_code != 200:

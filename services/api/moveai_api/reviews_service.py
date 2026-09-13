@@ -10,6 +10,7 @@ from fastapi import HTTPException
 from moveai_contracts.api import PERMISSION_OPS, ReviewCreate
 from moveai_db import J
 from moveai_planner.approval import propagate_withdrawal
+from moveai_planner.provenance import ProvenanceError, verify_dose_fields
 
 from .auth import Principal
 
@@ -78,6 +79,12 @@ def _authorize(p: Principal, body: ReviewCreate, row: dict) -> str:
         if not p.has("rights_reviewer", "clinical_lead"):
             raise _err(403, "forbidden", "rights decisions require rights_reviewer")
         return "rights_reviewer"
+    if d == "technique_review":
+        if body.entity_table != "media_asset_version":
+            raise _err(422, "wrong_table", "technique review targets media_asset_version")
+        if not p.has("pt", "clinical_lead"):
+            raise _err(403, "forbidden", "technique review requires pt or clinical_lead")
+        return "clinical_lead" if p.has("clinical_lead") else "pt"
     if body.entity_table in LEAD_ONLY_TABLES and d in ("approve", "accept"):
         if not p.has("clinical_lead"):
             raise _err(403, "forbidden", "protocol/rule approval requires clinical_lead")
@@ -128,6 +135,17 @@ def decide(conn: psycopg.Connection, p: Principal, body: ReviewCreate) -> dict[s
                     (m["id"], J({"reason": body.reason})),
                 )
         out["approval_state"] = row.get("approval_state") or "n/a"
+    elif d == "technique_review":
+        # The gate the planner has always required before a picture reaches a patient (engine._media_for) and
+        # that nothing ever set. `changes.passed` defaults to true; a reviewer records a failure explicitly with
+        # false, which is a real decision too and blocks display just as firmly.
+        passed = bool((body.changes or {}).get("passed", True))
+        conn.execute(
+            "update media_asset_version set technique_review_passed=%s, technique_reviewer_id=%s where id=%s",
+            (passed, p.user_id, row["id"]),
+        )
+        out["approval_state"] = row.get("approval_state") or "n/a"
+        out["technique_review_passed"] = passed
     elif d in ("approve", "accept"):
         if row["approval_state"] not in ("draft", "pending_review"):
             raise _err(409, "not_reviewable", f"cannot approve a {row['approval_state']} version")
@@ -165,6 +183,15 @@ def decide(conn: psycopg.Connection, p: Principal, body: ReviewCreate) -> dict[s
         changes = {k: v for k, v in (body.changes or {}).items() if k in EDITABLE[table]}
         if not changes:
             raise _err(422, "no_changes", "no editable clinical fields in changes")
+        if "dose_envelope" in changes:
+            # A dose is only as good as the claim it names. Shape was always validated; that the claim exists, is
+            # a dose, and comes from the same source as the exercise was not — so any UUID used to pass.
+            try:
+                verify_dose_fields(
+                    conn, changes["dose_envelope"] or {}, variant_version_id=row.get("variant_version_id"), actor_id=p.user_id
+                )
+            except ProvenanceError as e:
+                raise _err(422, e.code, e.message) from e
         cols = [
             c
             for c in row

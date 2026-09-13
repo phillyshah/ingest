@@ -76,7 +76,17 @@ function Detail({ table, id }: { table: string; id: string }) {
           {(d.data.media ?? []).length ? d.data.media.map((m: any) => (
             <div key={m.id} style={{ marginBottom: 8 }}>
               <Badge kind={stateKind(m.media_state)}>{m.media_state}</Badge>{" "}
+              {m.technique_review_passed === true && <Badge kind="ok">technique reviewed</Badge>}
+              {m.technique_review_passed === false && <Badge kind="bad">failed technique review</Badge>}
               {m.storage_ref ? <StoredImage mediaId={m.id} /> : <span className="small mono">{m.url}</span>}
+              {/* Rights say a picture may be shown; this says it should be — that it actually shows the exercise
+                  done correctly. A photo reaches a patient plan only with both. */}
+              {clinical && m.storage_ref && m.technique_review_passed !== true && (
+                <div className="row" style={{ marginTop: 4 }}>
+                  <button className="small" onClick={() => decide.mutateAsync({ entity_table: "media_asset_version", version_id: m.id, decision: "technique_review", changes: { passed: true }, reason }).then((out) => { setResult(out); void d.refetch(); })}>Shows the exercise correctly</button>
+                  <button className="small" onClick={() => decide.mutateAsync({ entity_table: "media_asset_version", version_id: m.id, decision: "technique_review", changes: { passed: false }, reason }).then((out) => { setResult(out); void d.refetch(); })}>Does not — keep text-only</button>
+                </div>
+              )}
             </div>
           )) : <span className="muted small">none (text-only is valid)</span>}
           <h3>Diagnostic mappings</h3>{(d.data.diagnostic_mappings ?? []).map((m: any) => <div key={m.id} className="small"><span className="mono">{m.code}</span> {m.descriptor} <Badge>{m.relationship}</Badge> <Badge kind={stateKind(m.approval_state)}>{m.approval_state}</Badge></div>)}

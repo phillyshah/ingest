@@ -149,7 +149,7 @@ def install_pack(
                     v.functional_goal,
                     v.starting_position,
                     v.assistance.value,
-                    v.chain if hasattr(v, "chain") else None,
+                    v.chain,
                     v.load_mode,
                     v.side_behavior,
                     v.equipment,

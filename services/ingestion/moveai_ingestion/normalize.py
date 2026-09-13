@@ -164,10 +164,12 @@ def persist(
             ).fetchone()["id"]
             created_claims.append(dcid)
         for g in ex.graphics:
+            # A referenced-but-unfetched graphic still hangs off this source's rights grant: without the link, a
+            # later rights denial or expiry (reviews_service, propagate_withdrawal) could never find it.
             conn.execute(
-                """insert into media_asset_version(entity_id, version, variant_version_id, media_type, media_state, url, approval_state)
-                   values (%s,1,%s,'still_graphic',%s,%s,'draft')""",
-                (uuid.uuid4(), vid, "rights_hold" if g.third_party else "reference_only", g.src),
+                """insert into media_asset_version(entity_id, version, variant_version_id, media_type, media_state, url, rights_grant_id, approval_state)
+                   values (%s,1,%s,'still_graphic',%s,%s,%s,'draft')""",
+                (uuid.uuid4(), vid, "rights_hold" if g.third_party else "reference_only", g.src, rights_grant_id),
             )
     for note in result.clinician_only:
         conn.execute(

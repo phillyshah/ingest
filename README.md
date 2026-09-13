@@ -29,7 +29,7 @@ Working: schema + DB-enforced invariants, ingestion pipeline (HTML, text PDF, OC
 provenance, content-pack installer, deterministic planner (`needs_assessment` / `blocked_for_clinical_review` /
 `draft_ready`) with population segmentation, PT approval with signed revisions, withdrawal propagation, immutable
 catalog releases, `/v1` API with campaign board endpoints and SSE, mock MoveAI adapter, reviewer app (Kanban,
-campaign detail, extraction review, catalog, plan options), 126 Python tests, 6 UI unit tests, a Playwright smoke,
+campaign detail, extraction review, catalog, plan options), 286 Python tests, 6 UI unit tests, a Playwright smoke,
 and `make demo`. Deployment files target the owner's VPS + Supabase (spec §22) but nothing has been deployed.
 
 Also working: Supabase deployment hardening. Migration 0010 removes all `anon`/`authenticated` privileges and

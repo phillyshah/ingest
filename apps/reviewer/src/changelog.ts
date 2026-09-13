@@ -25,6 +25,37 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.8.1",
+    date: "2026-09-13",
+    headline: "Fixes from the September review",
+    changes: [
+      {
+        kind: "fixed",
+        text: "A stored exercise photo could never reach a plan: the rule that a picture must pass technique review before a patient sees it has always existed, but there was no way to record that review. A PT can now mark a photo as showing the exercise correctly (or not) from the review queue, and a variant with an older reference link no longer hides its newer photo.",
+      },
+      {
+        kind: "fixed",
+        text: "A dose that claims to come from a source is now checked: the cited passage must exist, must be a dose, and must come from the same document as the exercise. Previously any identifier was accepted. Plan edits can no longer replace an exercise's approved instructions with pasted text.",
+      },
+      {
+        kind: "fixed",
+        text: "Exercises read by a campaign are now filed under the body region of the condition being covered instead of \"unknown\", so the catalog can find them by region.",
+      },
+      {
+        kind: "fixed",
+        text: "Reading real publishers' pages: the fetcher now sends the request headers publishers expect (several refused it before), and a page that redirects to a publisher's new domain is parked as \"needs a policy for that domain\" instead of failing with an unhelpful error.",
+      },
+      {
+        kind: "changed",
+        text: "A campaign's \"where it will look\" list now says plainly that a signed publisher is one the system may read when given a URL, not one it will search — automatic discovery is not built yet.",
+      },
+      {
+        kind: "fixed",
+        text: "The open/closed-chain setting on an exercise in a content pack was silently discarded on install; it is now kept.",
+      },
+    ],
+  },
+  {
     version: "0.8.0",
     date: "2026-09-12",
     headline: "Typing something close now offers the exact match",
