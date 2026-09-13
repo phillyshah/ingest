@@ -11,6 +11,13 @@ COPY scripts ./scripts
 COPY fixtures ./fixtures
 RUN uv sync --frozen --no-dev --all-packages
 RUN useradd -r -u 10001 moveai && chown -R moveai /app
+# The clinician-upload mount point (ALLOWED_FILE_ROOTS, infra/.env.example): /sources/upload writes here as the
+# unprivileged `moveai` user, and the worker container reads the same named volume back read-only. A fresh named
+# volume is seeded from whichever image first supplies this path, so both Dockerfiles create it (see
+# Dockerfile.worker) with the same world-writable, sticky-bit permissions — matching users are not guaranteed
+# across the two images, and without this the mount point is created by Docker owned by root, and every upload
+# 500s on a permission-denied write.
+RUN mkdir -p /srv/moveai/uploads && chmod 1777 /srv/moveai/uploads
 USER moveai
 ARG GIT_SHA=unknown
 ARG BUILT_AT=unknown
