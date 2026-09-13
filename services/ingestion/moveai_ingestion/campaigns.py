@@ -736,8 +736,12 @@ def derive_lifecycle(conn: psycopg.Connection, camp: dict, run: dict | None, cnt
         return "complete", [], None
     if cnt.get("awaiting_review", 0) or cnt.get("approved", 0) or cnt.get("published", 0):
         return "pt_review", blockers, "PT reviews candidates; clinical lead publishes"
-    blockers.append("run produced no reviewable candidates within scope and limits")
-    return "needs_attention", blockers, "widen sources, raise limits, or close incomplete"
+    blockers.append("the run had nothing to read: no document URLs were given and no accepted source is linked to this condition yet")
+    return (
+        "needs_attention",
+        blockers,
+        "add document URLs from a publisher accepted on the Sources page, or upload a PDF there instead",
+    )
 
 
 def card(conn: psycopg.Connection, camp: dict) -> dict[str, Any]:

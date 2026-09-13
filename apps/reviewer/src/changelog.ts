@@ -25,6 +25,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.9.1",
+    date: "2026-09-13",
+    headline: "A campaign with nothing to read now says so",
+    changes: [
+      {
+        kind: "fixed",
+        text: "Starting a campaign for a new condition with no document URLs ended in \"no reviewable candidates — widen sources\", which sounded like a limit problem. It was not: there is no automatic web search yet, so a campaign reads only the URLs you give it (from a publisher accepted on the Sources page) plus sources already linked to the condition, and a brand-new condition has none. The blocker and the campaign form now say exactly that, and point at the two things that work today: paste document URLs, or upload a PDF on the Sources page.",
+      },
+    ],
+  },
+  {
     version: "0.9.0",
     date: "2026-09-13",
     headline: "The system understands knee and hip replacement",
