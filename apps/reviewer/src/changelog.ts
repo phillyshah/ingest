@@ -25,6 +25,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.11.1",
+    date: "2026-09-13",
+    headline: "No more server errors with a few tabs open",
+    changes: [
+      {
+        kind: "fixed",
+        text: "Every screen refresh used to open its own connection to the database, and the hosted database allows only fifteen at once — so with the board polling in a couple of tabs while a campaign ran, requests started failing with a server error. The app now shares a small pool of connections and waits briefly for a free one instead of failing.",
+      },
+    ],
+  },
+  {
     version: "0.11.0",
     date: "2026-09-13",
     headline: "The Sources page shows what has been ingested",

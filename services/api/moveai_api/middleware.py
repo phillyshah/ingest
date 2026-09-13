@@ -6,7 +6,7 @@ import hashlib
 import json
 import uuid
 
-from moveai_db import J, connect
+from moveai_db import J, pooled
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
@@ -23,7 +23,7 @@ class RequestContext(BaseHTTPMiddleware):
         tenant = request.headers.get("x-tenant-id")
         if idem and request.method in ("POST", "PATCH"):
             h = hashlib.sha256(body).hexdigest()
-            with connect() as c:
+            with pooled() as c:
                 row = c.execute(
                     "select * from idempotency_key where key=%s and coalesce(tenant_id::text,'')=%s and coalesce(user_id::text,'')=%s",
                     (idem, tenant or "", user or ""),
@@ -48,7 +48,7 @@ class RequestContext(BaseHTTPMiddleware):
                 payload = json.loads(raw or b"null")
             except ValueError:
                 payload = None
-            with connect() as c:
+            with pooled() as c:
                 c.execute(
                     """insert into idempotency_key(key, tenant_id, user_id, request_hash, status_code, response) values (%s,%s,%s,%s,%s,%s)
                              on conflict do nothing""",
@@ -70,7 +70,7 @@ class RequestContext(BaseHTTPMiddleware):
             )
         if request.method in ("POST", "PATCH", "PUT", "DELETE") and not request.url.path.endswith("/healthz"):
             p = getattr(request.state, "principal", None)
-            with connect() as c:
+            with pooled() as c:
                 c.execute(
                     """insert into audit_event(tenant_id, actor_id, actor_kind, action, request_id, detail) values (%s,%s,%s,%s,%s,%s)""",
                     (

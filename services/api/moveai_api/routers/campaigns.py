@@ -7,7 +7,7 @@ from typing import Any
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from moveai_contracts.api import CampaignCreate, CampaignPatch, CampaignScopeInput, RunAction
-from moveai_db import connect
+from moveai_db import pooled
 from moveai_ingestion import campaigns as svc
 from moveai_ingestion.campaigns import CampaignError
 from sse_starlette.sse import EventSourceResponse
@@ -66,7 +66,7 @@ async def stream(request: Request, after: int = 0, p: Principal = Depends(curren
     async def gen():
         last = after
         while not await request.is_disconnected():
-            with connect() as c:
+            with pooled() as c:
                 rows = svc.events_since(c, tenant, last)
                 c.commit()
             for r in rows:

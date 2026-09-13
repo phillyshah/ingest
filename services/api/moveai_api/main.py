@@ -22,6 +22,15 @@ app = FastAPI(
     root_path=os.environ.get("API_ROOT_PATH", ""),
 )
 app.add_middleware(RequestContext)
+
+
+@app.on_event("shutdown")
+def _close_db_pool() -> None:
+    from moveai_db import close_pool
+
+    close_pool()  # hand the pooler's slots back promptly on restart
+
+
 install(app)
 for r in (sources.router, source_policies.router, catalog.router, plans.router, campaigns.router):
     app.include_router(r, prefix="/v1")
