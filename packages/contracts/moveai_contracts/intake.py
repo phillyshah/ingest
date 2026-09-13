@@ -80,7 +80,25 @@ INTAKE_FIELDS: tuple[str, ...] = (
     "language",
     "functional_criteria_met",
     "assessment_timestamp",
+    # Post-arthroplasty fields (September 2026 review, M1). The free-text restriction fields above stay for the
+    # surgeon's own words; these are the structured facts a rule can actually test. Rules can only name fields in
+    # this tuple (ast.Expr validation), which is why a pack could not add them itself.
+    "weight_bearing_status",  # wbat | pwb | tdwb | nwb — surgeon-set, never defaulted
+    "surgical_approach",  # posterior | anterior | lateral | other — decides hip precautions
+    "fixation",  # cemented | uncemented | hybrid — bears on weight-bearing
+    "knee_flexion_active_deg",
+    "knee_extension_deficit_deg",  # degrees short of full extension; 0 = full
+    "extension_lag_deg",  # quad lag on straight leg raise
+    "hip_flexion_active_deg",
+    "assistive_device",  # walker | crutches | cane | none
+    "wound_status",  # healing | closed | concern
+    "effusion",  # none | mild | moderate | severe
+    "days_since_procedure",  # derived from procedure_date and the assessment time; never entered by hand
 )
+
+# Fields the planner derives itself. They are filled at plan time with provenance "derived" and are never
+# proposed from a narrative or accepted from a client as "known".
+DERIVED_FIELDS: tuple[str, ...] = ("days_since_procedure",)
 
 
 class Intake(BaseModel):

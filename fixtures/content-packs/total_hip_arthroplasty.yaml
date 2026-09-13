@@ -1,0 +1,569 @@
+pack: total_hip_arthroplasty
+version: 0.1.0
+family: total_hip_arthroplasty
+approval_state: unsigned_placeholder
+label: "Primary total hip arthroplasty — UNSIGNED PLACEHOLDER, not a treatment protocol"
+# Structure only, like total_knee_arthroplasty.yaml. The hip's defining problem is that precautions depend on the
+# surgical approach — posterior, anterior and lateral each restrict different movements — so `surgical_approach`
+# is a required input and each approach has an exclude_variant rule keyed on movement tags. Those rules only
+# execute once a clinical lead signs them (exclude_variant is executable-only-when-approved); until then they
+# document the intent. Most hip precautions are education rather than exercise (sitting height, sock aids,
+# pillow between the knees) and live in phase restrictions as text until a non-exercise item type exists.
+condition:
+  internal_code: total_hip_arthroplasty
+  preferred_name: Total hip arthroplasty, primary
+  synonyms: [total hip arthroplasty, THA, total hip replacement, THR, hip replacement, hip arthroplasty, hip replacement surgery, new hip]
+  body_region: hip
+  ambiguity_flags: [laterality_required, surgical_approach_required, weight_bearing_status_required, fixation_not_inferable, surgeon_protocol_required, bilateral_not_supported]
+  icd10cm:
+    - {code: Z96.641, relationship: exact, laterality: right}
+    - {code: Z96.642, relationship: exact, laterality: left}
+    - {code: Z96.643, relationship: exact, laterality: bilateral}
+    - {code: Z96.649, relationship: exact, laterality: unspecified}
+    - {code: Z47.1, relationship: broader, laterality: unspecified}
+    - {code: M16.11, relationship: broader, laterality: right}
+    - {code: M16.12, relationship: broader, laterality: left}
+    - {code: M16.0, relationship: broader, laterality: bilateral}
+sources: []
+claims: []
+concepts:
+  - key: ankle_pump
+    preferred_name: Ankle pumps
+    aliases: [ankle pumping, calf pumps]
+    body_region: hip
+    movement_purpose: calf muscle pumping to move blood and reduce swelling
+    variants:
+      - key: ankle_pump_supine
+        name: Ankle pumps (lying down)
+        assistance: active
+        region: hip
+        joint: ankle
+        starting_position: lying on your back with the legs straight
+        side_behavior: bilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with both legs straight.
+          - Point your toes away from you, then pull them up toward you.
+          - Keep going at a steady pace.
+        target_impairment: [swelling, circulation]
+        functional_goal: [swelling control]
+        tags: [requires_supine, circulation]
+  - key: quad_set
+    preferred_name: Thigh squeeze
+    aliases: [quad set, quadriceps setting]
+    body_region: hip
+    movement_purpose: waking up the thigh muscle
+    variants:
+      - key: quad_set_supine
+        name: Thigh squeeze (lying down, knee straight)
+        assistance: active
+        region: hip
+        joint: tibiofemoral
+        starting_position: lying on your back with the operated leg straight
+        side_behavior: unilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with the operated leg straight.
+          - Tighten the muscle on the front of your thigh so the back of the knee presses down.
+          - Hold, then relax.
+        target_impairment: [quadriceps inhibition]
+        functional_goal: [walking]
+        tags: [requires_supine, isometric]
+        requires_starting_position: true
+  - key: glute_set
+    preferred_name: Buttock squeeze
+    aliases: [glute set, gluteal set]
+    body_region: hip
+    movement_purpose: activating the buttock muscles
+    variants:
+      - key: glute_set_supine
+        name: Buttock squeeze (lying down)
+        assistance: active
+        region: hip
+        joint: hip
+        starting_position: lying on your back
+        side_behavior: bilateral
+        equipment: []
+        setting: [home]
+        step_sequence:
+          - Lie on your back.
+          - Squeeze your buttocks together.
+          - Hold, then relax.
+        target_impairment: [gluteal inhibition]
+        functional_goal: [standing balance]
+        tags: [requires_supine, isometric]
+  - key: heel_slide
+    preferred_name: Heel slide
+    aliases: [supine heel slide, hip and knee bend]
+    body_region: hip
+    movement_purpose: bending the hip and knee a little, within precautions
+    variants:
+      - key: heel_slide_active
+        name: Heel slide (lying down, within the hip precautions)
+        assistance: active
+        region: hip
+        joint: hip
+        movement_plane: sagittal
+        starting_position: lying on your back with the legs straight
+        side_behavior: unilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with your legs straight.
+          - Slide the heel of the operated leg toward your bottom so the hip and knee bend.
+          - Stop before the hip bends past the limit your surgeon set, then slide back slowly.
+        cues: [Keep the knee pointing up; do not let it roll in.]
+        target_impairment: [limited hip flexion]
+        functional_goal: [getting in and out of bed]
+        tags: [requires_supine, range_limited]
+        requires_starting_position: true
+  - key: hip_abduction_supine
+    preferred_name: Leg out to the side (lying down)
+    aliases: [supine hip abduction, leg slide out]
+    body_region: hip
+    movement_purpose: sliding the leg out to the side to work the outer hip
+    variants:
+      - key: abduction_supine_slide
+        name: Leg slide out to the side (lying down)
+        assistance: active
+        region: hip
+        joint: hip
+        movement_plane: frontal
+        starting_position: lying on your back with the legs straight
+        side_behavior: unilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with your legs straight and toes pointing up.
+          - Slide the operated leg out to the side, keeping the knee straight.
+          - Slide it back to the middle — not across the other leg.
+        cues: [Toes up the whole time.]
+        common_errors: [Letting the leg cross the midline on the way back.]
+        target_impairment: [hip abductor weakness]
+        functional_goal: [walking, standing balance]
+        tags: [requires_supine, active_hip_abduction]
+        requires_starting_position: true
+  - key: standing_hip_abduction
+    preferred_name: Standing leg out to the side
+    aliases: [standing hip abduction]
+    body_region: hip
+    movement_purpose: strengthening the outer hip while standing
+    variants:
+      - key: standing_abduction_support
+        name: Standing leg out to the side (holding a counter)
+        assistance: active
+        region: hip
+        joint: hip
+        movement_plane: frontal
+        starting_position: standing tall holding a counter
+        side_behavior: unilateral
+        equipment: [counter or chair]
+        setting: [home]
+        step_sequence:
+          - Stand tall holding a counter or the back of a chair.
+          - Keep the operated leg straight and lift it out to the side.
+          - Lower slowly without crossing the other leg.
+        cues: [Toes pointing forward; do not lean.]
+        target_impairment: [hip abductor weakness]
+        functional_goal: [walking, standing balance]
+        tags: [standing, balance_support, active_hip_abduction]
+  - key: standing_hip_extension
+    preferred_name: Standing leg back
+    aliases: [standing hip extension, leg back]
+    body_region: hip
+    movement_purpose: taking the leg straight back to work the buttock
+    variants:
+      - key: standing_extension_support
+        name: Standing leg back (holding a counter)
+        assistance: active
+        region: hip
+        joint: hip
+        movement_plane: sagittal
+        starting_position: standing tall holding a counter
+        side_behavior: unilateral
+        equipment: [counter or chair]
+        setting: [home]
+        step_sequence:
+          - Stand tall holding a counter.
+          - Keep the knee straight and take the operated leg a small distance behind you.
+          - Bring it back with control, without arching the lower back.
+        cues: [Small movement; keep the toes pointing forward.]
+        common_errors: [Turning the foot out as the leg goes back.]
+        target_impairment: [gluteal weakness]
+        functional_goal: [walking]
+        tags: [standing, balance_support, hip_extension]
+  - key: prone_hip_extension_stretch
+    preferred_name: Lying on your front
+    aliases: [prone lying, prone hip extension stretch]
+    body_region: hip
+    movement_purpose: lying face down to stretch the front of the hip
+    variants:
+      - key: prone_lying_stretch
+        name: Lying on your front (hip stretch)
+        assistance: passive
+        region: hip
+        joint: hip
+        movement_plane: sagittal
+        starting_position: lying face down on a firm surface
+        side_behavior: bilateral
+        equipment: []
+        setting: [home]
+        step_sequence:
+          - Lie face down on a firm surface with the legs straight.
+          - Relax and let the front of the hips settle.
+          - Stay there for the time your PT sets.
+        target_impairment: [hip flexor tightness]
+        functional_goal: [walking upright]
+        tags: [prone, prone_hip_extension, hip_extension_external_rotation]
+        requires_starting_position: true
+  - key: seated_knee_to_chest
+    preferred_name: Seated knee lift
+    aliases: [seated hip flexion, seated marching]
+    body_region: hip
+    movement_purpose: lifting the knee while sitting, which bends the hip past 90 degrees
+    variants:
+      - key: seated_marching
+        name: Seated knee lift (marching)
+        assistance: active
+        region: hip
+        joint: hip
+        movement_plane: sagittal
+        starting_position: sitting on a firm chair
+        side_behavior: unilateral
+        equipment: [chair]
+        setting: [home]
+        step_sequence:
+          - Sit tall on a firm chair.
+          - Lift the knee of the operated leg a small amount, then lower it.
+        target_impairment: [hip flexor weakness]
+        functional_goal: [stairs, getting into a car]
+        tags: [seated, hip_flexion_over_90]
+  - key: bridge
+    preferred_name: Bridge
+    aliases: [glute bridge, hip lift]
+    body_region: hip
+    movement_purpose: lifting the hips off the surface to strengthen the buttocks
+    variants:
+      - key: bridge_double
+        name: Bridge (both feet)
+        assistance: active
+        region: hip
+        joint: hip
+        chain: closed
+        starting_position: lying on your back with both knees bent and feet flat
+        side_behavior: bilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with both knees bent and feet flat.
+          - Squeeze your buttocks and lift your hips a small distance.
+          - Lower slowly.
+        target_impairment: [gluteal weakness]
+        functional_goal: [sit-to-stand, walking]
+        tags: [requires_supine, closed_chain]
+        requires_starting_position: true
+  - key: sit_to_stand
+    preferred_name: Sit to stand
+    aliases: [chair rise, chair stand]
+    body_region: hip
+    movement_purpose: getting up from a raised chair using the legs
+    variants:
+      - key: sit_to_stand_raised
+        name: Sit to stand (raised chair, arms as needed)
+        assistance: active
+        region: hip
+        joint: hip
+        chain: closed
+        starting_position: sitting on a raised firm chair with armrests
+        side_behavior: bilateral
+        equipment: [raised chair]
+        setting: [home, supervised]
+        step_sequence:
+          - Sit toward the front of a raised firm chair, operated leg slightly forward.
+          - Stand up using the armrests as much as you need, without bending forward at the hip past the limit your surgeon set.
+          - Sit back down slowly, operated leg forward.
+        cues: [Keep the chest up as you rise.]
+        target_impairment: [lower limb weakness]
+        functional_goal: [sit-to-stand]
+        tags: [closed_chain, functional]
+  - key: mini_squat
+    preferred_name: Mini squat
+    aliases: [partial squat, small knee bend standing]
+    body_region: hip
+    movement_purpose: bending both knees a little while standing
+    variants:
+      - key: mini_squat_support
+        name: Mini squat (holding a counter)
+        assistance: active
+        region: hip
+        joint: hip
+        chain: closed
+        starting_position: standing with feet shoulder-width apart, hands on a counter
+        side_behavior: bilateral
+        equipment: [counter]
+        setting: [home, supervised]
+        step_sequence:
+          - Stand with your feet shoulder-width apart, hands on a counter.
+          - Bend both knees a small amount, keeping the chest up.
+          - Straighten back up.
+        target_impairment: [lower limb weakness]
+        functional_goal: [sit-to-stand, stairs]
+        tags: [closed_chain, standing]
+  - key: step_up
+    preferred_name: Step up
+    aliases: [step-up, low step up]
+    body_region: hip
+    movement_purpose: stepping up onto a low step with the operated leg
+    variants:
+      - key: step_up_forward_low
+        name: Step up (low step, holding a rail)
+        assistance: active
+        region: hip
+        joint: hip
+        chain: closed
+        starting_position: standing facing a low step, holding a rail
+        side_behavior: unilateral
+        equipment: [step, rail]
+        setting: [home, supervised]
+        step_sequence:
+          - Stand facing a low step, holding a rail.
+          - Step up with the operated leg, bringing the other foot up to join it.
+          - Step down slowly, operated leg last.
+        target_impairment: [hip and knee weakness]
+        functional_goal: [stairs]
+        tags: [closed_chain, standing, stairs]
+  - key: single_leg_stance
+    preferred_name: Single-leg balance
+    aliases: [single leg stance, one-leg balance]
+    body_region: hip
+    movement_purpose: standing on the operated leg to train balance
+    variants:
+      - key: sls_support
+        name: Single-leg balance (near a counter)
+        assistance: active
+        region: hip
+        joint: hip
+        chain: closed
+        starting_position: standing near a counter for safety
+        side_behavior: unilateral
+        equipment: [counter]
+        setting: [home, supervised]
+        step_sequence:
+          - Stand near a counter for safety.
+          - Lift the other foot and balance on the operated leg.
+          - Hold for the time your PT sets, then rest.
+        target_impairment: [balance deficit, hip abductor weakness]
+        functional_goal: [standing balance, stairs]
+        tags: [standing, balance, balance_support]
+        balance_demand: high
+  - key: stationary_bike
+    preferred_name: Stationary bike
+    aliases: [exercise bike, cycling]
+    body_region: hip
+    movement_purpose: cycling for hip motion and endurance, seat high to respect precautions
+    variants:
+      - key: bike_high_seat
+        name: Stationary bike (seat high)
+        assistance: active
+        region: hip
+        joint: hip
+        chain: closed
+        starting_position: seated on a stationary bike with the seat raised
+        side_behavior: bilateral
+        equipment: [stationary bike]
+        setting: [home, supervised]
+        step_sequence:
+          - Sit on the bike with the seat raised so the hip does not bend past the limit your surgeon set.
+          - Pedal slowly with no resistance.
+        target_impairment: [limited hip motion, deconditioning]
+        functional_goal: [cycling, walking endurance]
+        tags: [closed_chain, seated, requires_bike]
+clinical_uses:
+  # Phase 1 — acute / protection
+  - {key: cu_ankle_pump_p1, variant: ankle_pump_supine, phase: acute, goals: [swelling control], dose_envelope: {sets: {null_reason: "Not supplied: clinical lead must author", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, hold_seconds: {null_reason: "Not applicable to a pumping movement; lead to confirm", provenance: unknown}, sessions_per_day: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_quad_set_p1, variant: quad_set_supine, phase: acute, goals: [quadriceps activation], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, hold_seconds: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_glute_set_p1, variant: glute_set_supine, phase: acute, goals: [gluteal activation], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, hold_seconds: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_heel_slide_p1, variant: heel_slide_active, phase: acute, exclusion: Hip precautions and ROM limits must be known., goals: [hip and knee motion within precautions], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, range_max_deg: {null_reason: "Hip flexion limit from the surgeon's precautions; never assumed", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_abd_slide_p1, variant: abduction_supine_slide, phase: acute, exclusion: Excluded after a lateral approach until the abductor repair is cleared (rule slot)., goals: [hip abductor activation], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_stand_abd_p1, variant: standing_abduction_support, phase: acute, goals: [hip strength for gait], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_stand_ext_p1, variant: standing_extension_support, phase: acute, goals: [gluteal strength], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_sit_to_stand_p1, variant: sit_to_stand_raised, phase: acute, goals: [sit-to-stand], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  # Phase 2 — early strengthening
+  - {key: cu_bridge_p2, variant: bridge_double, phase: early_strengthening, goals: [gluteal strength], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, hold_seconds: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_mini_squat_p2, variant: mini_squat_support, phase: early_strengthening, exclusion: Weight-bearing status must permit full weight., goals: [lower limb strength], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, range_max_deg: {null_reason: "Depth from clinical lead", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_bike_p2, variant: bike_high_seat, phase: early_strengthening, goals: [hip motion, endurance], dose_envelope: {session_minutes: {null_reason: "Not supplied", provenance: unknown}, days_per_week: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_sls_p2, variant: sls_support, phase: early_strengthening, goals: [balance], dose_envelope: {hold_seconds: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_prone_p2, variant: prone_lying_stretch, phase: early_strengthening, exclusion: Excluded early after an anterior approach (rule slot)., goals: [hip flexor length], dose_envelope: {hold_seconds: {null_reason: "Not supplied", provenance: unknown}, sessions_per_day: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_seated_march_p2, variant: seated_marching, phase: early_strengthening, exclusion: Excluded while posterior precautions apply (rule slot)., goals: [hip flexor strength], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  # Phase 3 — functional strengthening
+  - {key: cu_step_up_p3, variant: step_up_forward_low, phase: functional_strengthening, goals: [stairs], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_bike_p3, variant: bike_high_seat, phase: functional_strengthening, goals: [endurance], dose_envelope: {session_minutes: {null_reason: "Not supplied", provenance: unknown}, days_per_week: {null_reason: "Not supplied", provenance: unknown}, load_value: {null_reason: "Resistance not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_sls_p3, variant: sls_support, phase: functional_strengthening, goals: [balance], dose_envelope: {hold_seconds: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+rules:
+  - key: req_side
+    name: Operated side must be established
+    kind: required_input
+    expression: {op: known, field: affected_side}
+    action: {type: require_field, field: affected_side, reason: "Laterality is not established"}
+    severity: block
+  - key: req_procedure
+    name: Procedure, date and surgical approach are required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: procedure}, {op: known, field: procedure_date}, {op: known, field: surgical_approach}]}
+    action: {type: require_field, fields: [procedure, procedure_date, surgical_approach], reason: "The approach decides which movements are restricted; it is never inferred"}
+    severity: block
+  - key: req_associated
+    name: Associated procedures must be known
+    kind: required_input
+    expression: {op: known, field: associated_procedures}
+    action: {type: require_field, field: associated_procedures, reason: "Revision, periprosthetic fracture or abductor repair are different pathways"}
+    severity: block
+  - key: req_surgeon_status
+    name: Weight-bearing status, fixation and surgeon restrictions are required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: weight_bearing_status}, {op: known, field: fixation}, {op: known, field: surgeon_restrictions}, {op: known, field: rom_restrictions}]}
+    action: {type: require_field, fields: [weight_bearing_status, fixation, surgeon_restrictions, rom_restrictions], reason: "Weight bearing and hip precautions are surgeon-set and never assumed"}
+    severity: block
+  - key: req_current_assessment
+    name: Current assessment is required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: hip_flexion_active_deg}, {op: known, field: assistive_device}, {op: known, field: wound_status}, {op: known, field: pain_movement}, {op: known, field: concerning_findings}]}
+    action: {type: require_field, fields: [hip_flexion_active_deg, assistive_device, wound_status, pain_movement, concerning_findings], reason: "Current hip measure, device, wound state and the concern screen are required"}
+    severity: block
+  - key: concern_findings_present
+    name: Concerning findings reported
+    kind: concern_screen
+    expression: {op: and, args: [{op: known, field: concerning_findings}, {op: ne, field: concerning_findings, value: []}]}
+    action: {type: block_for_review, message: "Concerning findings after a hip replacement (sudden hip pain with a short or turned-out leg, calf pain or swelling, fever, wound drainage, a fall) route to the surgeon or clinician per approved rule (unsigned)."}
+    severity: block
+  - key: wound_concern
+    name: Wound concern reported
+    kind: concern_screen
+    expression: {op: eq, field: wound_status, value: concern}
+    action: {type: block_for_review, message: "A wound concern is a surgeon question before any loading progression."}
+    severity: block
+  - key: combined_procedure
+    name: Not a primary uncomplicated THA
+    kind: restriction
+    expression: {op: and, args: [{op: known, field: associated_procedures}, {op: ne, field: associated_procedures, value: []}]}
+    action: {type: block_for_review, message: "Revision, periprosthetic fracture fixation or abductor repair are not merged with the primary pathway; a separate approved pathway is required."}
+    severity: block
+  - key: posterior_precautions
+    name: Posterior approach precautions (executes only once signed)
+    kind: restriction
+    expression: {op: eq, field: surgical_approach, value: posterior}
+    action: {type: exclude_variant, tags: [hip_flexion_over_90, adduction_past_midline, hip_internal_rotation]}
+    severity: block
+  - key: anterior_precautions
+    name: Anterior approach precautions (executes only once signed)
+    kind: restriction
+    expression: {op: eq, field: surgical_approach, value: anterior}
+    action: {type: exclude_variant, tags: [hip_extension_external_rotation, prone_hip_extension]}
+    severity: block
+  - key: lateral_precautions
+    name: Lateral approach precautions (executes only once signed)
+    kind: restriction
+    expression: {op: eq, field: surgical_approach, value: lateral}
+    action: {type: exclude_variant, tags: [active_hip_abduction]}
+    severity: block
+  - key: protected_weight_bearing
+    name: Protected weight bearing excludes standing loaded work
+    kind: restriction
+    expression: {op: in, field: weight_bearing_status, value: [pwb, tdwb, nwb]}
+    action: {type: exclude_variant, tags: [closed_chain, stairs]}
+    severity: block
+  - key: worsening_response
+    name: Worsening response after prior session
+    kind: next_day_response
+    expression: {op: eq, field: prior_session_response, value: worse}
+    action: {type: block_for_review, message: "Worsened response; routing requires an approved rule."}
+    severity: block
+  - key: branch_primary_tha
+    name: Primary uncomplicated THA
+    kind: eligibility
+    expression: {op: and, args: [{op: eq, field: procedure, value: total_hip_arthroplasty}, {op: eq, field: associated_procedures, value: []}]}
+    action: {type: inform, message: primary uncomplicated THA pathway}
+  - key: phase_entry_criteria_slot
+    name: Phase advancement criteria (RULE SLOT — unsigned)
+    kind: progression
+    expression: {op: eq, field: functional_criteria_met, value: true}
+    action: {type: inform, message: "Advance only when PT-confirmed criteria are met; elapsed time is never a criterion on its own."}
+  - key: earliest_start_slot
+    name: Earliest phase start (RULE SLOT — floor unsigned)
+    kind: progression
+    expression: {op: known, field: days_since_procedure}
+    action: {type: inform, message: "A signed rule will combine days_since_procedure with criteria as a floor; until signed this only confirms the date is known."}
+  - key: precaution_duration_slot
+    name: Precaution duration (RULE SLOT — weeks unsigned)
+    kind: restriction
+    expression: {op: and, args: [{op: known, field: surgical_approach}, {op: known, field: days_since_procedure}]}
+    action: {type: inform, message: "A signed rule will lift approach-specific precautions after the surgeon's stated number of weeks; until signed they stand indefinitely."}
+protocols:
+  - key: tha_primary
+    name: Primary total hip arthroplasty — postoperative pathway (structure only)
+    population_description: Adults after primary, uncomplicated, unilateral total hip arthroplasty with surgeon protocol and approach known
+    branch_conditions: [procedure = total_hip_arthroplasty, no associated procedures]
+    eligibility_rules: [branch_primary_tha]
+    required_inputs: [affected_side, procedure, procedure_date, surgical_approach, associated_procedures, weight_bearing_status, fixation, surgeon_restrictions, rom_restrictions, hip_flexion_active_deg, assistive_device, wound_status, pain_movement, concerning_findings]
+    phases:
+      - key: p1_acute
+        name: Protect the hip and get moving
+        goals: [swelling and pain control, safe transfers within precautions, household walking with the device, hip and thigh muscle activation]
+        window: {anchor: procedure, start: 0, end: 2, unit: weeks, provisional: true, text: "About the first two weeks after surgery — typical published window, unsigned; confirm against the surgeon's protocol", provenance: unknown}
+        items: [cu_ankle_pump_p1, cu_quad_set_p1, cu_glute_set_p1, cu_heel_slide_p1, cu_abd_slide_p1, cu_stand_abd_p1, cu_stand_ext_p1, cu_sit_to_stand_p1]
+        entry_rules: []
+        restrictions: [weight bearing per surgeon, hip precautions per approach (posterior — no bending past the surgeon's limit, no crossing the legs, no turning the foot in; anterior — no taking the leg back and out together; lateral — no active leg-out-to-the-side until cleared), raised seat and toilet seat, pillow between the knees in bed, sock aid and long shoehorn, use the walking device until cleared]
+        review_checkpoint: PT confirms wound state, device, and that precautions are understood before any loaded work
+        advance_criteria: [PT-confirmed criteria (independent with device, wound closed, precautions understood) — thresholds unsigned]
+        hold_criteria: [pain or swelling increasing, wound concern]
+        regress_criteria: [sudden hip pain with a short or turned-out leg, calf pain, fever, drainage — route to surgeon]
+        basis: []
+        gaps: [doses not supplied, thresholds not signed, windows are typical published values not signed, precaution durations not signed]
+      - key: p2_early_strength
+        name: Build strength
+        goals: [wean the walking device, normal gait, hip strength within precautions]
+        window: {anchor: procedure, start: 2, end: 6, unit: weeks, provisional: true, text: "About weeks two to six — typical published window, unsigned", provenance: unknown}
+        items: [cu_bridge_p2, cu_mini_squat_p2, cu_bike_p2, cu_sls_p2, cu_stand_abd_p1, cu_stand_ext_p1, cu_prone_p2, cu_seated_march_p2]
+        entry_rules: [phase_entry_criteria_slot]
+        restrictions: [weight bearing per surgeon, hip precautions per approach until the surgeon lifts them]
+        review_checkpoint: PT confirms criteria; precautions lifted only on the surgeon's word
+        advance_criteria: [PT-confirmed criteria — thresholds unsigned]
+        hold_criteria: [pain increase with loading]
+        regress_criteria: [pain or swelling increase for more than a day after a session]
+        basis: []
+        gaps: [doses not supplied, thresholds not signed, windows not signed]
+      - key: p3_functional
+        name: Functional strengthening
+        goals: [community walking, stairs without a rail, single-leg balance, return to low-impact activity]
+        window: {anchor: procedure, start: 6, end: 12, unit: weeks, provisional: true, text: "About weeks six to twelve — typical published window, unsigned", provenance: unknown}
+        items: [cu_step_up_p3, cu_bike_p3, cu_sls_p3, cu_bridge_p2, cu_mini_squat_p2]
+        entry_rules: [phase_entry_criteria_slot]
+        restrictions: [no running or jumping; low-impact only unless the surgeon says otherwise]
+        review_checkpoint: PT confirms criteria and surgeon clearance for activity
+        advance_criteria: [PT-confirmed criteria — thresholds unsigned]
+        hold_criteria: [pain with loading]
+        regress_criteria: [pain increase]
+        basis: []
+        gaps: [doses not supplied, thresholds not signed, windows not signed]
+    monitoring: [pain, swelling, hip motion within precautions, gait and device, wound, calf symptoms, leg length or rotation change]
+    reassessment: {timing: "per surgeon protocol", provenance: unknown}
+    recovery_horizon: {text: "Return to low-impact activity is commonly described over three to six months; depends on the surgeon protocol and criteria; not signed", provenance: unknown}
+    provenance: {kind: structural_placeholder, refs: []}
+applicability: []
+intake_prompts:
+  affected_side: Which hip was replaced
+  procedure: The procedure performed
+  procedure_date: The date of surgery anchors every phase window
+  surgical_approach: Posterior, anterior or lateral — decides which movements are restricted
+  associated_procedures: Anything beyond a primary replacement changes the pathway
+  weight_bearing_status: Weight-bearing status is surgeon-set and never assumed
+  fixation: Cemented or uncemented fixation bears on weight bearing
+  surgeon_restrictions: The surgeon's restrictions and precautions, in their words
+  rom_restrictions: The hip flexion limit and any other range limit from the surgeon
+  hip_flexion_active_deg: Current active hip flexion
+  assistive_device: Walker, crutches, cane or none
+  wound_status: Wound healing, closed, or a concern
+  pain_movement: Pain with movement now
+  concerning_findings: Concern screen must be completed (dislocation signs, calf symptoms, fever, drainage, falls)

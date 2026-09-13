@@ -428,9 +428,34 @@ def narrative_matches(opt: PlanOption, narrative: str) -> bool:
 
 
 # ---------------------------------------------------------------- main entry
+def derive_time_fields(intake: Intake, assessment_time: datetime | None) -> Intake:
+    """Fill `days_since_procedure` from a known procedure date and the assessment time.
+
+    Post-operative pathways have real earliest-start floors ("not before day 14, and only when criteria are met"),
+    and a rule can only test a field. The date is a chart fact the PT already entered; the arithmetic is not a
+    clinical judgement, so doing it here is not inventing anything. A client-supplied value is discarded: the
+    field is derived or it is unknown. Elapsed time still never advances a phase on its own (_current_phase).
+    """
+    from moveai_contracts.intake import DERIVED_FIELDS, IntakeField
+
+    fields = {k: v for k, v in intake.fields.items() if k not in DERIVED_FIELDS}
+    pd = intake.get("procedure_date")
+    if pd.is_known:
+        try:
+            when = datetime.fromisoformat(str(pd.value)).date()
+            now = (assessment_time or datetime.now(UTC)).date()
+            days = (now - when).days
+            if days >= 0:
+                fields["days_since_procedure"] = IntakeField.known(days, unit="days", provenance="derived")
+        except ValueError:
+            pass  # an unparseable date stays unknown; a rule that needs it will say so
+    return Intake(fields=fields)
+
+
 def plan_options(conn: psycopg.Connection, *, tenant_id: Any, user_id: Any, submission: CaseSubmission) -> PlanOptionsResponse:
     proposed, notes = nar.extract(submission.narrative)
     intake = nar.merge(submission.intake, proposed)
+    intake = derive_time_fields(intake, submission.assessment_time)
     conditions = all_conditions(conn)
     candidates = nar.candidate_conditions(conditions, submission.narrative, intake)
     release = None

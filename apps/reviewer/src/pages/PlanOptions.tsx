@@ -14,6 +14,10 @@ const FIELDS: [string, string][] = [
   ["irritability", "high|moderate|low"], ["severity", ""], ["injury_location", ""], ["rom_active", "{…} deg"], ["rom_passive", "{…} deg"], ["functional_limitations", "[]"], ["goals", "[]"],
   ["intended_activity", "[]"], ["comorbidities", "[]"], ["concerning_findings", "[] = screened, none"], ["prior_interventions", "[]"], ["prior_session_response", "better|same|worse"],
   ["exercise_tolerance", ""], ["equipment", "[]"], ["can_assume_starting_position", "true|false"], ["session_time_minutes", "min"], ["language", ""], ["functional_criteria_met", "true|false"],
+  // Post-arthroplasty facts a rule can test (days_since_procedure is derived by the planner, so it is not listed).
+  ["weight_bearing_status", "wbat|pwb|tdwb|nwb"], ["surgical_approach", "posterior|anterior|lateral|other"], ["fixation", "cemented|uncemented|hybrid"],
+  ["knee_flexion_active_deg", "deg"], ["knee_extension_deficit_deg", "deg"], ["extension_lag_deg", "deg"], ["hip_flexion_active_deg", "deg"],
+  ["assistive_device", "walker|crutches|cane|none"], ["wound_status", "healing|closed|concern"], ["effusion", "none|mild|moderate|severe"],
 ];
 
 function parse(v: string): unknown {
