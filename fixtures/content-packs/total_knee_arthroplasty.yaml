@@ -1,0 +1,617 @@
+pack: total_knee_arthroplasty
+version: 0.1.0
+family: total_knee_arthroplasty
+approval_state: unsigned_placeholder
+label: "Primary total knee arthroplasty — UNSIGNED PLACEHOLDER, not a treatment protocol"
+# Structure only. Every dose is null with a reason; every window is provisional with provenance unknown; every
+# numeric criterion is a rule slot marked as such. The phases, exercises and required inputs mirror what commonly
+# published post-TKA protocols contain, so a clinical lead has a shape to fill in and sign — nothing here is a
+# prescription until they do. Population: primary, uncomplicated, unilateral TKA with no surgeon-specific
+# restrictions beyond those entered at intake. Revision, tubercle osteotomy, periprosthetic fracture and
+# extensor-mechanism repair are different pathways and are blocked by the associated-procedures rule.
+condition:
+  internal_code: total_knee_arthroplasty
+  preferred_name: Total knee arthroplasty, primary
+  synonyms: [total knee arthroplasty, TKA, total knee replacement, TKR, knee replacement, knee arthroplasty, knee replacement surgery, new knee]
+  body_region: knee
+  ambiguity_flags: [laterality_required, weight_bearing_status_required, fixation_not_inferable, surgeon_protocol_required, bilateral_not_supported]
+  icd10cm:
+    - {code: Z96.651, relationship: exact, laterality: right}
+    - {code: Z96.652, relationship: exact, laterality: left}
+    - {code: Z96.653, relationship: exact, laterality: bilateral}
+    - {code: Z96.659, relationship: exact, laterality: unspecified}
+    - {code: Z47.1, relationship: broader, laterality: unspecified}
+    - {code: M17.11, relationship: broader, laterality: right}
+    - {code: M17.12, relationship: broader, laterality: left}
+    - {code: M17.0, relationship: broader, laterality: bilateral}
+sources: []
+claims: []
+concepts:
+  - key: ankle_pump
+    preferred_name: Ankle pumps
+    aliases: [ankle pumping, calf pumps, foot pumps]
+    body_region: knee
+    movement_purpose: calf muscle pumping to move blood and reduce swelling
+    variants:
+      - key: ankle_pump_supine
+        name: Ankle pumps (lying down)
+        assistance: active
+        region: knee
+        joint: ankle
+        starting_position: lying on your back with the legs straight
+        side_behavior: bilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with both legs straight.
+          - Point your toes away from you, then pull them up toward you.
+          - Keep going at a steady pace.
+        cues: [Move only the ankle; keep the knee still.]
+        target_impairment: [swelling, circulation]
+        functional_goal: [swelling control]
+        tags: [requires_supine, circulation]
+  - key: quad_set
+    preferred_name: Thigh squeeze
+    aliases: [quad set, quadriceps setting, static quad, quad squeeze]
+    body_region: knee
+    movement_purpose: waking up the thigh muscle without bending the knee
+    variants:
+      - key: quad_set_supine
+        name: Thigh squeeze (lying down, knee straight)
+        assistance: active
+        region: knee
+        joint: tibiofemoral
+        starting_position: lying on your back with the operated leg straight
+        side_behavior: unilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with the operated leg straight.
+          - Tighten the muscle on the front of your thigh so the back of the knee presses down.
+          - Hold, then relax.
+        cues: [Pull the kneecap up toward your hip; keep the toes pointing up.]
+        common_errors: [Lifting the heel instead of pressing the knee down.]
+        target_impairment: [quadriceps inhibition]
+        functional_goal: [knee control, walking]
+        tags: [requires_supine, isometric]
+        requires_starting_position: true
+  - key: glute_set
+    preferred_name: Buttock squeeze
+    aliases: [glute set, gluteal set, buttock squeeze]
+    body_region: knee
+    movement_purpose: activating the hip muscles while lying down
+    variants:
+      - key: glute_set_supine
+        name: Buttock squeeze (lying down)
+        assistance: active
+        region: knee
+        joint: hip
+        starting_position: lying on your back
+        side_behavior: bilateral
+        equipment: []
+        setting: [home]
+        step_sequence:
+          - Lie on your back.
+          - Squeeze your buttocks together.
+          - Hold, then relax.
+        target_impairment: [gluteal inhibition]
+        functional_goal: [standing balance]
+        tags: [requires_supine, isometric]
+  - key: heel_slide
+    preferred_name: Heel slide
+    aliases: [supine heel slide, knee bend slide, knee flexion slide]
+    body_region: knee
+    movement_purpose: bending the knee a little further each time
+    variants:
+      - key: heel_slide_active
+        name: Heel slide (lying down)
+        assistance: active
+        region: knee
+        joint: tibiofemoral
+        movement_plane: sagittal
+        starting_position: lying on your back with the legs straight
+        side_behavior: unilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with your legs straight.
+          - Slide the heel of the operated leg toward your bottom so the knee bends.
+          - Go as far as is comfortable, hold, then slide back slowly.
+        cues: [Keep the heel on the surface the whole time.]
+        common_errors: [Letting the knee roll outward.]
+        target_impairment: [limited knee flexion]
+        functional_goal: [sit-to-stand, stairs]
+        tags: [requires_supine, range_limited]
+        requires_starting_position: true
+      - key: heel_slide_assisted_strap
+        name: Heel slide with a strap (lying down)
+        assistance: active_assisted
+        region: knee
+        joint: tibiofemoral
+        movement_plane: sagittal
+        starting_position: lying on your back, a strap or towel looped around the foot
+        side_behavior: unilateral
+        equipment: [strap]
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with a strap or towel around the foot of the operated leg.
+          - Slide the heel toward your bottom, using the strap to help the knee bend a little further.
+          - Hold, then slide back slowly.
+        cues: [Use the strap to help, not to force.]
+        target_impairment: [limited knee flexion]
+        functional_goal: [sit-to-stand, stairs]
+        tags: [requires_supine, range_limited]
+        requires_starting_position: true
+  - key: short_arc_quad
+    preferred_name: Short-arc knee straightening
+    aliases: [short arc quad, SAQ, knee extension over a roll]
+    body_region: knee
+    movement_purpose: straightening the knee through the last part of its range
+    variants:
+      - key: saq_supine_roll
+        name: Short-arc knee straightening (over a rolled towel)
+        assistance: active
+        region: knee
+        joint: tibiofemoral
+        movement_plane: sagittal
+        starting_position: lying on your back with a rolled towel under the operated knee
+        side_behavior: unilateral
+        equipment: [rolled towel]
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with a rolled towel under the operated knee.
+          - Straighten the knee by lifting the foot, keeping the back of the knee on the towel.
+          - Hold, then lower slowly.
+        target_impairment: [quadriceps weakness, extension lag]
+        functional_goal: [walking]
+        tags: [requires_supine]
+        requires_starting_position: true
+  - key: straight_leg_raise
+    preferred_name: Straight leg raise
+    aliases: [SLR, leg lift]
+    body_region: knee
+    movement_purpose: lifting the straight leg to strengthen the thigh
+    variants:
+      - key: slr_active
+        name: Straight leg raise (lying down)
+        assistance: active
+        region: knee
+        joint: tibiofemoral
+        starting_position: lying on your back, the other knee bent with the foot flat
+        side_behavior: unilateral
+        equipment: []
+        setting: [home, supervised]
+        step_sequence:
+          - Lie on your back with the other knee bent and that foot flat.
+          - Tighten the thigh of the operated leg and keep the knee straight.
+          - Lift the leg to the height of the other knee, then lower slowly.
+        cues: [Lock the knee straight before you lift.]
+        common_errors: [Letting the knee bend as the leg comes up.]
+        target_impairment: [quadriceps weakness, extension lag]
+        functional_goal: [walking, getting in and out of a car]
+        tags: [requires_supine]
+        requires_starting_position: true
+  - key: heel_prop
+    preferred_name: Heel prop for knee straightening
+    aliases: [heel prop, prone hang alternative, extension hang]
+    body_region: knee
+    movement_purpose: letting the knee settle into full straightness
+    variants:
+      - key: heel_prop_supine
+        name: Heel prop (lying down, heel on a roll)
+        assistance: passive
+        region: knee
+        joint: tibiofemoral
+        movement_plane: sagittal
+        starting_position: lying on your back with the heel resting on a rolled towel and nothing under the knee
+        side_behavior: unilateral
+        equipment: [rolled towel]
+        setting: [home]
+        step_sequence:
+          - Lie on your back and rest the heel of the operated leg on a rolled towel.
+          - Leave nothing under the knee and let it relax toward straight.
+          - Stay there for the time your PT sets.
+        cues: [Relax the thigh; gravity does the work.]
+        common_errors: [Putting a pillow under the knee.]
+        target_impairment: [extension deficit]
+        functional_goal: [walking without a limp]
+        tags: [requires_supine, extension]
+        requires_starting_position: true
+  - key: seated_knee_flexion
+    preferred_name: Seated knee bend
+    aliases: [seated knee flexion, chair knee bend, seated heel slide]
+    body_region: knee
+    movement_purpose: bending the knee while sitting, with help from the other leg
+    variants:
+      - key: seated_flexion_assisted
+        name: Seated knee bend (helped by the other leg)
+        assistance: active_assisted
+        region: knee
+        joint: tibiofemoral
+        movement_plane: sagittal
+        starting_position: sitting on a firm chair, feet on the floor
+        side_behavior: unilateral
+        equipment: [chair]
+        setting: [home, supervised]
+        step_sequence:
+          - Sit on a firm chair with both feet on the floor.
+          - Slide the foot of the operated leg back under the chair so the knee bends.
+          - Use the other foot to gently push it a little further, hold, then relax.
+        target_impairment: [limited knee flexion]
+        functional_goal: [sit-to-stand, stairs, cycling]
+        tags: [seated, range_limited]
+  - key: standing_hip_abduction
+    preferred_name: Standing leg out to the side
+    aliases: [standing hip abduction, side leg lift standing]
+    body_region: knee
+    movement_purpose: strengthening the hip muscles that keep the knee steady
+    variants:
+      - key: standing_abduction_support
+        name: Standing leg out to the side (holding a counter)
+        assistance: active
+        region: knee
+        joint: hip
+        movement_plane: frontal
+        starting_position: standing tall holding a counter or the back of a chair
+        side_behavior: unilateral
+        equipment: [counter or chair]
+        setting: [home]
+        step_sequence:
+          - Stand tall holding a counter or the back of a chair.
+          - Keep the operated leg straight and lift it out to the side.
+          - Lower slowly.
+        cues: [Keep the toes pointing forward; do not lean.]
+        target_impairment: [hip abductor weakness]
+        functional_goal: [standing balance, walking]
+        tags: [standing, balance_support]
+  - key: mini_squat
+    preferred_name: Mini squat
+    aliases: [partial squat, small knee bend standing, wall mini squat]
+    body_region: knee
+    movement_purpose: bending both knees a little while standing
+    variants:
+      - key: mini_squat_support
+        name: Mini squat (holding a counter)
+        assistance: active
+        region: knee
+        joint: tibiofemoral
+        chain: closed
+        starting_position: standing with feet shoulder-width apart, hands on a counter
+        side_behavior: bilateral
+        equipment: [counter]
+        setting: [home, supervised]
+        step_sequence:
+          - Stand with your feet shoulder-width apart, hands on a counter.
+          - Bend both knees a small amount, keeping the knees over the toes.
+          - Straighten back up.
+        cues: [Only go as low as your PT set; keep the weight even on both feet.]
+        common_errors: [Letting the knees drift inward.]
+        target_impairment: [quadriceps weakness]
+        functional_goal: [sit-to-stand, stairs]
+        tags: [closed_chain, standing]
+  - key: sit_to_stand
+    preferred_name: Sit to stand
+    aliases: [chair rise, chair stand, sit-to-stand]
+    body_region: knee
+    movement_purpose: getting up from a chair using the legs
+    variants:
+      - key: sit_to_stand_arms
+        name: Sit to stand (using the arms as needed)
+        assistance: active
+        region: knee
+        joint: tibiofemoral
+        chain: closed
+        starting_position: sitting on a firm chair with armrests, feet flat
+        side_behavior: bilateral
+        equipment: [chair]
+        setting: [home, supervised]
+        step_sequence:
+          - Sit toward the front of a firm chair with your feet flat.
+          - Lean forward and stand up, using the armrests as much as you need.
+          - Sit back down slowly.
+        cues: [Nose over toes as you stand.]
+        target_impairment: [lower limb weakness]
+        functional_goal: [sit-to-stand]
+        tags: [closed_chain, functional]
+  - key: step_up
+    preferred_name: Step up
+    aliases: [step-up, forward step up, low step up]
+    body_region: knee
+    movement_purpose: stepping up onto a low step with the operated leg
+    variants:
+      - key: step_up_forward_low
+        name: Step up (low step, holding a rail)
+        assistance: active
+        region: knee
+        joint: tibiofemoral
+        chain: closed
+        starting_position: standing facing a low step, holding a rail
+        side_behavior: unilateral
+        equipment: [step, rail]
+        setting: [home, supervised]
+        step_sequence:
+          - Stand facing a low step, holding a rail.
+          - Step up with the operated leg, bringing the other foot up to join it.
+          - Step down slowly, operated leg last.
+        cues: [Keep the knee in line with the second toe.]
+        target_impairment: [quadriceps weakness]
+        functional_goal: [stairs]
+        tags: [closed_chain, standing, stairs]
+  - key: stationary_bike
+    preferred_name: Stationary bike
+    aliases: [exercise bike, cycling, bike rocking]
+    body_region: knee
+    movement_purpose: cycling to gain knee bend and keep the joint moving
+    variants:
+      - key: bike_rocking
+        name: Stationary bike (rocking back and forth)
+        assistance: active
+        region: knee
+        joint: tibiofemoral
+        chain: closed
+        starting_position: seated on a stationary bike with the seat high
+        side_behavior: bilateral
+        equipment: [stationary bike]
+        setting: [home, supervised]
+        step_sequence:
+          - Sit on the bike with the seat set high.
+          - Rock the pedals back and forth as far as the knee comfortably allows.
+          - When you can get all the way round, pedal slowly with no resistance.
+        cues: [Lower the seat a little as the knee bends more.]
+        target_impairment: [limited knee flexion]
+        functional_goal: [cycling, stairs]
+        tags: [closed_chain, seated, requires_bike]
+  - key: terminal_knee_extension
+    preferred_name: Knee straightening with a band
+    aliases: [terminal knee extension, TKE, band knee extension]
+    body_region: knee
+    movement_purpose: straightening the knee fully against a band while standing
+    variants:
+      - key: tke_band_standing
+        name: Knee straightening with a band (standing)
+        assistance: resisted
+        region: knee
+        joint: tibiofemoral
+        chain: closed
+        load_mode: elastic_band
+        starting_position: standing with a band looped behind the operated knee and anchored in front
+        side_behavior: unilateral
+        equipment: [elastic band]
+        setting: [home, supervised]
+        step_sequence:
+          - Loop a band behind the operated knee and anchor it in front of you.
+          - Let the knee bend slightly, then straighten it fully against the band.
+          - Hold, then let it bend again slowly.
+        target_impairment: [extension lag, quadriceps weakness]
+        functional_goal: [walking without a limp]
+        tags: [closed_chain, standing, strengthening]
+  - key: calf_raise
+    preferred_name: Heel raise
+    aliases: [calf raise, heel rise]
+    body_region: knee
+    movement_purpose: rising onto the toes to strengthen the calf
+    variants:
+      - key: calf_raise_support
+        name: Heel raise (holding a counter)
+        assistance: active
+        region: knee
+        joint: ankle
+        chain: closed
+        starting_position: standing holding a counter
+        side_behavior: bilateral
+        equipment: [counter]
+        setting: [home]
+        step_sequence:
+          - Stand holding a counter.
+          - Rise up onto your toes, then lower slowly.
+        target_impairment: [calf weakness]
+        functional_goal: [walking]
+        tags: [closed_chain, standing]
+  - key: single_leg_stance
+    preferred_name: Single-leg balance
+    aliases: [single leg stance, one-leg balance]
+    body_region: knee
+    movement_purpose: standing on the operated leg to train balance
+    variants:
+      - key: sls_support
+        name: Single-leg balance (near a counter)
+        assistance: active
+        region: knee
+        joint: tibiofemoral
+        chain: closed
+        starting_position: standing near a counter for safety
+        side_behavior: unilateral
+        equipment: [counter]
+        setting: [home, supervised]
+        step_sequence:
+          - Stand near a counter for safety.
+          - Lift the other foot and balance on the operated leg.
+          - Hold for the time your PT sets, then rest.
+        target_impairment: [balance deficit]
+        functional_goal: [standing balance, stairs]
+        tags: [standing, balance, balance_support]
+        balance_demand: high
+clinical_uses:
+  # Phase 1 — acute / protection
+  - {key: cu_ankle_pump_p1, variant: ankle_pump_supine, phase: acute, indication: Circulation and swelling control from day one., goals: [swelling control], dose_envelope: {sets: {null_reason: "Not supplied: clinical lead must author", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, hold_seconds: {null_reason: "Not applicable to a pumping movement; lead to confirm", provenance: unknown}, sessions_per_day: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_quad_set_p1, variant: quad_set_supine, phase: acute, indication: Quadriceps activation without knee motion., goals: [quadriceps activation], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, hold_seconds: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_glute_set_p1, variant: glute_set_supine, phase: acute, goals: [gluteal activation], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, hold_seconds: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_heel_slide_p1, variant: heel_slide_assisted_strap, phase: acute, indication: Knee flexion within the surgeon-permitted range., exclusion: Any ROM restriction that is unknown blocks this item., goals: [knee flexion], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, range_max_deg: {null_reason: "From surgeon restrictions; never assumed", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_saq_p1, variant: saq_supine_roll, phase: acute, goals: [terminal extension], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, hold_seconds: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_heel_prop_p1, variant: heel_prop_supine, phase: acute, indication: Full passive extension is the first ROM priority., goals: [full extension], dose_envelope: {hold_seconds: {null_reason: "Not supplied", provenance: unknown}, sessions_per_day: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_slr_p1, variant: slr_active, phase: acute, indication: Once the quad set is reliable and the extension lag is small., goals: [quadriceps strength], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_seated_flex_p1, variant: seated_flexion_assisted, phase: acute, goals: [knee flexion], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, range_max_deg: {null_reason: "From surgeon restrictions", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_stand_abd_p1, variant: standing_abduction_support, phase: acute, goals: [hip strength for gait], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  # Phase 2 — early strengthening and ROM restoration
+  - {key: cu_heel_slide_p2, variant: heel_slide_active, phase: early_strengthening, goals: [knee flexion], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_bike_p2, variant: bike_rocking, phase: early_strengthening, goals: [knee flexion, endurance], dose_envelope: {session_minutes: {null_reason: "Not supplied", provenance: unknown}, days_per_week: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_mini_squat_p2, variant: mini_squat_support, phase: early_strengthening, exclusion: Weight-bearing status must be known and permit full weight., goals: [quadriceps strength], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, range_max_deg: {null_reason: "Squat depth from clinical lead", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_sit_to_stand_p2, variant: sit_to_stand_arms, phase: early_strengthening, goals: [sit-to-stand], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_tke_p2, variant: tke_band_standing, phase: early_strengthening, goals: [terminal extension], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, load_value: {null_reason: "Band grade not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_calf_raise_p2, variant: calf_raise_support, phase: early_strengthening, goals: [calf strength], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_sls_p2, variant: sls_support, phase: early_strengthening, goals: [balance], dose_envelope: {hold_seconds: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  # Phase 3 — functional strengthening
+  - {key: cu_step_up_p3, variant: step_up_forward_low, phase: functional_strengthening, goals: [stairs], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_mini_squat_p3, variant: mini_squat_support, phase: functional_strengthening, goals: [quadriceps strength], dose_envelope: {sets: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}, range_max_deg: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_bike_p3, variant: bike_rocking, phase: functional_strengthening, goals: [endurance], dose_envelope: {session_minutes: {null_reason: "Not supplied", provenance: unknown}, days_per_week: {null_reason: "Not supplied", provenance: unknown}, load_value: {null_reason: "Resistance not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+  - {key: cu_sls_p3, variant: sls_support, phase: functional_strengthening, goals: [balance], dose_envelope: {hold_seconds: {null_reason: "Not supplied", provenance: unknown}, repetitions: {null_reason: "Not supplied", provenance: unknown}}, supporting_claims: [], directness: unknown, support_category: insufficient_support}
+rules:
+  - key: req_side
+    name: Operated side must be established
+    kind: required_input
+    expression: {op: known, field: affected_side}
+    action: {type: require_field, field: affected_side, reason: "Laterality is not established"}
+    severity: block
+  - key: req_procedure
+    name: Procedure and date are required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: procedure}, {op: known, field: procedure_date}]}
+    action: {type: require_field, fields: [procedure, procedure_date], reason: "The procedure and its date anchor every phase window"}
+    severity: block
+  - key: req_associated
+    name: Associated procedures must be known
+    kind: required_input
+    expression: {op: known, field: associated_procedures}
+    action: {type: require_field, field: associated_procedures, reason: "Revision, osteotomy, fracture fixation or extensor-mechanism repair are different pathways"}
+    severity: block
+  - key: req_surgeon_status
+    name: Weight-bearing status, fixation and surgeon restrictions are required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: weight_bearing_status}, {op: known, field: fixation}, {op: known, field: surgeon_restrictions}, {op: known, field: rom_restrictions}, {op: known, field: brace_restrictions}]}
+    action: {type: require_field, fields: [weight_bearing_status, fixation, surgeon_restrictions, rom_restrictions, brace_restrictions], reason: "Weight bearing is surgeon-set and fixation bears on it; neither is ever assumed"}
+    severity: block
+  - key: req_current_assessment
+    name: Current assessment is required
+    kind: required_input
+    expression: {op: and, args: [{op: known, field: knee_flexion_active_deg}, {op: known, field: knee_extension_deficit_deg}, {op: known, field: extension_lag_deg}, {op: known, field: assistive_device}, {op: known, field: wound_status}, {op: known, field: pain_movement}, {op: known, field: concerning_findings}]}
+    action: {type: require_field, fields: [knee_flexion_active_deg, knee_extension_deficit_deg, extension_lag_deg, assistive_device, wound_status, pain_movement, concerning_findings], reason: "Current knee measures, device, wound state and the concern screen are required"}
+    severity: block
+  - key: concern_findings_present
+    name: Concerning findings reported
+    kind: concern_screen
+    expression: {op: and, args: [{op: known, field: concerning_findings}, {op: ne, field: concerning_findings, value: []}]}
+    action: {type: block_for_review, message: "Concerning findings after a knee replacement (calf pain or swelling, fever, wound drainage, sudden loss of motion, a fall) route to the surgeon or clinician per approved rule (unsigned)."}
+    severity: block
+  - key: wound_concern
+    name: Wound concern reported
+    kind: concern_screen
+    expression: {op: eq, field: wound_status, value: concern}
+    action: {type: block_for_review, message: "A wound concern is a surgeon question before any loading progression."}
+    severity: block
+  - key: combined_procedure
+    name: Not a primary uncomplicated TKA
+    kind: restriction
+    expression: {op: and, args: [{op: known, field: associated_procedures}, {op: ne, field: associated_procedures, value: []}]}
+    action: {type: block_for_review, message: "Revision, tubercle osteotomy, periprosthetic fracture fixation or extensor-mechanism repair are not merged with the primary pathway; a separate approved pathway is required."}
+    severity: block
+  - key: protected_weight_bearing
+    name: Protected weight bearing excludes standing loaded work
+    kind: restriction
+    expression: {op: in, field: weight_bearing_status, value: [pwb, tdwb, nwb]}
+    action: {type: exclude_variant, tags: [closed_chain, stairs]}
+    severity: block
+  - key: worsening_response
+    name: Worsening response after prior session
+    kind: next_day_response
+    expression: {op: eq, field: prior_session_response, value: worse}
+    action: {type: block_for_review, message: "Worsened response; routing requires an approved rule."}
+    severity: block
+  - key: branch_primary_tka
+    name: Primary uncomplicated TKA
+    kind: eligibility
+    expression: {op: and, args: [{op: eq, field: procedure, value: total_knee_arthroplasty}, {op: eq, field: associated_procedures, value: []}]}
+    action: {type: inform, message: primary uncomplicated TKA pathway}
+  - key: phase_entry_criteria_slot
+    name: Phase advancement criteria (RULE SLOT — unsigned)
+    kind: progression
+    expression: {op: eq, field: functional_criteria_met, value: true}
+    action: {type: inform, message: "Advance only when PT-confirmed criteria are met; elapsed time is never a criterion on its own."}
+  - key: flexion_milestone_slot
+    name: Flexion milestone (RULE SLOT — threshold unsigned)
+    kind: progression
+    expression: {op: known, field: knee_flexion_active_deg}
+    action: {type: inform, message: "A signed rule will test knee_flexion_active_deg against the phase's flexion milestone; until signed this only confirms the measure was taken."}
+  - key: extension_milestone_slot
+    name: Extension milestone (RULE SLOT — threshold unsigned)
+    kind: progression
+    expression: {op: and, args: [{op: known, field: knee_extension_deficit_deg}, {op: known, field: extension_lag_deg}]}
+    action: {type: inform, message: "A signed rule will test extension deficit and extension lag against the phase's milestone; until signed this only confirms the measures were taken."}
+  - key: earliest_start_slot
+    name: Earliest phase start (RULE SLOT — floor unsigned)
+    kind: progression
+    expression: {op: known, field: days_since_procedure}
+    action: {type: inform, message: "A signed rule will combine days_since_procedure with criteria as a floor (never as the sole trigger); until signed this only confirms the date is known."}
+  - key: stiff_knee_surgeon_review_slot
+    name: Persistent stiffness surgeon review (RULE SLOT — unsigned)
+    kind: restriction
+    expression: {op: and, args: [{op: known, field: knee_flexion_active_deg}, {op: known, field: days_since_procedure}]}
+    action: {type: inform, message: "A signed rule will route flexion below the surgeon's threshold at the agreed week to surgeon review (manipulation consideration)."}
+protocols:
+  - key: tka_primary
+    name: Primary total knee arthroplasty — postoperative pathway (structure only)
+    population_description: Adults after primary, uncomplicated, unilateral total knee arthroplasty with surgeon protocol available
+    branch_conditions: [procedure = total_knee_arthroplasty, no associated procedures]
+    eligibility_rules: [branch_primary_tka]
+    required_inputs: [affected_side, procedure, procedure_date, associated_procedures, weight_bearing_status, fixation, surgeon_restrictions, rom_restrictions, brace_restrictions, knee_flexion_active_deg, knee_extension_deficit_deg, extension_lag_deg, assistive_device, wound_status, pain_movement, concerning_findings]
+    phases:
+      - key: p1_acute
+        name: Protect and wake up the muscle
+        goals: [swelling and pain control, full passive extension, early knee flexion, quadriceps activation, safe transfers and household walking with the device]
+        window: {anchor: procedure, start: 0, end: 2, unit: weeks, provisional: true, text: "About the first two weeks after surgery — typical published window, unsigned; confirm against the surgeon's protocol", provenance: unknown}
+        items: [cu_ankle_pump_p1, cu_quad_set_p1, cu_glute_set_p1, cu_heel_slide_p1, cu_saq_p1, cu_heel_prop_p1, cu_slr_p1, cu_seated_flex_p1, cu_stand_abd_p1]
+        entry_rules: []
+        restrictions: [weight bearing per surgeon, no pillow under the knee, ice and elevation after exercise, keep the wound dry, use the walking device until cleared]
+        review_checkpoint: PT confirms extension deficit, flexion, lag and wound state before any loaded work
+        advance_criteria: [PT-confirmed criteria (flexion, extension, lag, independent with device, wound closed) — thresholds unsigned]
+        hold_criteria: [effusion or pain increasing, wound concern]
+        regress_criteria: [new calf pain, fever, drainage — route to surgeon]
+        basis: []
+        gaps: [doses not supplied, thresholds not signed, windows are typical published values not signed]
+      - key: p2_early_strength
+        name: Build strength and bend
+        goals: [knee flexion progressing toward the surgeon's target, full extension, wean the walking device, reciprocal stairs, normal gait]
+        window: {anchor: procedure, start: 2, end: 6, unit: weeks, provisional: true, text: "About weeks two to six — typical published window, unsigned", provenance: unknown}
+        items: [cu_heel_slide_p2, cu_seated_flex_p1, cu_heel_prop_p1, cu_slr_p1, cu_bike_p2, cu_mini_squat_p2, cu_sit_to_stand_p2, cu_tke_p2, cu_calf_raise_p2, cu_sls_p2]
+        entry_rules: [phase_entry_criteria_slot]
+        restrictions: [weight bearing per surgeon, squat depth per clinical lead]
+        review_checkpoint: PT confirms criteria; flexion below the surgeon's threshold at the agreed week is a surgeon question
+        advance_criteria: [PT-confirmed criteria — thresholds unsigned]
+        hold_criteria: [effusion increase with loading]
+        regress_criteria: [pain or effusion increase for more than a day after a session]
+        basis: []
+        gaps: [doses not supplied, thresholds not signed, windows not signed]
+      - key: p3_functional
+        name: Functional strengthening
+        goals: [community walking, stairs without a rail, single-leg balance, return to low-impact activity]
+        window: {anchor: procedure, start: 6, end: 12, unit: weeks, provisional: true, text: "About weeks six to twelve — typical published window, unsigned", provenance: unknown}
+        items: [cu_step_up_p3, cu_mini_squat_p3, cu_bike_p3, cu_sls_p3, cu_tke_p2, cu_calf_raise_p2]
+        entry_rules: [phase_entry_criteria_slot]
+        restrictions: [no running or jumping; low-impact only unless the surgeon says otherwise]
+        review_checkpoint: PT confirms criteria and surgeon clearance for activity
+        advance_criteria: [PT-confirmed criteria — thresholds unsigned]
+        hold_criteria: [effusion with loading]
+        regress_criteria: [pain or effusion increase]
+        basis: []
+        gaps: [doses not supplied, thresholds not signed, windows not signed]
+    monitoring: [pain, effusion, knee flexion and extension, extension lag, wound, walking device, calf symptoms]
+    reassessment: {timing: "per surgeon protocol", provenance: unknown}
+    recovery_horizon: {text: "Return to low-impact activity is commonly described over three to six months; depends on the surgeon protocol and criteria; not signed", provenance: unknown}
+    provenance: {kind: structural_placeholder, refs: []}
+applicability: []
+intake_prompts:
+  affected_side: Which knee was replaced
+  procedure: The procedure performed
+  procedure_date: The date of surgery anchors every phase window
+  associated_procedures: Anything beyond a primary replacement changes the pathway
+  weight_bearing_status: Weight-bearing status is surgeon-set and never assumed
+  fixation: Cemented or uncemented fixation bears on weight bearing
+  surgeon_restrictions: The surgeon's restrictions, in their words
+  rom_restrictions: Any range-of-motion limit from the surgeon
+  brace_restrictions: Brace or immobiliser instructions, if any
+  knee_flexion_active_deg: Current active knee flexion
+  knee_extension_deficit_deg: Degrees short of full extension
+  extension_lag_deg: Quad lag on a straight leg raise
+  assistive_device: Walker, crutches, cane or none
+  wound_status: Wound healing, closed, or a concern
+  pain_movement: Pain with movement now
+  concerning_findings: Concern screen must be completed (calf symptoms, fever, drainage, falls)

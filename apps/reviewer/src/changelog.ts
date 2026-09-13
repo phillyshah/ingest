@@ -25,6 +25,25 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.9.0",
+    date: "2026-09-13",
+    headline: "The system understands knee and hip replacement",
+    changes: [
+      {
+        kind: "added",
+        text: "\"Total knee arthroplasty\", \"knee replacement\", \"TKR\", \"hip replacement\", \"THA\" and the like are now recognised conditions. Both come as unsigned placeholder pathways — three phases with the exercises commonly published for each, every dose left blank until a clinical lead signs — so a campaign can be scoped and the plan engine returns a labelled preview and a proper checklist instead of \"no condition recognised\".",
+      },
+      {
+        kind: "added",
+        text: "The intake now has the facts a post-operative rule can actually test: weight-bearing status, surgical approach (which decides hip precautions), fixation, current knee flexion, extension deficit and lag, hip flexion, walking device, wound state and swelling. Days since surgery is worked out from the surgery date automatically, never typed in.",
+      },
+      {
+        kind: "added",
+        text: "Hip pathways carry approach-specific precaution rules (posterior, anterior, lateral) that exclude the movements each approach restricts. Like every clinical rule they only take effect once a clinical lead signs them; until then they document the intent.",
+      },
+    ],
+  },
+  {
     version: "0.8.1",
     date: "2026-09-13",
     headline: "Fixes from the September review",

@@ -142,7 +142,9 @@ def test_the_database_refuses_an_author_approving_their_own_variant(conn, seeded
     import psycopg
     import pytest
 
-    row = conn.execute("select id, created_by from exercise_variant_version where created_by is not null limit 1").fetchone()
+    row = conn.execute(
+        "select id, created_by from exercise_variant_version where created_by is not null and approval_state not in ('approved','published') limit 1"
+    ).fetchone()
     with pytest.raises(psycopg.errors.CheckViolation, match="author_not_approver"), conn.transaction():
         conn.execute("update exercise_variant_version set approved_by=%s where id=%s", (row["created_by"], row["id"]))
 

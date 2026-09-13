@@ -9,6 +9,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 import psycopg
+from moveai_contracts.matching import condition_names, name_matches
 from moveai_db import J
 
 from . import queue as q
@@ -31,11 +32,9 @@ class CampaignError(Exception):
 def match_conditions(conn: psycopg.Connection, text: str | None) -> list[dict[str, Any]]:
     if not text:
         return []
-    low = text.lower()
     out = []
     for c in conn.execute("select * from condition").fetchall():
-        names = [c["preferred_name"], c["internal_code"].replace("_", " "), *c["synonyms"]]
-        if any(n and n.lower() in low for n in names):
+        if any(name_matches(n, text) for n in condition_names(c)):
             out.append(c)
     return out
 
