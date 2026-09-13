@@ -11,6 +11,9 @@ COPY scripts ./scripts
 COPY fixtures ./fixtures
 RUN uv sync --frozen --no-dev --all-packages
 RUN useradd -r -u 10002 moveai-worker && chown -R moveai-worker /app
+# See Dockerfile.api: creates the same mount point with the same permissions so the shared named volume is seeded
+# correctly regardless of which container starts first. This container only ever mounts it read-only.
+RUN mkdir -p /srv/moveai/uploads && chmod 1777 /srv/moveai/uploads
 USER moveai-worker
 # See Dockerfile.api: `uv run` needs a writable $HOME cache that this system account does not have.
 CMD ["/app/.venv/bin/python", "-m", "moveai_ingestion.worker"]
