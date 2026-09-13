@@ -140,10 +140,36 @@ def list_sources(
     conn: psycopg.Connection = Depends(get_conn),
     p: Principal = Depends(current_principal),
 ) -> dict[str, Any]:
+    # One row per source with enough to answer "what has been ingested, and how far did it get?" without opening
+    # each one: the latest version's state, how many exercises came out of it, how many still wait for a PT, and
+    # the last job error if it stalled. The Sources page's Files tab is built on this.
     rows = conn.execute(
-        """select s.*, (select id from source_version v where v.source_id=s.id order by created_at desc limit 1) as latest_version_id,
-                  (select pipeline_state from source_version v where v.source_id=s.id order by created_at desc limit 1) as latest_pipeline_state
-             from source s where (%s::text is null or allowlist_state=%s) order by created_at desc limit %s""",
+        """with latest as (
+             select distinct on (source_id) source_id, id, pipeline_state, created_at, byte_size, content_type
+               from source_version order by source_id, created_at desc)
+           select s.*, l.id as latest_version_id, l.pipeline_state as latest_pipeline_state, l.created_at as latest_version_at,
+                  l.byte_size, l.content_type,
+                  (select count(*) from dependency_edge d join source_version v on v.id=d.upstream_id
+                     where d.upstream_table='source_version' and v.source_id=s.id and d.downstream_table='exercise_variant_version')::int as variants,
+                  (select count(*) from dependency_edge d join source_version v on v.id=d.upstream_id
+                     join exercise_variant_version ev on ev.id=d.downstream_id
+                     where d.upstream_table='source_version' and v.source_id=s.id and d.downstream_table='exercise_variant_version'
+                       and ev.approval_state='pending_review')::int as awaiting_review,
+                  (select count(*) from dependency_edge d join source_version v on v.id=d.upstream_id
+                     join exercise_variant_version ev on ev.id=d.downstream_id
+                     where d.upstream_table='source_version' and v.source_id=s.id and d.downstream_table='exercise_variant_version'
+                       and ev.approval_state in ('approved','published'))::int as approved,
+                  (select count(*) from media_asset_version m join exercise_variant_version ev on ev.id=m.variant_version_id
+                     join dependency_edge d on d.downstream_id=ev.id and d.downstream_table='exercise_variant_version'
+                     join source_version v on v.id=d.upstream_id
+                     where v.source_id=s.id and m.media_state='graphic_available')::int as photos,
+                  (select j.stage || ': ' || coalesce(j.error_class, j.state::text) || coalesce(' — ' || left(j.last_error, 160), '')
+                     from ingestion_job j where j.source_version_id=l.id and j.state in ('failed','dead_letter')
+                     order by j.finished_at desc nulls last limit 1) as last_problem,
+                  (select count(*) from ingestion_job j where j.source_version_id=l.id and j.state in ('queued','running'))::int as jobs_active,
+                  (select display_name from app_user u where u.id=s.owner_user_id) as uploaded_by
+             from source s left join latest l on l.source_id=s.id
+            where (%s::text is null or allowlist_state=%s) order by s.created_at desc limit %s""",
         (state, state, limit + 1),
     ).fetchall()
     return paginate(clean_all(rows), limit)

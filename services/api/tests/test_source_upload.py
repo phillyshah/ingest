@@ -63,6 +63,12 @@ def test_uploading_a_pdf_enqueues_it_and_it_runs_the_full_pipeline(admin, conn, 
     media = conn.execute("select * from media_asset_version where variant_version_id=%s", (variant["id"],)).fetchall()
     assert len(media) == 1 and media[0]["media_state"] == "graphic_available"
 
+    # the Files tab can answer "what did my upload produce?" from the list alone
+    row = next(s for s in admin.get("/sources?limit=200").json()["items"] if s["id"] == body["id"])
+    assert row["source_type"] == "clinician_upload" and row["uploaded_by"]
+    assert row["variants"] == 1 and row["awaiting_review"] == 1 and row["approved"] == 0 and row["photos"] == 1
+    assert row["jobs_active"] == 0 and row["last_problem"] is None
+
 
 def test_upload_grants_full_ownership_rights_except_training(admin, conn):
     r = _upload(admin)

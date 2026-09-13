@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { upload } from "../api/client";
-import { useSourcePolicies, useSourcePolicyDecision, type SourcePolicy } from "../api/hooks";
+import { useSourcePolicies, useSourcePolicyDecision, useSources, type SourcePolicy, type SourceRow } from "../api/hooks";
 import { useAuth, hasRole } from "../auth";
 import { Badge, Err, fmt } from "../components/ui";
 
@@ -194,6 +194,7 @@ function UploadPdf() {
 export default function Sources() {
   const q = useSourcePolicies();
   const { session } = useAuth();
+  const [tab, setTab] = useState<"files" | "publishers">("files");
   if (q.error) return <Err e={q.error} />;
   if (!q.data) return <p className="muted">loading…</p>;
   const readable = q.data.items.filter((p) => p.effective);
@@ -202,9 +203,19 @@ export default function Sources() {
   return (
     <>
       <h1>Sources</h1>
+      <div className="tabs">
+        <button className={tab === "files" ? "active" : ""} onClick={() => setTab("files")} data-testid="tab-files">Files &amp; pages</button>
+        <button className={tab === "publishers" ? "active" : ""} onClick={() => setTab("publishers")} data-testid="tab-publishers">Publishers ({q.data.readable} of {q.data.total} readable)</button>
+      </div>
 
-      <UploadPdf />
+      {tab === "files" && (
+        <>
+          <UploadPdf />
+          <Files />
+        </>
+      )}
 
+      {tab === "publishers" && <>
       <h2>The curated allowlist</h2>
       <p className="muted">
         The publishers this system may read, and on what terms. A campaign can only reach a publisher listed as
@@ -234,6 +245,88 @@ export default function Sources() {
       <h2>Not readable{rest.length ? ` (${rest.length})` : ""}</h2>
       {rest.length === 0 && <p className="muted">Nothing outstanding.</p>}
       {rest.map((p) => <Policy key={p.domain} p={p} />)}
+      </>}
     </>
+  );
+}
+
+// How far a document got, in words. The pipeline state names are internal; the operator wants to know whether
+// the thing they uploaded yesterday produced exercises, is still going, or got stuck.
+function progress(s: SourceRow): { text: string; kind: "ok" | "bad" | "warn" | "info" | "hold" } {
+  if (s.allowlist_state === "denied") return { text: "refused", kind: "bad" };
+  if (s.last_problem && s.jobs_active === 0 && s.variants === 0) return { text: "stuck", kind: "bad" };
+  if (s.jobs_active > 0) return { text: "being read", kind: "info" };
+  const st = s.latest_pipeline_state;
+  if (!st || st === "discovered") return { text: s.allowlist_state === "pending" ? "waiting on publisher terms" : "queued", kind: "warn" };
+  if (st === "rights_hold") return { text: "held: rights", kind: "warn" };
+  if (st === "parse_failed" || st === "extraction_failed") return { text: "could not be read", kind: "bad" };
+  if (st === "withdrawn" || st === "superseded" || st === "rejected") return { text: st, kind: "hold" };
+  if (s.variants === 0) return { text: "read, no exercises found", kind: "warn" };
+  if (s.awaiting_review > 0) return { text: `${s.awaiting_review} awaiting review`, kind: "info" };
+  return { text: "reviewed", kind: "ok" };
+}
+
+function kindOf(s: SourceRow): string {
+  if (s.source_type === "clinician_upload") return "uploaded PDF";
+  if (s.canonical_url.startsWith("file:")) return "owned file";
+  return s.source_type === "pdf" ? "web PDF" : "web page";
+}
+
+function where(s: SourceRow): string {
+  if (s.canonical_url.startsWith("file:")) return s.uploaded_by ? `uploaded by ${s.uploaded_by}` : "local file";
+  try { return new URL(s.canonical_url).hostname; } catch { return s.canonical_url; }
+}
+
+/** Everything the system has been given or has found, and how far each one got. */
+function Files() {
+  const q = useSources();
+  const [showFound, setShowFound] = useState(false);
+  if (q.error) return <Err e={q.error} />;
+  if (!q.data) return <p className="muted">loading…</p>;
+  const all = q.data.items;
+  // What someone deliberately gave the system comes first; pages discovery found but has not read yet are noise
+  // until they are, so they sit behind a toggle.
+  const given = all.filter((s) => s.source_type === "clinician_upload" || s.allowlist_state === "approved" || (s.latest_pipeline_state && s.latest_pipeline_state !== "discovered"));
+  const found = all.filter((s) => !given.includes(s));
+  const rows = showFound ? all : given;
+  const totals = given.reduce((t, s) => ({ variants: t.variants + s.variants, awaiting: t.awaiting + s.awaiting_review, approved: t.approved + s.approved }), { variants: 0, awaiting: 0, approved: 0 });
+  return (
+    <div className="panel" data-testid="files">
+      <h2 style={{ marginTop: 0 }}>What has been ingested</h2>
+      <p className="small muted">
+        {given.length} document{given.length === 1 ? "" : "s"} read or being read · {totals.variants} exercise{totals.variants === 1 ? "" : "s"} extracted · {totals.awaiting} awaiting review · {totals.approved} approved.
+        {found.length > 0 && <> {" "}<button className="small" onClick={() => setShowFound(!showFound)}>{showFound ? "Hide" : "Show"} {found.length} page{found.length === 1 ? "" : "s"} found by campaigns but not read yet</button></>}
+      </p>
+      {rows.length === 0 && <p className="muted">Nothing yet. Upload a PDF above, or start a campaign.</p>}
+      {rows.length > 0 && (
+        <table>
+          <thead><tr><th>Document</th><th>Kind</th><th>From</th><th>Added</th><th>Status</th><th>Exercises</th><th>Photos</th></tr></thead>
+          <tbody>
+            {rows.map((s) => {
+              const p = progress(s);
+              return (
+                <tr key={s.id}>
+                  <td>
+                    {s.title || s.canonical_url.split("/").pop() || s.canonical_url}
+                    {!s.canonical_url.startsWith("file:") && <><br /><a className="small" href={s.canonical_url} target="_blank" rel="noreferrer">{s.canonical_url.replace(/^https?:\/\//, "").slice(0, 80)}</a></>}
+                    {s.last_problem && <div className="small muted">{s.last_problem}</div>}
+                  </td>
+                  <td className="small">{kindOf(s)}</td>
+                  <td className="small">{where(s)}</td>
+                  <td className="small">{fmt(s.created_at)}</td>
+                  <td><Badge kind={p.kind}>{p.text}</Badge></td>
+                  <td>
+                    {s.variants}
+                    {s.awaiting_review > 0 && <> · <Link to="/reviews" className="small">{s.awaiting_review} to review</Link></>}
+                    {s.approved > 0 && <span className="small muted"> · {s.approved} approved</span>}
+                  </td>
+                  <td>{s.photos || "—"}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </div>
   );
 }

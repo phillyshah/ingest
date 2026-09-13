@@ -25,6 +25,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.11.0",
+    date: "2026-09-13",
+    headline: "The Sources page shows what has been ingested",
+    changes: [
+      {
+        kind: "added",
+        text: "Sources now has two tabs. \"Files & pages\" lists every document the system has been given or has read — uploaded PDFs, pages read by campaigns — with what kind of thing it is, where it came from, when it was added, how far it got (being read, awaiting review, reviewed, stuck, held on rights), how many exercises and photos came out of it, and the last error if it stalled. Pages a campaign found but has not read yet sit behind a toggle so they do not drown the list. \"Publishers\" is the allowlist as before.",
+      },
+    ],
+  },
+  {
     version: "0.10.0",
     date: "2026-09-13",
     headline: "Campaigns now go and find sources",
