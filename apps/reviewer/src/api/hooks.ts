@@ -52,6 +52,17 @@ export interface SourcePolicy {
   permissions: Record<string, "allowed" | "denied" | "unknown">;
   license: { id: string; name: string; url: string | null; summary: string | null; notes: string[] };
 }
+/** A source as the Files tab lists it: what it is, where it came from, and how far it got. */
+export interface SourceRow {
+  id: string; canonical_url: string; publisher: string | null; title: string | null; source_type: string;
+  allowlist_state: "pending" | "approved" | "denied"; created_at: string; uploaded_by: string | null;
+  latest_version_id: string | null; latest_pipeline_state: string | null; latest_version_at: string | null;
+  byte_size: number | null; content_type: string | null;
+  variants: number; awaiting_review: number; approved: number; photos: number; jobs_active: number; last_problem: string | null;
+}
+export const useSources = (limit = 200) =>
+  useQuery({ queryKey: ["sources", limit], queryFn: () => get<{ items: SourceRow[]; total: number }>(`/sources?limit=${limit}`), refetchInterval: 10_000 });
+
 export const useSourcePolicies = () =>
   useQuery({ queryKey: ["source-policies"], queryFn: () => get<{ items: SourcePolicy[]; readable: number; total: number }>("/source-policies") });
 
