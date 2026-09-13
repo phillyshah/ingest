@@ -8,6 +8,7 @@ from typing import Any
 
 from moveai_contracts.enums import FieldStatus
 from moveai_contracts.intake import Intake, IntakeField
+from moveai_contracts.matching import condition_names, name_matches
 
 # Fields a narrative may propose but never establish on its own.
 CRITICAL_FIELDS = {
@@ -127,7 +128,6 @@ def candidate_conditions(conditions: list[dict[str, Any]], narrative: str | None
         return []
     hits = []
     for c in conditions:
-        names = [c["preferred_name"], c["internal_code"].replace("_", " "), *c["synonyms"]]
-        if any(n and n.lower() in text for n in names):
+        if any(name_matches(n, text) for n in condition_names(c)):
             hits.append(c)
     return hits
