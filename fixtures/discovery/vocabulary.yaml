@@ -1,0 +1,67 @@
+# Words that make a page on a publisher's site look like a rehabilitation resource, and words that make it look
+# like something else. Used by the discovery stage to rank pages found in a publisher's sitemap or returned by a
+# web search before any of them is fetched. Ranking only: nothing here decides what is clinically true, and every
+# page that is fetched still goes through extraction and PT review like any other source.
+#
+# Editable without a code change. Keep entries lowercase; multi-word entries are matched as hyphen- or
+# space-joined phrases in a URL path or a page title.
+
+# A page needs at least one hit from the condition's own names (preferred name, synonyms, acronym) to be a
+# candidate at all. These add to the score once it is.
+rehab_terms:
+  - exercise
+  - exercises
+  - rehab
+  - rehabilitation
+  - recovery
+  - recovering
+  - physiotherapy
+  - physio
+  - physical therapy
+  - protocol
+  - guideline
+  - guidelines
+  - after surgery
+  - post-operative
+  - postoperative
+  - post-op
+  - home programme
+  - home program
+  - self-management
+  - stretches
+  - strengthening
+  - mobility
+  - range of motion
+  - patient information
+  - patient leaflet
+  - leaflet
+  - handout
+
+# Pages that are about the condition but are not rehabilitation resources: news, fundraising, careers, and so on.
+# A hit here lowers the score; it does not exclude the page.
+noise_terms:
+  - news
+  - press
+  - press-release
+  - careers
+  - jobs
+  - donate
+  - fundraising
+  - events
+  - blog
+  - podcast
+  - video
+  - shop
+  - store
+  - login
+  - search
+  - sitemap
+  - tag
+  - tags
+  - author
+  - category
+  - page
+  - pdf-viewer
+  - print
+  - share
+  - comments

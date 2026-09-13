@@ -11,6 +11,8 @@ export interface Card {
 export interface CampaignDetailT extends Card {
   scope: Record<string, unknown>; runs: Record<string, unknown>[]; coverage_checks: Record<string, unknown>[]; limits: Record<string, number>;
   budget: Record<string, unknown>; warnings: string[]; maintenance_enabled: boolean;
+  /** What discovery found but could not read, grouped by publisher — the next thing to accept on the Sources page. */
+  pending_publishers?: { domain: string; publisher: string | null; review_state: string | null; evidence_state: string | null; count: number; reason: string; pages: string[] }[];
 }
 
 export const useCampaigns = (params = "") => useQuery({ queryKey: ["campaigns", params], queryFn: () => get<{ items: Card[]; total: number; server_time: string }>(`/ingestion-campaigns${params}`), refetchInterval: 10_000 });

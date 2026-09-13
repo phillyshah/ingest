@@ -124,6 +124,19 @@ export default function CampaignDetail() {
       {c.blockers.length > 0 && <div className="notice"><b>Blockers:</b> {c.blockers.join(" · ")} {c.next_human_action && <> — <b>next:</b> {c.next_human_action}</>}</div>}
       <div className="tabs">{TABS.map((t) => <button key={t} className={tab === t ? "active" : ""} onClick={() => setTab(t)}>{t}</button>)}</div>
 
+      {tab === "Overview" && (c.pending_publishers ?? []).length > 0 && (
+        <div className="panel" data-testid="pending-publishers">
+          <h3>Found, but not readable yet</h3>
+          <p className="small muted">
+            Discovery found these pages, but a page is only read from a publisher whose terms a rights reviewer has accepted.
+            Accept the terms on the <Link to="/sources">Sources page</Link>, then press <b>start</b> here — the pages found are kept and picked up by the next run.
+            A domain that is not on the list at all is recorded for you and never read; adding one is a change to the curated allowlist.
+          </p>
+          <table><thead><tr><th>Publisher</th><th>Pages</th><th>Waiting on</th><th>Examples</th></tr></thead>
+            <tbody>{(c.pending_publishers ?? []).map((p: any) => <tr key={p.domain}><td>{p.publisher ?? <span className="muted">not on the list</span>}<br /><span className="mono small">{p.domain}</span></td><td>{p.count}</td><td className="small">{p.reason}</td>
+              <td className="small">{(p.pages ?? []).map((u: string) => <div key={u}><a href={u} target="_blank" rel="noreferrer">{u.replace(/^https?:\/\/[^/]+/, "")}</a></div>)}</td></tr>)}</tbody></table>
+        </div>
+      )}
       {tab === "Overview" && (
         <div className="grid2">
           <div className="panel">

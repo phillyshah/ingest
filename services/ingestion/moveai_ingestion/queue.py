@@ -13,7 +13,7 @@ from moveai_db import J
 
 from .config import PARSER_VERSION, PROMPT_VERSION, SCHEMA_VERSION, model_version
 
-STAGES = ("access_check", "fetch", "parse", "extract", "normalize", "validate", "enqueue_review")
+STAGES = ("discover", "access_check", "fetch", "parse", "extract", "normalize", "validate", "enqueue_review")
 PERMANENT_ERRORS = {
     "rights_denied",
     "rights_unknown",

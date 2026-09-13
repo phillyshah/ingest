@@ -146,30 +146,52 @@ def scope_preview(conn: psycopg.Connection, tenant_id: Any, scope: dict[str, Any
     policies = conn.execute("select * from source_policy order by publisher").fetchall()
     readable = [p for p in policies if p["effective"]]
     if scope.get("source_policy") != "supplied_only":
+        from .discovery import discovery_providers, get_search_provider
+
         strategy += [f"allowlisted source: {s['canonical_url']}" for s in sources[:20]]
-        # Honest about what a signed publisher means today: its pages *may be read* when a URL on it is supplied
-        # or already linked to the condition. Nothing searches the publisher for relevant pages — the earlier
-        # wording ("allowlisted publisher: …") read as if the campaign would go and look there, and it will not.
-        strategy += [
-            f"may read from {p['publisher']} ({p['domain']}, {p['license_id']}) when a URL on it is supplied — no automatic discovery yet"
-            for p in readable
-        ]
-    strategy.append(
-        "no automatic discovery: only supplied URLs and sources already linked to the condition are read; "
-        "domains outside the allowlist are recorded as pending, never fetched"
-    )
-    # Only a campaign with nothing at all to read is blocked. Supplied URLs and per-source approvals are both
-    # legitimate ways in, and the fixture-backed runs use them.
-    if not readable and not scope.get("supplied_source_urls") and not sources:
-        awaiting = sum(1 for p in policies if p["review_state"] == "pending")
-        blocking.append(
-            "nothing to read: no source is approved, no URL was supplied, and "
-            + (
-                f"{awaiting} publisher policies are waiting for a rights reviewer to accept their licence terms"
-                if awaiting
-                else "the curated allowlist is empty"
+        providers = discovery_providers()
+        unsigned = [p for p in policies if not p["effective"] and p["review_state"] != "rejected"]
+        names = ", ".join(c["preferred_name"] for c in conds.values()) or "the condition"
+        if "sitemap" in providers:
+            if readable:
+                strategy.append(
+                    f"will search the site index of {len(readable)} accepted publisher(s) for pages about {names} and read the best matches: "
+                    + ", ".join(p["publisher"] for p in readable)
+                )
+            if unsigned:
+                strategy.append(
+                    f"will also look through the site index of {len(unsigned)} listed publisher(s) whose terms are not yet accepted — "
+                    "pages found there are listed for you but not read until a rights reviewer accepts the terms on the Sources page: "
+                    + ", ".join(p["publisher"] for p in unsigned)
+                )
+        else:
+            strategy += [
+                f"may read from {p['publisher']} ({p['domain']}, {p['license_id']}) when a URL on it is supplied" for p in readable
+            ]
+            strategy.append("automatic site-index discovery is switched off in this deployment (DISCOVERY_PROVIDERS)")
+        if "search" in providers:
+            try:
+                sp = get_search_provider().name
+            except Exception as e:  # noqa: BLE001
+                sp = f"misconfigured: {e}"
+            strategy.append(
+                f"web search ({sp}): up to {scope['limits'].get('max_search_requests', 0)} queries; results on accepted publishers are read, "
+                "results elsewhere are recorded for you and never fetched"
+                if sp != "none"
+                else "web search: no provider configured, so only publishers' own site indexes are searched"
             )
-        )
+    strategy.append(
+        "a page is only ever read from a publisher whose terms a rights reviewer has accepted; every other domain is recorded as pending, never fetched"
+    )
+    # Only a campaign with nothing at all to look at is blocked. With discovery, any listed publisher gives the run
+    # something to look through; the pages it finds may still all park as pending, and the board says so.
+    if (
+        not readable
+        and not scope.get("supplied_source_urls")
+        and not sources
+        and not (policies and scope.get("source_policy") != "supplied_only")
+    ):
+        blocking.append("nothing to read: no source is approved, no URL was supplied, and the curated allowlist is empty")
     return {
         "interpreted_conditions": [
             {
@@ -378,16 +400,29 @@ def start(conn: psycopg.Connection, tenant_id: Any, user_id: Any, campaign_id: A
         (camp["id"], scope["id"], n + 1),
     ).fetchone()
     conn.execute("update ingestion_campaign set control='active' where id=%s", (camp["id"],))
-    dispatched = _dispatch_sources(conn, tenant_id, camp, scope, run)
-    conn.execute(
-        "update campaign_run set discovery_closed_at=now(), stop_reason=%s where id=%s",
-        (
-            "discovery closed: bounded source list dispatched"
-            if dispatched["dispatched"]
-            else "no eligible sources within scope and limits",
-            run["id"],
-        ),
-    )
+    dispatched = _dispatch(conn, tenant_id, camp, scope, run, _immediate_candidates(conn, tenant_id, camp, scope))
+    if scope["source_policy"] == "supplied_only":
+        conn.execute(
+            "update campaign_run set discovery_closed_at=now(), stop_reason=%s where id=%s",
+            (
+                "discovery closed: supplied URLs dispatched" if dispatched["dispatched"] else "no eligible sources within scope and limits",
+                run["id"],
+            ),
+        )
+    else:
+        # Discovery runs on the worker (it reads publishers' sitemaps over the network). The run stays open until
+        # that job is done; reconcile_run closes discovery once nothing is queued or running.
+        job = q.enqueue(
+            conn,
+            stage="discover",
+            payload={"kind": "discover"},
+            tenant_id=tenant_id,
+            campaign_id=camp["id"],
+            campaign_run_id=run["id"],
+            priority=camp["priority"],
+            extra_key=str(run["id"]),
+        )
+        dispatched["discovery_job_id"] = str(job["id"])
     _event(conn, camp["id"], run["id"], "started", user_id, dispatched)
     return get(conn, tenant_id, camp["id"])
 
@@ -409,15 +444,57 @@ def _pending_reason(pol: dict | None) -> str:
     if pol["evidence_state"] == "drifted":
         return f"{pol['publisher']} changed its terms since they were signed; they need re-reading"
     if pol["review_state"] != "signed":
-        return f"{pol['publisher']}: the licence terms are captured and waiting for a rights reviewer to accept them"
+        return f"{pol['publisher']}: the licence terms are captured and waiting for a rights reviewer to accept them on the Sources page"
     if pol["can_fetch"] != "allowed":
         return f"{pol['publisher']}'s licence ({pol['license_id']}) does not permit reading: can_fetch is {pol['can_fetch']}"
     return f"{pol['publisher']}: the signature no longer covers the terms on record"
 
 
-def _dispatch_sources(conn: psycopg.Connection, tenant_id: Any, camp: dict, scope: dict, run: dict) -> dict[str, Any]:
-    """Bounded, request-driven discovery: supplied URLs + allowlisted sources already linked to the scoped conditions.
-    Unknown domains become pending items (Needs Attention), never fetches."""
+def _source_for(conn: psycopg.Connection, tenant_id: Any, url: str) -> tuple[str, dict]:
+    cu = canonicalize(url)
+    src = conn.execute("select * from source where canonical_url=%s", (cu,)).fetchone()
+    if not src:
+        src = conn.execute(
+            "insert into source(tenant_id, canonical_url, source_type, allowlist_state) values (%s,%s,%s,'pending') returning *",
+            (tenant_id, cu, "pdf" if cu.lower().endswith(".pdf") else "html"),
+        ).fetchone()
+    return cu, src
+
+
+def _immediate_candidates(conn: psycopg.Connection, tenant_id: Any, camp: dict, scope: dict) -> list[dict[str, Any]]:
+    """What a run can dispatch without leaving the database: the operator's URLs, sources already linked to the
+    scoped conditions through existing evidence, and anything an earlier run of this campaign parked as pending
+    (so that accepting a publisher's terms and pressing Start picks those pages up, rather than losing them)."""
+    candidates: list[dict[str, Any]] = []
+    for url in scope["supplied_source_urls"]:
+        try:
+            cu, src = _source_for(conn, tenant_id, url)
+        except Exception as e:  # noqa: BLE001
+            candidates.append({"url": url, "problem": str(e)})
+            continue
+        candidates.append({"url": cu, "source": src, "via": "supplied"})
+    if scope["source_policy"] != "supplied_only":
+        for cid in scope["condition_ids"]:
+            rows = conn.execute(
+                """select distinct s.* from source s join source_version sv on sv.source_id=s.id join evidence_claim ec on ec.source_version_id=sv.id
+                     join clinical_use_version cu on ec.id = any(cu.supporting_claim_ids) where cu.condition_id=%s and s.allowlist_state='approved'""",
+                (cid,),
+            ).fetchall()
+            candidates += [{"url": r["canonical_url"], "source": r, "via": "linked_to_condition"} for r in rows]
+        parked = conn.execute(
+            """select s.*, ci.detail from campaign_item ci join source s on s.id=ci.item_id
+                where ci.campaign_id=%s and ci.item_table='source' and ci.disposition='pending' order by ci.created_at""",
+            (camp["id"],),
+        ).fetchall()
+        candidates += [{"url": r["canonical_url"], "source": r, "via": (r["detail"] or {}).get("via") or "parked"} for r in parked]
+    return candidates
+
+
+def _dispatch(
+    conn: psycopg.Connection, tenant_id: Any, camp: dict, scope: dict, run: dict, candidates: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Turn candidate URLs into jobs, within the run's limits. A URL on a domain whose terms are not signed (or
+    that has no policy) becomes a pending item with the reason — visible on the board, never fetched."""
     limits = scope["limits"]
     # The body region every extracted exercise from this run is filed under. It was hard-coded "unknown", which
     # left campaign-sourced exercises unfindable by region in the catalog. The scoped conditions know their region;
@@ -427,36 +504,30 @@ def _dispatch_sources(conn: psycopg.Connection, tenant_id: Any, camp: dict, scop
         for r in conn.execute("select distinct body_region from condition where id = any(%s)", (list(scope["condition_ids"]),)).fetchall()
     }
     region = regions.pop() if len(regions) == 1 else "unknown"
-    candidates: list[dict[str, Any]] = []
-    for url in scope["supplied_source_urls"]:
-        try:
-            cu = canonicalize(url)
-        except Exception as e:  # noqa: BLE001
-            candidates.append({"url": url, "problem": str(e)})
-            continue
-        src = conn.execute("select * from source where canonical_url=%s", (cu,)).fetchone()
-        if not src:
-            src = conn.execute(
-                "insert into source(tenant_id, canonical_url, source_type, allowlist_state) values (%s,%s,%s,'pending') returning *",
-                (tenant_id, cu, "pdf" if cu.lower().endswith(".pdf") else "html"),
-            ).fetchone()
-        candidates.append({"url": cu, "source": src})
-    if scope["source_policy"] != "supplied_only":
-        for cid in scope["condition_ids"]:
-            rows = conn.execute(
-                """select distinct s.* from source s join source_version sv on sv.source_id=s.id join evidence_claim ec on ec.source_version_id=sv.id
-                     join clinical_use_version cu on ec.id = any(cu.supporting_claim_ids) where cu.condition_id=%s and s.allowlist_state='approved'""",
-                (cid,),
-            ).fetchall()
-            candidates += [{"url": r["canonical_url"], "source": r} for r in rows]
+    # Already dispatched by this campaign (this run or an earlier one): a second source_version for the same page
+    # would be a second fetch and a second set of duplicate candidates for the PT.
+    already = {
+        r["canonical_url"]
+        for r in conn.execute(
+            """select s.canonical_url from campaign_item ci join source_version sv on sv.id=ci.item_id join source s on s.id=sv.source_id
+                where ci.campaign_id=%s and ci.item_table='source_version'""",
+            (camp["id"],),
+        ).fetchall()
+    }
     seen: set[str] = set()
     dispatched, pending, skipped = [], [], []
+    n_dispatched_before = conn.execute(
+        "select count(*) as n from campaign_item where run_id=%s and item_table='source_version'", (run["id"],)
+    ).fetchone()["n"]
     for c in candidates:
         if c["url"] in seen:
             continue
         seen.add(c["url"])
         if "problem" in c:
             skipped.append({"url": c["url"], "reason": c["problem"]})
+            continue
+        if c["url"] in already:
+            skipped.append({"url": c["url"], "reason": "already read by this campaign"})
             continue
         src = c["source"]
         pol = policy_for_url(conn, c["url"])
@@ -469,14 +540,21 @@ def _dispatch_sources(conn: psycopg.Connection, tenant_id: Any, camp: dict, scop
                 "source",
                 src["id"],
                 "pending",
-                {"reason": _pending_reason(pol), "domain": urlparse(c["url"]).hostname},
+                {
+                    "reason": _pending_reason(pol),
+                    "domain": urlparse(c["url"]).hostname,
+                    "via": c.get("via"),
+                    "url": c["url"],
+                    **({"title": c["title"]} if c.get("title") else {}),
+                    **({"score": c["score"]} if c.get("score") is not None else {}),
+                },
             )
             continue
-        if len(dispatched) >= int(limits["max_sources"]):
+        if n_dispatched_before + len(dispatched) >= int(limits["max_sources"]):
             skipped.append({"url": c["url"], "reason": "max_sources reached"})
             continue
         if not conn.execute(
-            "select reserve_budget(%s,null,%s::numeric,1,0::bigint) as ok",
+            "select reserve_budget(%s,null,%s::numeric,0,0::bigint) as ok",  # a fetch is not a search request; discovery counts those
             (run["id"], EST_COST_PER_SOURCE_USD),
         ).fetchone()["ok"]:
             skipped.append({"url": c["url"], "reason": "budget/search-request limit reached"})
@@ -525,10 +603,49 @@ def _dispatch_sources(conn: psycopg.Connection, tenant_id: Any, camp: dict, scop
             "source_version",
             svid,
             "new",
-            {"url": c["url"], "job_id": str(job["id"])},
+            {"url": c["url"], "job_id": str(job["id"]), "via": c.get("via"), **({"title": c["title"]} if c.get("title") else {})},
+        )
+        # a page parked pending by an earlier run and now readable: the pending item has done its job
+        conn.execute(
+            "delete from campaign_item where campaign_id=%s and item_table='source' and item_id=%s and disposition='pending'",
+            (camp["id"], src["id"]),
         )
         dispatched.append(c["url"])
     return {"dispatched": dispatched, "pending_allowlist": pending, "skipped": skipped}
+
+
+def stage_discover(conn: psycopg.Connection, job: dict) -> dict[str, Any]:
+    """The `discover` pipeline stage: index the allowlisted publishers, score their pages against the scoped
+    conditions, search the web when a provider is configured, and dispatch what was found through the same gate
+    as a typed URL. Runs on the worker, not in the API request, because it reads sitemaps over the network."""
+    from .discovery import discover
+
+    run = conn.execute("select * from campaign_run where id=%s", (job["campaign_run_id"],)).fetchone()
+    camp = conn.execute("select * from ingestion_campaign where id=%s", (job["campaign_id"],)).fetchone()
+    scope = conn.execute("select * from campaign_scope_version where id=%s", (run["scope_version_id"],)).fetchone()
+    conds = conn.execute("select * from condition where id = any(%s)", (list(scope["condition_ids"]),)).fetchall()
+    found = discover(conn, run_id=run["id"], conditions=conds, limits=scope["limits"])
+    candidates = []
+    for c in found["candidates"]:
+        try:
+            cu, src = _source_for(conn, job["tenant_id"], c.url)
+        except Exception as e:  # noqa: BLE001
+            candidates.append({"url": c.url, "problem": str(e)})
+            continue
+        candidates.append({"url": cu, "source": src, "via": c.via, "title": c.title, "score": c.score})
+    out = _dispatch(conn, job["tenant_id"], camp, scope, run, candidates)
+    summary = {
+        **found["summary"],
+        "dispatched": len(out["dispatched"]),
+        "pending": len(out["pending_allowlist"]),
+        "skipped": len(out["skipped"]),
+    }
+    _event(conn, camp["id"], run["id"], "discovered", None, summary)
+    return {
+        "discovery": summary,
+        "dispatch": out,
+        "warnings": [p["error"] for p in found["summary"].get("publishers", []) if p.get("error")],
+    }
 
 
 def _item(
@@ -648,7 +765,13 @@ def reconcile_run(conn: psycopg.Connection, run_id: Any) -> dict:
             "update campaign_run set heartbeat_at=greatest(coalesce(heartbeat_at, %s), %s) where id=%s",
             (last_hb, last_hb, run_id),
         )
-    if run["state"] == "running" and active == 0 and run["discovery_closed_at"]:
+    if run["state"] == "running" and active == 0:
+        if not run["discovery_closed_at"]:
+            # the discover job (if any) is terminal — succeeded, failed or dead-lettered — so nothing else can arrive
+            conn.execute(
+                "update campaign_run set discovery_closed_at=now(), stop_reason=coalesce(stop_reason, 'discovery closed') where id=%s",
+                (run_id,),
+            )
         conn.execute(
             "update campaign_run set state='finished', finished_at=now(), stop_reason=coalesce(stop_reason,'') || '; queue drained' where id=%s",
             (run_id,),
@@ -736,8 +859,19 @@ def derive_lifecycle(conn: psycopg.Connection, camp: dict, run: dict | None, cnt
         return "complete", [], None
     if cnt.get("awaiting_review", 0) or cnt.get("approved", 0) or cnt.get("published", 0):
         return "pt_review", blockers, "PT reviews candidates; clinical lead publishes"
-    blockers.append("run produced no reviewable candidates within scope and limits")
-    return "needs_attention", blockers, "widen sources, raise limits, or close incomplete"
+    if cnt.get("sources_pending", 0):
+        blockers.append("pages were found but none could be read: every one is on a publisher whose terms are not yet accepted")
+        return (
+            "needs_attention",
+            blockers,
+            "accept the publisher's terms on the Sources page, then start a new run — the pages found are kept",
+        )
+    blockers.append("the run found nothing to read for this condition")
+    return (
+        "needs_attention",
+        blockers,
+        "paste document URLs from an accepted publisher, upload a PDF on the Sources page, or widen the condition's names",
+    )
 
 
 def card(conn: psycopg.Connection, camp: dict) -> dict[str, Any]:
@@ -838,8 +972,23 @@ def get(conn: psycopg.Connection, tenant_id: Any, campaign_id: Any) -> dict[str,
     warnings = []
     if scope and not scope["authorized_by"]:
         warnings.append("scope not confirmed")
+    # What discovery found but could not read, by publisher, so the next step is a name and a count rather than a
+    # list of item ids: "14 pages on NHS — accept its terms".
+    pending_publishers = [
+        {**r, "pages": [p for p in r["pages"] if p]}
+        for r in conn.execute(
+            """select ci.detail->>'domain' as domain, p.publisher, p.review_state, p.evidence_state,
+                      count(*)::int as count, min(ci.detail->>'reason') as reason,
+                      (array_agg(ci.detail->>'url' order by (ci.detail->>'score')::int desc nulls last))[1:5] as pages
+                 from campaign_item ci left join source_policy p on p.domain = ci.detail->>'domain'
+                where ci.campaign_id=%s and ci.item_table='source' and ci.disposition='pending'
+                group by 1,2,3,4 order by count desc, 1""",
+            (camp["id"],),
+        ).fetchall()
+    ]
     return {
         **c,
+        "pending_publishers": pending_publishers,
         "scope": {k: (str(v) if isinstance(v, uuid.UUID) else v) for k, v in scope.items()} if scope else {},
         "runs": [{**r, "id": str(r["id"])} for r in runs],
         "coverage_checks": [{**k, "id": str(k["id"])} for k in checks],

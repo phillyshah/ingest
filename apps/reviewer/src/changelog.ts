@@ -25,6 +25,29 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "0.10.0",
+    date: "2026-09-13",
+    headline: "Campaigns now go and find sources",
+    changes: [
+      {
+        kind: "added",
+        text: "A campaign with no document URLs no longer has nothing to do. It reads the site index of every listed publisher (the sitemap each site publishes for crawlers), picks the pages whose address or title names the condition and looks like rehabilitation material, and reads the best of them within the campaign's limits. Site indexes are cached for a week so the second campaign on a publisher is instant.",
+      },
+      {
+        kind: "added",
+        text: "Web search, when a search provider is configured: a handful of plain-language queries per condition (\"knee replacement exercises\", \"knee replacement rehabilitation protocol\"), counted against the campaign's search ceiling. Results on accepted publishers are read; results anywhere else are recorded for you and never fetched.",
+      },
+      {
+        kind: "changed",
+        text: "A page is still only ever read from a publisher whose terms a rights reviewer has accepted. Pages found on a publisher that is listed but not yet accepted appear on the campaign's Overview under \"Found, but not readable yet\", grouped by publisher with a link to the Sources page. Accept the terms there, press start, and the next run picks those pages up — nothing found is lost.",
+      },
+      {
+        kind: "changed",
+        text: "\"Where it will look\" on the scope check now says which publishers will be searched, which are waiting on acceptance, and whether web search is on. The old \"no automatic discovery\" line is gone because it is no longer true.",
+      },
+    ],
+  },
+  {
     version: "0.9.2",
     date: "2026-09-13",
     headline: "An uploaded PDF actually reaches the review queue now",

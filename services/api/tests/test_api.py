@@ -397,7 +397,7 @@ def test_campaign_lifecycle(admin, pt, lead, conn):
         and any("pending allowlist" in b for b in c["blockers"])
         and c["runs"][-1]["state"] == "finished"
     )
-    jobs = admin.get(f"/ingestion-jobs?campaign_id={cid}").json()["items"]
+    jobs = [j for j in admin.get(f"/ingestion-jobs?campaign_id={cid}").json()["items"] if j["stage"] != "discover"]
     assert jobs and jobs[0]["state"] == "failed" and jobs[0]["error_class"] == "rights_unknown"
     c = admin.post(f"/ingestion-campaigns/{cid}/cancel", json={"expected_revision": c["run_revision"], "reason": "test"})
     assert c.status_code == 409  # no active run to cancel once finished
@@ -408,7 +408,7 @@ def test_campaign_lifecycle(admin, pt, lead, conn):
     assert admin.get("/ingestion-campaigns").json()["total"] == 0  # archived by default
     assert admin.get("/ingestion-campaigns?include_archived=true").json()["total"] == 1
     ev = admin.get(f"/ingestion-campaigns/{cid}/events").json()["items"]
-    assert [e["event"] for e in ev if e["event"] != "job"] == [
+    assert [e["event"] for e in ev if e["event"] not in ("job", "discovered")] == [
         "created",
         "scope_revised",
         "started",
