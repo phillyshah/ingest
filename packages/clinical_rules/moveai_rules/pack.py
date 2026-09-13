@@ -4,7 +4,7 @@ Shipped packs are unsigned_placeholder; the publisher refuses to publish them.""
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import yaml
 from moveai_contracts.dose import Dose, DoseField
@@ -45,6 +45,10 @@ class PackVariant(BaseModel):
     joint: str | None = None
     movement_plane: str | None = None
     starting_position: str | None = None
+    # Open vs closed kinetic chain. Was absent from this model, so `chain: closed` in a pack was silently dropped
+    # on the way to the `exercise_variant_version.chain` column — a distinction the spec calls out, lost with no
+    # warning. Constrained to the same two values the column accepts.
+    chain: Literal["open", "closed"] | None = None
     load_mode: str | None = None
     side_behavior: str = "unilateral"
     equipment: list[str] = Field(default_factory=list)

@@ -15,6 +15,7 @@ from moveai_db import J
 
 from .catalog import PRESCRIBABLE, release_contains
 from .engine import content_hash, narrative_for, narrative_matches, validate_option
+from .provenance import ProvenanceError, verify_dose_fields
 
 
 class PlanError(Exception):
@@ -68,7 +69,9 @@ def patch_draft(conn: psycopg.Connection, *, tenant_id: Any, user_id: Any, plan_
     if patch.items is not None:
         # PT edits: every item must be an approved/published variant present in the pinned release; full revalidation
         for it in patch.items:
-            v = conn.execute("select approval_state from exercise_variant_version where id=%s", (it.variant_version_id,)).fetchone()
+            v = conn.execute(
+                "select approval_state, step_sequence from exercise_variant_version where id=%s", (it.variant_version_id,)
+            ).fetchone()
             if not v or v["approval_state"] not in PRESCRIBABLE:
                 raise PlanError("unpublished_variant", f"variant {it.variant_version_id} is not approved/published", 422)
             if cur["catalog_release_id"] and not release_contains(conn, cur["catalog_release_id"], it.variant_version_id):
@@ -77,9 +80,28 @@ def patch_draft(conn: psycopg.Connection, *, tenant_id: Any, user_id: Any, plan_
                     f"variant {it.variant_version_id} is not in the pinned catalog release",
                     422,
                 )
+            # The instructions a patient reads are the approved variant's, never text pasted into a plan: changing
+            # wording is a clinical edit that goes through review (and invalidates approval), not a draft patch.
+            approved_steps = [s["text"] for s in (v["step_sequence"] or [])]
+            if it.instructions and it.instructions != approved_steps:
+                raise PlanError(
+                    "instructions_diverge",
+                    f"item {it.variant_version_id}: instructions differ from the approved variant; edit the variant through review instead",
+                    422,
+                )
+            it.instructions = approved_steps
             for name, f in it.prescribed_dose.fields.items() if it.prescribed_dose else []:
                 if f.is_set and f.provenance == "clinician_authored" and not f.author_id:
                     raise PlanError("dose_provenance", f"{name}: clinician-authored value needs author_id", 422)
+            try:
+                verify_dose_fields(
+                    conn,
+                    {k: f for k, f in it.prescribed_dose.fields.items()} if it.prescribed_dose else {},
+                    variant_version_id=it.variant_version_id,
+                    actor_id=user_id,
+                )
+            except ProvenanceError as e:
+                raise PlanError(e.code, e.message, 422) from e
         opt.items = patch.items
     if patch.rationale is not None:
         if not narrative_matches(opt, patch.rationale):

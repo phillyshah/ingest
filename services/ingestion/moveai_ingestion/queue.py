@@ -18,6 +18,7 @@ PERMANENT_ERRORS = {
     "rights_denied",
     "rights_unknown",
     "not_allowlisted",
+    "redirected_off_allowlist",
     "schema_invalid",
     "quarantined",
     "ssrf_blocked",

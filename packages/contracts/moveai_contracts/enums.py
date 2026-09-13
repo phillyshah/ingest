@@ -165,6 +165,9 @@ class ReviewDecision(StrEnum):
     withdraw = "withdraw"
     rights_allow = "rights_allow"
     rights_deny = "rights_deny"
+    # A PT/lead confirming a stored picture actually shows the exercise correctly (spec §20A). Distinct from
+    # approving the media version: rights say the picture *may* be shown; technique review says it *should* be.
+    technique_review = "technique_review"
 
 
 SQL_ENUM_MAP: dict[str, type[StrEnum]] = {

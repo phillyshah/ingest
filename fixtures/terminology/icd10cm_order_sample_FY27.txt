@@ -3,10 +3,734 @@
 00003 M7501   1 Adhesive capsulitis of right shoulder                        Adhesive capsulitis of right shoulder
 00004 M7502   1 Adhesive capsulitis of left shoulder                         Adhesive capsulitis of left shoulder
 00005 S8341   0 Sprain of medial collateral ligament of knee                 Sprain of medial collateral ligament of knee
-00006 S83411A 1 Sprain of medial collateral ligament of right knee, init     Sprain of medial collateral ligament of right knee, initial encounter
-00007 S83412A 1 Sprain of medial collateral ligament of left knee, init      Sprain of medial collateral ligament of left knee, initial encounter
-00008 S83419A 1 Sprain of medial collateral ligament of unsp knee, init      Sprain of medial collateral ligament of unspecified knee, initial encounter
-00009 S7631   0 Strain of musc/fasc/tend the posterior musc grp at thi lv    Strain of muscle, fascia and tendon of the posterior muscle group at thigh level
-00010 S76311A 1 Strain of musc/fasc/tend post grp at thi lv, right thigh, init Strain of muscle, fascia and tendon of the posterior muscle group at thigh level, right thigh, initial encounter
-00011 S76312A 1 Strain of musc/fasc/tend post grp at thi lv, left thigh, init Strain of muscle, fascia and tendon of the posterior muscle group at thigh level, left thigh, initial encounter
-00012 S76319A 1 Strain of musc/fasc/tend post grp at thi lv, unsp thigh, init Strain of muscle, fascia and tendon of the posterior muscle group at thigh level, unspecified thigh, initial encounter
+00006 S83411A 1 Sprain of medial collateral ligament of right knee, initial  Sprain of medial collateral ligament of right knee, initial encounter
+00007 S83411D 1 Sprain of medial collateral ligament of right knee, subseque Sprain of medial collateral ligament of right knee, subsequent encounter
+00008 S83412A 1 Sprain of medial collateral ligament of left knee, initial e Sprain of medial collateral ligament of left knee, initial encounter
+00009 S83412D 1 Sprain of medial collateral ligament of left knee, subsequen Sprain of medial collateral ligament of left knee, subsequent encounter
+00010 S83419A 1 Sprain of medial collateral ligament of unspecified knee, in Sprain of medial collateral ligament of unspecified knee, initial encounter
+00011 S83419D 1 Sprain of medial collateral ligament of unspecified knee, su Sprain of medial collateral ligament of unspecified knee, subsequent encounter
+00012 S7631   0 Strain of muscle, fascia and tendon of the posterior muscle  Strain of muscle, fascia and tendon of the posterior muscle group at thigh level
+00013 S76311A 1 Strain of muscle, fascia and tendon of the posterior muscle  Strain of muscle, fascia and tendon of the posterior muscle group at thigh level, right thigh, initial encounter
+00014 S76311D 1 Strain of muscle, fascia and tendon of the posterior muscle  Strain of muscle, fascia and tendon of the posterior muscle group at thigh level, right thigh, subsequent encounter
+00015 S76312A 1 Strain of muscle, fascia and tendon of the posterior muscle  Strain of muscle, fascia and tendon of the posterior muscle group at thigh level, left thigh, initial encounter
+00016 S76312D 1 Strain of muscle, fascia and tendon of the posterior muscle  Strain of muscle, fascia and tendon of the posterior muscle group at thigh level, left thigh, subsequent encounter
+00017 S76319A 1 Strain of muscle, fascia and tendon of the posterior muscle  Strain of muscle, fascia and tendon of the posterior muscle group at thigh level, unspecified thigh, initial encounter
+00018 S76319D 1 Strain of muscle, fascia and tendon of the posterior muscle  Strain of muscle, fascia and tendon of the posterior muscle group at thigh level, unspecified thigh, subsequent encounter
+00019 Z966    0 Presence of orthopedic joint implants                        Presence of orthopedic joint implants
+00020 Z9661   0 Presence of artificial shoulder joint                        Presence of artificial shoulder joint
+00021 Z96611  1 Presence of right artificial shoulder joint                  Presence of right artificial shoulder joint
+00022 Z96612  1 Presence of left artificial shoulder joint                   Presence of left artificial shoulder joint
+00023 Z96619  1 Presence of unspecified artificial shoulder joint            Presence of unspecified artificial shoulder joint
+00024 Z9664   0 Presence of artificial hip joint                             Presence of artificial hip joint
+00025 Z96641  1 Presence of right artificial hip joint                       Presence of right artificial hip joint
+00026 Z96642  1 Presence of left artificial hip joint                        Presence of left artificial hip joint
+00027 Z96643  1 Presence of bilateral artificial hip joint                   Presence of bilateral artificial hip joint
+00028 Z96649  1 Presence of unspecified artificial hip joint                 Presence of unspecified artificial hip joint
+00029 Z9665   0 Presence of artificial knee joint                            Presence of artificial knee joint
+00030 Z96651  1 Presence of right artificial knee joint                      Presence of right artificial knee joint
+00031 Z96652  1 Presence of left artificial knee joint                       Presence of left artificial knee joint
+00032 Z96653  1 Presence of bilateral artificial knee joint                  Presence of bilateral artificial knee joint
+00033 Z96659  1 Presence of unspecified artificial knee joint                Presence of unspecified artificial knee joint
+00034 Z471    1 Aftercare following joint replacement surgery                Aftercare following joint replacement surgery
+00035 Z472    1 Encounter for removal of internal fixation device            Encounter for removal of internal fixation device
+00036 Z4731   1 Aftercare following explantation of shoulder joint prosthesi Aftercare following explantation of shoulder joint prosthesis
+00037 Z4732   1 Aftercare following explantation of hip joint prosthesis     Aftercare following explantation of hip joint prosthesis
+00038 Z4733   1 Aftercare following explantation of knee joint prosthesis    Aftercare following explantation of knee joint prosthesis
+00039 Z4789   1 Encounter for other orthopedic aftercare                     Encounter for other orthopedic aftercare
+00040 Z48812  1 Encounter for surgical aftercare following surgery on the mu Encounter for surgical aftercare following surgery on the musculoskeletal system
+00041 Z5189   1 Encounter for other specified aftercare                      Encounter for other specified aftercare
+00042 Z8961   1 Acquired absence of hip joint                                Acquired absence of hip joint
+00043 T840    0 Mechanical complication of internal joint prosthesis         Mechanical complication of internal joint prosthesis
+00044 T84010A 1 Broken internal right hip prosthesis, initial encounter      Broken internal right hip prosthesis, initial encounter
+00045 T84010D 1 Broken internal right hip prosthesis, subsequent encounter   Broken internal right hip prosthesis, subsequent encounter
+00046 T84011A 1 Broken internal left hip prosthesis, initial encounter       Broken internal left hip prosthesis, initial encounter
+00047 T84011D 1 Broken internal left hip prosthesis, subsequent encounter    Broken internal left hip prosthesis, subsequent encounter
+00048 T84012A 1 Broken internal right knee prosthesis, initial encounter     Broken internal right knee prosthesis, initial encounter
+00049 T84012D 1 Broken internal right knee prosthesis, subsequent encounter  Broken internal right knee prosthesis, subsequent encounter
+00050 T84013A 1 Broken internal left knee prosthesis, initial encounter      Broken internal left knee prosthesis, initial encounter
+00051 T84013D 1 Broken internal left knee prosthesis, subsequent encounter   Broken internal left knee prosthesis, subsequent encounter
+00052 T84020A 1 Dislocation of internal right hip prosthesis, initial encoun Dislocation of internal right hip prosthesis, initial encounter
+00053 T84020D 1 Dislocation of internal right hip prosthesis, subsequent enc Dislocation of internal right hip prosthesis, subsequent encounter
+00054 T84021A 1 Dislocation of internal left hip prosthesis, initial encount Dislocation of internal left hip prosthesis, initial encounter
+00055 T84021D 1 Dislocation of internal left hip prosthesis, subsequent enco Dislocation of internal left hip prosthesis, subsequent encounter
+00056 T84022A 1 Instability of internal right knee prosthesis, initial encou Instability of internal right knee prosthesis, initial encounter
+00057 T84022D 1 Instability of internal right knee prosthesis, subsequent en Instability of internal right knee prosthesis, subsequent encounter
+00058 T84023A 1 Instability of internal left knee prosthesis, initial encoun Instability of internal left knee prosthesis, initial encounter
+00059 T84023D 1 Instability of internal left knee prosthesis, subsequent enc Instability of internal left knee prosthesis, subsequent encounter
+00060 T84030A 1 Mechanical loosening of unspecified internal prosthetic join Mechanical loosening of unspecified internal prosthetic joint, initial encounter
+00061 T84030D 1 Mechanical loosening of unspecified internal prosthetic join Mechanical loosening of unspecified internal prosthetic joint, subsequent encounter
+00062 T84031A 1 Mechanical loosening of internal right hip prosthetic joint, Mechanical loosening of internal right hip prosthetic joint, initial encounter
+00063 T84031D 1 Mechanical loosening of internal right hip prosthetic joint, Mechanical loosening of internal right hip prosthetic joint, subsequent encounter
+00064 T84032A 1 Mechanical loosening of internal left hip prosthetic joint,  Mechanical loosening of internal left hip prosthetic joint, initial encounter
+00065 T84032D 1 Mechanical loosening of internal left hip prosthetic joint,  Mechanical loosening of internal left hip prosthetic joint, subsequent encounter
+00066 T84033A 1 Mechanical loosening of internal right knee prosthetic joint Mechanical loosening of internal right knee prosthetic joint, initial encounter
+00067 T84033D 1 Mechanical loosening of internal right knee prosthetic joint Mechanical loosening of internal right knee prosthetic joint, subsequent encounter
+00068 T84034A 1 Mechanical loosening of internal left knee prosthetic joint, Mechanical loosening of internal left knee prosthetic joint, initial encounter
+00069 T84034D 1 Mechanical loosening of internal left knee prosthetic joint, Mechanical loosening of internal left knee prosthetic joint, subsequent encounter
+00070 T84050A 1 Periprosthetic osteolysis of unspecified internal prosthetic Periprosthetic osteolysis of unspecified internal prosthetic joint, initial encounter
+00071 T84050D 1 Periprosthetic osteolysis of unspecified internal prosthetic Periprosthetic osteolysis of unspecified internal prosthetic joint, subsequent encounter
+00072 T84051A 1 Periprosthetic osteolysis of internal right hip prosthetic j Periprosthetic osteolysis of internal right hip prosthetic joint, initial encounter
+00073 T84051D 1 Periprosthetic osteolysis of internal right hip prosthetic j Periprosthetic osteolysis of internal right hip prosthetic joint, subsequent encounter
+00074 T84052A 1 Periprosthetic osteolysis of internal left hip prosthetic jo Periprosthetic osteolysis of internal left hip prosthetic joint, initial encounter
+00075 T84052D 1 Periprosthetic osteolysis of internal left hip prosthetic jo Periprosthetic osteolysis of internal left hip prosthetic joint, subsequent encounter
+00076 T84053A 1 Periprosthetic osteolysis of internal right knee prosthetic  Periprosthetic osteolysis of internal right knee prosthetic joint, initial encounter
+00077 T84053D 1 Periprosthetic osteolysis of internal right knee prosthetic  Periprosthetic osteolysis of internal right knee prosthetic joint, subsequent encounter
+00078 T84054A 1 Periprosthetic osteolysis of internal left knee prosthetic j Periprosthetic osteolysis of internal left knee prosthetic joint, initial encounter
+00079 T84054D 1 Periprosthetic osteolysis of internal left knee prosthetic j Periprosthetic osteolysis of internal left knee prosthetic joint, subsequent encounter
+00080 T8451XA 1 Infection and inflammatory reaction due to internal right hi Infection and inflammatory reaction due to internal right hip prosthesis, initial encounter
+00081 T8451XD 1 Infection and inflammatory reaction due to internal right hi Infection and inflammatory reaction due to internal right hip prosthesis, subsequent encounter
+00082 T8452XA 1 Infection and inflammatory reaction due to internal left hip Infection and inflammatory reaction due to internal left hip prosthesis, initial encounter
+00083 T8452XD 1 Infection and inflammatory reaction due to internal left hip Infection and inflammatory reaction due to internal left hip prosthesis, subsequent encounter
+00084 T8453XA 1 Infection and inflammatory reaction due to internal right kn Infection and inflammatory reaction due to internal right knee prosthesis, initial encounter
+00085 T8453XD 1 Infection and inflammatory reaction due to internal right kn Infection and inflammatory reaction due to internal right knee prosthesis, subsequent encounter
+00086 T8454XA 1 Infection and inflammatory reaction due to internal left kne Infection and inflammatory reaction due to internal left knee prosthesis, initial encounter
+00087 T8454XD 1 Infection and inflammatory reaction due to internal left kne Infection and inflammatory reaction due to internal left knee prosthesis, subsequent encounter
+00088 T8484XA 1 Pain due to internal orthopedic prosthetic devices, implants Pain due to internal orthopedic prosthetic devices, implants and grafts, initial encounter
+00089 T8484XD 1 Pain due to internal orthopedic prosthetic devices, implants Pain due to internal orthopedic prosthetic devices, implants and grafts, subsequent encounter
+00090 T8481XA 1 Embolism due to internal orthopedic prosthetic devices, impl Embolism due to internal orthopedic prosthetic devices, implants and grafts, initial encounter
+00091 T8481XD 1 Embolism due to internal orthopedic prosthetic devices, impl Embolism due to internal orthopedic prosthetic devices, implants and grafts, subsequent encounter
+00092 M97     0 Periprosthetic fracture around internal prosthetic joint     Periprosthetic fracture around internal prosthetic joint
+00093 M9701XA 1 Periprosthetic fracture around internal prosthetic right hip Periprosthetic fracture around internal prosthetic right hip joint, initial encounter
+00094 M9701XD 1 Periprosthetic fracture around internal prosthetic right hip Periprosthetic fracture around internal prosthetic right hip joint, subsequent encounter
+00095 M9702XA 1 Periprosthetic fracture around internal prosthetic left hip  Periprosthetic fracture around internal prosthetic left hip joint, initial encounter
+00096 M9702XD 1 Periprosthetic fracture around internal prosthetic left hip  Periprosthetic fracture around internal prosthetic left hip joint, subsequent encounter
+00097 M9711XA 1 Periprosthetic fracture around internal prosthetic right kne Periprosthetic fracture around internal prosthetic right knee joint, initial encounter
+00098 M9711XD 1 Periprosthetic fracture around internal prosthetic right kne Periprosthetic fracture around internal prosthetic right knee joint, subsequent encounter
+00099 M9712XA 1 Periprosthetic fracture around internal prosthetic left knee Periprosthetic fracture around internal prosthetic left knee joint, initial encounter
+00100 M9712XD 1 Periprosthetic fracture around internal prosthetic left knee Periprosthetic fracture around internal prosthetic left knee joint, subsequent encounter
+00101 M9731XA 1 Periprosthetic fracture around internal prosthetic right sho Periprosthetic fracture around internal prosthetic right shoulder joint, initial encounter
+00102 M9731XD 1 Periprosthetic fracture around internal prosthetic right sho Periprosthetic fracture around internal prosthetic right shoulder joint, subsequent encounter
+00103 M9732XA 1 Periprosthetic fracture around internal prosthetic left shou Periprosthetic fracture around internal prosthetic left shoulder joint, initial encounter
+00104 M9732XD 1 Periprosthetic fracture around internal prosthetic left shou Periprosthetic fracture around internal prosthetic left shoulder joint, subsequent encounter
+00105 M16     0 Osteoarthritis of hip                                        Osteoarthritis of hip
+00106 M160    1 Bilateral primary osteoarthritis of hip                      Bilateral primary osteoarthritis of hip
+00107 M1610   1 Unilateral primary osteoarthritis, unspecified hip           Unilateral primary osteoarthritis, unspecified hip
+00108 M1611   1 Unilateral primary osteoarthritis, right hip                 Unilateral primary osteoarthritis, right hip
+00109 M1612   1 Unilateral primary osteoarthritis, left hip                  Unilateral primary osteoarthritis, left hip
+00110 M162    1 Bilateral osteoarthritis resulting from hip dysplasia        Bilateral osteoarthritis resulting from hip dysplasia
+00111 M1630   1 Unilateral osteoarthritis resulting from hip dysplasia, unsp Unilateral osteoarthritis resulting from hip dysplasia, unspecified hip
+00112 M1631   1 Unilateral osteoarthritis resulting from hip dysplasia, righ Unilateral osteoarthritis resulting from hip dysplasia, right hip
+00113 M1632   1 Unilateral osteoarthritis resulting from hip dysplasia, left Unilateral osteoarthritis resulting from hip dysplasia, left hip
+00114 M164    1 Bilateral post-traumatic osteoarthritis of hip               Bilateral post-traumatic osteoarthritis of hip
+00115 M1650   1 Unilateral post-traumatic osteoarthritis, unspecified hip    Unilateral post-traumatic osteoarthritis, unspecified hip
+00116 M1651   1 Unilateral post-traumatic osteoarthritis, right hip          Unilateral post-traumatic osteoarthritis, right hip
+00117 M1652   1 Unilateral post-traumatic osteoarthritis, left hip           Unilateral post-traumatic osteoarthritis, left hip
+00118 M166    1 Other bilateral secondary osteoarthritis of hip              Other bilateral secondary osteoarthritis of hip
+00119 M167    1 Other unilateral secondary osteoarthritis of hip             Other unilateral secondary osteoarthritis of hip
+00120 M169    1 Osteoarthritis of hip, unspecified                           Osteoarthritis of hip, unspecified
+00121 M17     0 Osteoarthritis of knee                                       Osteoarthritis of knee
+00122 M170    1 Bilateral primary osteoarthritis of knee                     Bilateral primary osteoarthritis of knee
+00123 M1710   1 Unilateral primary osteoarthritis, unspecified knee          Unilateral primary osteoarthritis, unspecified knee
+00124 M1711   1 Unilateral primary osteoarthritis, right knee                Unilateral primary osteoarthritis, right knee
+00125 M1712   1 Unilateral primary osteoarthritis, left knee                 Unilateral primary osteoarthritis, left knee
+00126 M172    1 Bilateral post-traumatic osteoarthritis of knee              Bilateral post-traumatic osteoarthritis of knee
+00127 M1730   1 Unilateral post-traumatic osteoarthritis, unspecified knee   Unilateral post-traumatic osteoarthritis, unspecified knee
+00128 M1731   1 Unilateral post-traumatic osteoarthritis, right knee         Unilateral post-traumatic osteoarthritis, right knee
+00129 M1732   1 Unilateral post-traumatic osteoarthritis, left knee          Unilateral post-traumatic osteoarthritis, left knee
+00130 M174    1 Other bilateral secondary osteoarthritis of knee             Other bilateral secondary osteoarthritis of knee
+00131 M175    1 Other unilateral secondary osteoarthritis of knee            Other unilateral secondary osteoarthritis of knee
+00132 M179    1 Osteoarthritis of knee, unspecified                          Osteoarthritis of knee, unspecified
+00133 M1901   0 Primary osteoarthritis, shoulder                             Primary osteoarthritis, shoulder
+00134 M19011  1 Primary osteoarthritis, right shoulder                       Primary osteoarthritis, right shoulder
+00135 M19012  1 Primary osteoarthritis, left shoulder                        Primary osteoarthritis, left shoulder
+00136 M19019  1 Primary osteoarthritis, unspecified shoulder                 Primary osteoarthritis, unspecified shoulder
+00137 M1911   0 Post-traumatic osteoarthritis, shoulder                      Post-traumatic osteoarthritis, shoulder
+00138 M19111  1 Post-traumatic osteoarthritis, right shoulder                Post-traumatic osteoarthritis, right shoulder
+00139 M19112  1 Post-traumatic osteoarthritis, left shoulder                 Post-traumatic osteoarthritis, left shoulder
+00140 M19119  1 Post-traumatic osteoarthritis, unspecified shoulder          Post-traumatic osteoarthritis, unspecified shoulder
+00141 M8705   0 Idiopathic aseptic necrosis of pelvis and femur              Idiopathic aseptic necrosis of pelvis and femur
+00142 M87050  1 Idiopathic aseptic necrosis of pelvis                        Idiopathic aseptic necrosis of pelvis
+00143 M87051  1 Idiopathic aseptic necrosis of right femur                   Idiopathic aseptic necrosis of right femur
+00144 M87052  1 Idiopathic aseptic necrosis of left femur                    Idiopathic aseptic necrosis of left femur
+00145 M87059  1 Idiopathic aseptic necrosis of unspecified femur             Idiopathic aseptic necrosis of unspecified femur
+00146 M87011  1 Idiopathic aseptic necrosis of right shoulder                Idiopathic aseptic necrosis of right shoulder
+00147 M87012  1 Idiopathic aseptic necrosis of left shoulder                 Idiopathic aseptic necrosis of left shoulder
+00148 M1A     0 Chronic gout                                                 Chronic gout
+00149 M255    0 Pain in joint                                                Pain in joint
+00150 M25511  1 Pain in right shoulder                                       Pain in right shoulder
+00151 M25512  1 Pain in left shoulder                                        Pain in left shoulder
+00152 M25519  1 Pain in unspecified shoulder                                 Pain in unspecified shoulder
+00153 M25551  1 Pain in right hip                                            Pain in right hip
+00154 M25552  1 Pain in left hip                                             Pain in left hip
+00155 M25559  1 Pain in unspecified hip                                      Pain in unspecified hip
+00156 M25561  1 Pain in right knee                                           Pain in right knee
+00157 M25562  1 Pain in left knee                                            Pain in left knee
+00158 M25569  1 Pain in unspecified knee                                     Pain in unspecified knee
+00159 M25571  1 Pain in right ankle and joints of right foot                 Pain in right ankle and joints of right foot
+00160 M25572  1 Pain in left ankle and joints of left foot                   Pain in left ankle and joints of left foot
+00161 M25579  1 Pain in unspecified ankle and joints of unspecified foot     Pain in unspecified ankle and joints of unspecified foot
+00162 M25611  1 Stiffness of right shoulder, not elsewhere classified        Stiffness of right shoulder, not elsewhere classified
+00163 M25612  1 Stiffness of left shoulder, not elsewhere classified         Stiffness of left shoulder, not elsewhere classified
+00164 M25619  1 Stiffness of unspecified shoulder, not elsewhere classified  Stiffness of unspecified shoulder, not elsewhere classified
+00165 M25651  1 Stiffness of right hip, not elsewhere classified             Stiffness of right hip, not elsewhere classified
+00166 M25652  1 Stiffness of left hip, not elsewhere classified              Stiffness of left hip, not elsewhere classified
+00167 M25659  1 Stiffness of unspecified hip, not elsewhere classified       Stiffness of unspecified hip, not elsewhere classified
+00168 M25661  1 Stiffness of right knee, not elsewhere classified            Stiffness of right knee, not elsewhere classified
+00169 M25662  1 Stiffness of left knee, not elsewhere classified             Stiffness of left knee, not elsewhere classified
+00170 M25669  1 Stiffness of unspecified knee, not elsewhere classified      Stiffness of unspecified knee, not elsewhere classified
+00171 M24511  1 Contracture, right shoulder                                  Contracture, right shoulder
+00172 M24512  1 Contracture, left shoulder                                   Contracture, left shoulder
+00173 M24519  1 Contracture, unspecified shoulder                            Contracture, unspecified shoulder
+00174 M24551  1 Contracture, right hip                                       Contracture, right hip
+00175 M24552  1 Contracture, left hip                                        Contracture, left hip
+00176 M24559  1 Contracture, unspecified hip                                 Contracture, unspecified hip
+00177 M24561  1 Contracture, right knee                                      Contracture, right knee
+00178 M24562  1 Contracture, left knee                                       Contracture, left knee
+00179 M24569  1 Contracture, unspecified knee                                Contracture, unspecified knee
+00180 M24411  1 Recurrent dislocation, right shoulder                        Recurrent dislocation, right shoulder
+00181 M24412  1 Recurrent dislocation, left shoulder                         Recurrent dislocation, left shoulder
+00182 M24419  1 Recurrent dislocation, unspecified shoulder                  Recurrent dislocation, unspecified shoulder
+00183 M24851  1 Other specific joint derangements of right hip, not elsewher Other specific joint derangements of right hip, not elsewhere classified
+00184 M24852  1 Other specific joint derangements of left hip, not elsewhere Other specific joint derangements of left hip, not elsewhere classified
+00185 M24859  1 Other specific joint derangements of unspecified hip, not el Other specific joint derangements of unspecified hip, not elsewhere classified
+00186 M24151  1 Other articular cartilage disorders, right hip               Other articular cartilage disorders, right hip
+00187 M24152  1 Other articular cartilage disorders, left hip                Other articular cartilage disorders, left hip
+00188 M24159  1 Other articular cartilage disorders, unspecified hip         Other articular cartilage disorders, unspecified hip
+00189 M24251  1 Disorder of ligament, right hip                              Disorder of ligament, right hip
+00190 M24252  1 Disorder of ligament, left hip                               Disorder of ligament, left hip
+00191 M24259  1 Disorder of ligament, unspecified hip                        Disorder of ligament, unspecified hip
+00192 M235    0 Chronic instability of knee                                  Chronic instability of knee
+00193 M2350   1 Chronic instability of knee, unspecified knee                Chronic instability of knee, unspecified knee
+00194 M2351   1 Chronic instability of knee, right knee                      Chronic instability of knee, right knee
+00195 M2352   1 Chronic instability of knee, left knee                       Chronic instability of knee, left knee
+00196 M24831  1 Other specific joint derangements of right ankle, not elsewh Other specific joint derangements of right ankle, not elsewhere classified
+00197 M24832  1 Other specific joint derangements of left ankle, not elsewhe Other specific joint derangements of left ankle, not elsewhere classified
+00198 M24839  1 Other specific joint derangements of unspecified ankle, not  Other specific joint derangements of unspecified ankle, not elsewhere classified
+00199 M751    0 Rotator cuff tear or rupture, not specified as traumatic     Rotator cuff tear or rupture, not specified as traumatic
+00200 M75100  1 Unspecified rotator cuff tear or rupture of unspecified shou Unspecified rotator cuff tear or rupture of unspecified shoulder, not specified as traumatic
+00201 M75101  1 Unspecified rotator cuff tear or rupture of right shoulder,  Unspecified rotator cuff tear or rupture of right shoulder, not specified as traumatic
+00202 M75102  1 Unspecified rotator cuff tear or rupture of left shoulder, n Unspecified rotator cuff tear or rupture of left shoulder, not specified as traumatic
+00203 M75110  1 Incomplete rotator cuff tear or rupture of unspecified shoul Incomplete rotator cuff tear or rupture of unspecified shoulder, not specified as traumatic
+00204 M75111  1 Incomplete rotator cuff tear or rupture of right shoulder, n Incomplete rotator cuff tear or rupture of right shoulder, not specified as traumatic
+00205 M75112  1 Incomplete rotator cuff tear or rupture of left shoulder, no Incomplete rotator cuff tear or rupture of left shoulder, not specified as traumatic
+00206 M75120  1 Complete rotator cuff tear or rupture of unspecified shoulde Complete rotator cuff tear or rupture of unspecified shoulder, not specified as traumatic
+00207 M75121  1 Complete rotator cuff tear or rupture of right shoulder, not Complete rotator cuff tear or rupture of right shoulder, not specified as traumatic
+00208 M75122  1 Complete rotator cuff tear or rupture of left shoulder, not  Complete rotator cuff tear or rupture of left shoulder, not specified as traumatic
+00209 M7520   1 Bicipital tendinitis unspecified shoulder                    Bicipital tendinitis unspecified shoulder
+00210 M7521   1 Bicipital tendinitis right shoulder                          Bicipital tendinitis right shoulder
+00211 M7522   1 Bicipital tendinitis left shoulder                           Bicipital tendinitis left shoulder
+00212 M7530   1 Calcific tendinitis of unspecified shoulder                  Calcific tendinitis of unspecified shoulder
+00213 M7531   1 Calcific tendinitis of right shoulder                        Calcific tendinitis of right shoulder
+00214 M7532   1 Calcific tendinitis of left shoulder                         Calcific tendinitis of left shoulder
+00215 M7540   1 Impingement syndrome of unspecified shoulder                 Impingement syndrome of unspecified shoulder
+00216 M7541   1 Impingement syndrome of right shoulder                       Impingement syndrome of right shoulder
+00217 M7542   1 Impingement syndrome of left shoulder                        Impingement syndrome of left shoulder
+00218 M7550   1 Bursitis of unspecified shoulder                             Bursitis of unspecified shoulder
+00219 M7551   1 Bursitis of right shoulder                                   Bursitis of right shoulder
+00220 M7552   1 Bursitis of left shoulder                                    Bursitis of left shoulder
+00221 M7580   1 Other shoulder lesions, unspecified shoulder                 Other shoulder lesions, unspecified shoulder
+00222 M7581   1 Other shoulder lesions, right shoulder                       Other shoulder lesions, right shoulder
+00223 M7582   1 Other shoulder lesions, left shoulder                        Other shoulder lesions, left shoulder
+00224 S430    0 Subluxation and dislocation of shoulder joint                Subluxation and dislocation of shoulder joint
+00225 S43001A 1 Unspecified subluxation and dislocation of right shoulder jo Unspecified subluxation and dislocation of right shoulder joint, initial encounter
+00226 S43001D 1 Unspecified subluxation and dislocation of right shoulder jo Unspecified subluxation and dislocation of right shoulder joint, subsequent encounter
+00227 S43002A 1 Unspecified subluxation and dislocation of left shoulder joi Unspecified subluxation and dislocation of left shoulder joint, initial encounter
+00228 S43002D 1 Unspecified subluxation and dislocation of left shoulder joi Unspecified subluxation and dislocation of left shoulder joint, subsequent encounter
+00229 S43003A 1 Unspecified subluxation and dislocation of unspecified shoul Unspecified subluxation and dislocation of unspecified shoulder joint, initial encounter
+00230 S43003D 1 Unspecified subluxation and dislocation of unspecified shoul Unspecified subluxation and dislocation of unspecified shoulder joint, subsequent encounter
+00231 S43011A 1 Anterior subluxation and dislocation of right shoulder joint Anterior subluxation and dislocation of right shoulder joint, initial encounter
+00232 S43011D 1 Anterior subluxation and dislocation of right shoulder joint Anterior subluxation and dislocation of right shoulder joint, subsequent encounter
+00233 S43012A 1 Anterior subluxation and dislocation of left shoulder joint, Anterior subluxation and dislocation of left shoulder joint, initial encounter
+00234 S43012D 1 Anterior subluxation and dislocation of left shoulder joint, Anterior subluxation and dislocation of left shoulder joint, subsequent encounter
+00235 S43013A 1 Anterior subluxation and dislocation of unspecified shoulder Anterior subluxation and dislocation of unspecified shoulder joint, initial encounter
+00236 S43013D 1 Anterior subluxation and dislocation of unspecified shoulder Anterior subluxation and dislocation of unspecified shoulder joint, subsequent encounter
+00237 S43021A 1 Posterior subluxation and dislocation of right shoulder join Posterior subluxation and dislocation of right shoulder joint, initial encounter
+00238 S43021D 1 Posterior subluxation and dislocation of right shoulder join Posterior subluxation and dislocation of right shoulder joint, subsequent encounter
+00239 S43022A 1 Posterior subluxation and dislocation of left shoulder joint Posterior subluxation and dislocation of left shoulder joint, initial encounter
+00240 S43022D 1 Posterior subluxation and dislocation of left shoulder joint Posterior subluxation and dislocation of left shoulder joint, subsequent encounter
+00241 S43023A 1 Posterior subluxation and dislocation of unspecified shoulde Posterior subluxation and dislocation of unspecified shoulder joint, initial encounter
+00242 S43023D 1 Posterior subluxation and dislocation of unspecified shoulde Posterior subluxation and dislocation of unspecified shoulder joint, subsequent encounter
+00243 S431    0 Subluxation and dislocation of acromioclavicular joint       Subluxation and dislocation of acromioclavicular joint
+00244 S43101A 1 Unspecified dislocation of right acromioclavicular joint, in Unspecified dislocation of right acromioclavicular joint, initial encounter
+00245 S43101D 1 Unspecified dislocation of right acromioclavicular joint, su Unspecified dislocation of right acromioclavicular joint, subsequent encounter
+00246 S43102A 1 Unspecified dislocation of left acromioclavicular joint, ini Unspecified dislocation of left acromioclavicular joint, initial encounter
+00247 S43102D 1 Unspecified dislocation of left acromioclavicular joint, sub Unspecified dislocation of left acromioclavicular joint, subsequent encounter
+00248 S43109A 1 Unspecified dislocation of unspecified acromioclavicular joi Unspecified dislocation of unspecified acromioclavicular joint, initial encounter
+00249 S43109D 1 Unspecified dislocation of unspecified acromioclavicular joi Unspecified dislocation of unspecified acromioclavicular joint, subsequent encounter
+00250 S434    0 Sprain of shoulder joint                                     Sprain of shoulder joint
+00251 S43401A 1 Unspecified sprain of right shoulder joint, initial encounte Unspecified sprain of right shoulder joint, initial encounter
+00252 S43401D 1 Unspecified sprain of right shoulder joint, subsequent encou Unspecified sprain of right shoulder joint, subsequent encounter
+00253 S43421A 1 Sprain of right rotator cuff capsule, initial encounter      Sprain of right rotator cuff capsule, initial encounter
+00254 S43421D 1 Sprain of right rotator cuff capsule, subsequent encounter   Sprain of right rotator cuff capsule, subsequent encounter
+00255 S43431A 1 Superior glenoid labrum lesion of right shoulder, initial en Superior glenoid labrum lesion of right shoulder, initial encounter
+00256 S43431D 1 Superior glenoid labrum lesion of right shoulder, subsequent Superior glenoid labrum lesion of right shoulder, subsequent encounter
+00257 S43402A 1 Unspecified sprain of left shoulder joint, initial encounter Unspecified sprain of left shoulder joint, initial encounter
+00258 S43402D 1 Unspecified sprain of left shoulder joint, subsequent encoun Unspecified sprain of left shoulder joint, subsequent encounter
+00259 S43422A 1 Sprain of left rotator cuff capsule, initial encounter       Sprain of left rotator cuff capsule, initial encounter
+00260 S43422D 1 Sprain of left rotator cuff capsule, subsequent encounter    Sprain of left rotator cuff capsule, subsequent encounter
+00261 S43432A 1 Superior glenoid labrum lesion of left shoulder, initial enc Superior glenoid labrum lesion of left shoulder, initial encounter
+00262 S43432D 1 Superior glenoid labrum lesion of left shoulder, subsequent  Superior glenoid labrum lesion of left shoulder, subsequent encounter
+00263 S43409A 1 Unspecified sprain of unspecified shoulder joint, initial en Unspecified sprain of unspecified shoulder joint, initial encounter
+00264 S43409D 1 Unspecified sprain of unspecified shoulder joint, subsequent Unspecified sprain of unspecified shoulder joint, subsequent encounter
+00265 S43429A 1 Sprain of unspecified rotator cuff capsule, initial encounte Sprain of unspecified rotator cuff capsule, initial encounter
+00266 S43429D 1 Sprain of unspecified rotator cuff capsule, subsequent encou Sprain of unspecified rotator cuff capsule, subsequent encounter
+00267 S43439A 1 Superior glenoid labrum lesion of unspecified shoulder, init Superior glenoid labrum lesion of unspecified shoulder, initial encounter
+00268 S43439D 1 Superior glenoid labrum lesion of unspecified shoulder, subs Superior glenoid labrum lesion of unspecified shoulder, subsequent encounter
+00269 S4350XA 1 Sprain of unspecified acromioclavicular joint, initial encou Sprain of unspecified acromioclavicular joint, initial encounter
+00270 S4350XD 1 Sprain of unspecified acromioclavicular joint, subsequent en Sprain of unspecified acromioclavicular joint, subsequent encounter
+00271 S4351XA 1 Sprain of right acromioclavicular joint, initial encounter   Sprain of right acromioclavicular joint, initial encounter
+00272 S4351XD 1 Sprain of right acromioclavicular joint, subsequent encounte Sprain of right acromioclavicular joint, subsequent encounter
+00273 S4352XA 1 Sprain of left acromioclavicular joint, initial encounter    Sprain of left acromioclavicular joint, initial encounter
+00274 S4352XD 1 Sprain of left acromioclavicular joint, subsequent encounter Sprain of left acromioclavicular joint, subsequent encounter
+00275 S460    0 Injury of muscle(s) and tendon(s) of the rotator cuff of sho Injury of muscle(s) and tendon(s) of the rotator cuff of shoulder
+00276 S46011A 1 Strain of muscle(s) and tendon(s) of the rotator cuff of rig Strain of muscle(s) and tendon(s) of the rotator cuff of right shoulder, initial encounter
+00277 S46011D 1 Strain of muscle(s) and tendon(s) of the rotator cuff of rig Strain of muscle(s) and tendon(s) of the rotator cuff of right shoulder, subsequent encounter
+00278 S46021A 1 Laceration of muscle(s) and tendon(s) of the rotator cuff of Laceration of muscle(s) and tendon(s) of the rotator cuff of right shoulder, initial encounter
+00279 S46021D 1 Laceration of muscle(s) and tendon(s) of the rotator cuff of Laceration of muscle(s) and tendon(s) of the rotator cuff of right shoulder, subsequent encounter
+00280 S46111A 1 Strain of muscle, fascia and tendon of long head of biceps,  Strain of muscle, fascia and tendon of long head of biceps, right arm, initial encounter
+00281 S46111D 1 Strain of muscle, fascia and tendon of long head of biceps,  Strain of muscle, fascia and tendon of long head of biceps, right arm, subsequent encounter
+00282 S42001A 1 Fracture of unspecified part of right clavicle, initial enco Fracture of unspecified part of right clavicle, initial encounter
+00283 S42001D 1 Fracture of unspecified part of right clavicle, subsequent e Fracture of unspecified part of right clavicle, subsequent encounter
+00284 S42201A 1 Unspecified fracture of upper end of right humerus, initial  Unspecified fracture of upper end of right humerus, initial encounter
+00285 S42201D 1 Unspecified fracture of upper end of right humerus, subseque Unspecified fracture of upper end of right humerus, subsequent encounter
+00286 S42301A 1 Unspecified fracture of shaft of humerus, right arm, initial Unspecified fracture of shaft of humerus, right arm, initial encounter
+00287 S42301D 1 Unspecified fracture of shaft of humerus, right arm, subsequ Unspecified fracture of shaft of humerus, right arm, subsequent encounter
+00288 S46012A 1 Strain of muscle(s) and tendon(s) of the rotator cuff of lef Strain of muscle(s) and tendon(s) of the rotator cuff of left shoulder, initial encounter
+00289 S46012D 1 Strain of muscle(s) and tendon(s) of the rotator cuff of lef Strain of muscle(s) and tendon(s) of the rotator cuff of left shoulder, subsequent encounter
+00290 S46022A 1 Laceration of muscle(s) and tendon(s) of the rotator cuff of Laceration of muscle(s) and tendon(s) of the rotator cuff of left shoulder, initial encounter
+00291 S46022D 1 Laceration of muscle(s) and tendon(s) of the rotator cuff of Laceration of muscle(s) and tendon(s) of the rotator cuff of left shoulder, subsequent encounter
+00292 S46112A 1 Strain of muscle, fascia and tendon of long head of biceps,  Strain of muscle, fascia and tendon of long head of biceps, left arm, initial encounter
+00293 S46112D 1 Strain of muscle, fascia and tendon of long head of biceps,  Strain of muscle, fascia and tendon of long head of biceps, left arm, subsequent encounter
+00294 S42002A 1 Fracture of unspecified part of left clavicle, initial encou Fracture of unspecified part of left clavicle, initial encounter
+00295 S42002D 1 Fracture of unspecified part of left clavicle, subsequent en Fracture of unspecified part of left clavicle, subsequent encounter
+00296 S42202A 1 Unspecified fracture of upper end of left humerus, initial e Unspecified fracture of upper end of left humerus, initial encounter
+00297 S42202D 1 Unspecified fracture of upper end of left humerus, subsequen Unspecified fracture of upper end of left humerus, subsequent encounter
+00298 S42302A 1 Unspecified fracture of shaft of humerus, left arm, initial  Unspecified fracture of shaft of humerus, left arm, initial encounter
+00299 S42302D 1 Unspecified fracture of shaft of humerus, left arm, subseque Unspecified fracture of shaft of humerus, left arm, subsequent encounter
+00300 S46019A 1 Strain of muscle(s) and tendon(s) of the rotator cuff of uns Strain of muscle(s) and tendon(s) of the rotator cuff of unspecified shoulder, initial encounter
+00301 S46019D 1 Strain of muscle(s) and tendon(s) of the rotator cuff of uns Strain of muscle(s) and tendon(s) of the rotator cuff of unspecified shoulder, subsequent encounter
+00302 S46029A 1 Laceration of muscle(s) and tendon(s) of the rotator cuff of Laceration of muscle(s) and tendon(s) of the rotator cuff of unspecified shoulder, initial encounter
+00303 S46029D 1 Laceration of muscle(s) and tendon(s) of the rotator cuff of Laceration of muscle(s) and tendon(s) of the rotator cuff of unspecified shoulder, subsequent encounter
+00304 S46119A 1 Strain of muscle, fascia and tendon of long head of biceps,  Strain of muscle, fascia and tendon of long head of biceps, unspecified arm, initial encounter
+00305 S46119D 1 Strain of muscle, fascia and tendon of long head of biceps,  Strain of muscle, fascia and tendon of long head of biceps, unspecified arm, subsequent encounter
+00306 S42009A 1 Fracture of unspecified part of unspecified clavicle, initia Fracture of unspecified part of unspecified clavicle, initial encounter
+00307 S42009D 1 Fracture of unspecified part of unspecified clavicle, subseq Fracture of unspecified part of unspecified clavicle, subsequent encounter
+00308 S42209A 1 Unspecified fracture of upper end of unspecified humerus, in Unspecified fracture of upper end of unspecified humerus, initial encounter
+00309 S42209D 1 Unspecified fracture of upper end of unspecified humerus, su Unspecified fracture of upper end of unspecified humerus, subsequent encounter
+00310 S42309A 1 Unspecified fracture of shaft of humerus, unspecified arm, i Unspecified fracture of shaft of humerus, unspecified arm, initial encounter
+00311 S42309D 1 Unspecified fracture of shaft of humerus, unspecified arm, s Unspecified fracture of shaft of humerus, unspecified arm, subsequent encounter
+00312 S835    0 Sprain of cruciate ligament of knee                          Sprain of cruciate ligament of knee
+00313 S83501A 1 Sprain of unspecified cruciate ligament of right knee, initi Sprain of unspecified cruciate ligament of right knee, initial encounter
+00314 S83501D 1 Sprain of unspecified cruciate ligament of right knee, subse Sprain of unspecified cruciate ligament of right knee, subsequent encounter
+00315 S83502A 1 Sprain of unspecified cruciate ligament of left knee, initia Sprain of unspecified cruciate ligament of left knee, initial encounter
+00316 S83502D 1 Sprain of unspecified cruciate ligament of left knee, subseq Sprain of unspecified cruciate ligament of left knee, subsequent encounter
+00317 S83509A 1 Sprain of unspecified cruciate ligament of unspecified knee, Sprain of unspecified cruciate ligament of unspecified knee, initial encounter
+00318 S83509D 1 Sprain of unspecified cruciate ligament of unspecified knee, Sprain of unspecified cruciate ligament of unspecified knee, subsequent encounter
+00319 S83511A 1 Sprain of anterior cruciate ligament of right knee, initial  Sprain of anterior cruciate ligament of right knee, initial encounter
+00320 S83511D 1 Sprain of anterior cruciate ligament of right knee, subseque Sprain of anterior cruciate ligament of right knee, subsequent encounter
+00321 S83512A 1 Sprain of anterior cruciate ligament of left knee, initial e Sprain of anterior cruciate ligament of left knee, initial encounter
+00322 S83512D 1 Sprain of anterior cruciate ligament of left knee, subsequen Sprain of anterior cruciate ligament of left knee, subsequent encounter
+00323 S83519A 1 Sprain of anterior cruciate ligament of unspecified knee, in Sprain of anterior cruciate ligament of unspecified knee, initial encounter
+00324 S83519D 1 Sprain of anterior cruciate ligament of unspecified knee, su Sprain of anterior cruciate ligament of unspecified knee, subsequent encounter
+00325 S83521A 1 Sprain of posterior cruciate ligament of right knee, initial Sprain of posterior cruciate ligament of right knee, initial encounter
+00326 S83521D 1 Sprain of posterior cruciate ligament of right knee, subsequ Sprain of posterior cruciate ligament of right knee, subsequent encounter
+00327 S83522A 1 Sprain of posterior cruciate ligament of left knee, initial  Sprain of posterior cruciate ligament of left knee, initial encounter
+00328 S83522D 1 Sprain of posterior cruciate ligament of left knee, subseque Sprain of posterior cruciate ligament of left knee, subsequent encounter
+00329 S83529A 1 Sprain of posterior cruciate ligament of unspecified knee, i Sprain of posterior cruciate ligament of unspecified knee, initial encounter
+00330 S83529D 1 Sprain of posterior cruciate ligament of unspecified knee, s Sprain of posterior cruciate ligament of unspecified knee, subsequent encounter
+00331 S8342   0 Sprain of lateral collateral ligament of knee                Sprain of lateral collateral ligament of knee
+00332 S83421A 1 Sprain of lateral collateral ligament of right knee, initial Sprain of lateral collateral ligament of right knee, initial encounter
+00333 S83421D 1 Sprain of lateral collateral ligament of right knee, subsequ Sprain of lateral collateral ligament of right knee, subsequent encounter
+00334 S83422A 1 Sprain of lateral collateral ligament of left knee, initial  Sprain of lateral collateral ligament of left knee, initial encounter
+00335 S83422D 1 Sprain of lateral collateral ligament of left knee, subseque Sprain of lateral collateral ligament of left knee, subsequent encounter
+00336 S83429A 1 Sprain of lateral collateral ligament of unspecified knee, i Sprain of lateral collateral ligament of unspecified knee, initial encounter
+00337 S83429D 1 Sprain of lateral collateral ligament of unspecified knee, s Sprain of lateral collateral ligament of unspecified knee, subsequent encounter
+00338 S832    0 Tear of meniscus, current injury                             Tear of meniscus, current injury
+00339 S83201A 1 Unspecified tear of unspecified meniscus, current injury, ri Unspecified tear of unspecified meniscus, current injury, right knee, initial encounter
+00340 S83201D 1 Unspecified tear of unspecified meniscus, current injury, ri Unspecified tear of unspecified meniscus, current injury, right knee, subsequent encounter
+00341 S83202A 1 Unspecified tear of unspecified meniscus, current injury, le Unspecified tear of unspecified meniscus, current injury, left knee, initial encounter
+00342 S83202D 1 Unspecified tear of unspecified meniscus, current injury, le Unspecified tear of unspecified meniscus, current injury, left knee, subsequent encounter
+00343 S83209A 1 Unspecified tear of unspecified meniscus, current injury, un Unspecified tear of unspecified meniscus, current injury, unspecified knee, initial encounter
+00344 S83209D 1 Unspecified tear of unspecified meniscus, current injury, un Unspecified tear of unspecified meniscus, current injury, unspecified knee, subsequent encounter
+00345 S83211A 1 Bucket-handle tear of medial meniscus, current injury, right Bucket-handle tear of medial meniscus, current injury, right knee, initial encounter
+00346 S83211D 1 Bucket-handle tear of medial meniscus, current injury, right Bucket-handle tear of medial meniscus, current injury, right knee, subsequent encounter
+00347 S83212A 1 Bucket-handle tear of medial meniscus, current injury, left  Bucket-handle tear of medial meniscus, current injury, left knee, initial encounter
+00348 S83212D 1 Bucket-handle tear of medial meniscus, current injury, left  Bucket-handle tear of medial meniscus, current injury, left knee, subsequent encounter
+00349 S83219A 1 Bucket-handle tear of medial meniscus, current injury, unspe Bucket-handle tear of medial meniscus, current injury, unspecified knee, initial encounter
+00350 S83219D 1 Bucket-handle tear of medial meniscus, current injury, unspe Bucket-handle tear of medial meniscus, current injury, unspecified knee, subsequent encounter
+00351 S83221A 1 Peripheral tear of medial meniscus, current injury, right kn Peripheral tear of medial meniscus, current injury, right knee, initial encounter
+00352 S83221D 1 Peripheral tear of medial meniscus, current injury, right kn Peripheral tear of medial meniscus, current injury, right knee, subsequent encounter
+00353 S83222A 1 Peripheral tear of medial meniscus, current injury, left kne Peripheral tear of medial meniscus, current injury, left knee, initial encounter
+00354 S83222D 1 Peripheral tear of medial meniscus, current injury, left kne Peripheral tear of medial meniscus, current injury, left knee, subsequent encounter
+00355 S83229A 1 Peripheral tear of medial meniscus, current injury, unspecif Peripheral tear of medial meniscus, current injury, unspecified knee, initial encounter
+00356 S83229D 1 Peripheral tear of medial meniscus, current injury, unspecif Peripheral tear of medial meniscus, current injury, unspecified knee, subsequent encounter
+00357 S83231A 1 Complex tear of medial meniscus, current injury, right knee, Complex tear of medial meniscus, current injury, right knee, initial encounter
+00358 S83231D 1 Complex tear of medial meniscus, current injury, right knee, Complex tear of medial meniscus, current injury, right knee, subsequent encounter
+00359 S83232A 1 Complex tear of medial meniscus, current injury, left knee,  Complex tear of medial meniscus, current injury, left knee, initial encounter
+00360 S83232D 1 Complex tear of medial meniscus, current injury, left knee,  Complex tear of medial meniscus, current injury, left knee, subsequent encounter
+00361 S83239A 1 Complex tear of medial meniscus, current injury, unspecified Complex tear of medial meniscus, current injury, unspecified knee, initial encounter
+00362 S83239D 1 Complex tear of medial meniscus, current injury, unspecified Complex tear of medial meniscus, current injury, unspecified knee, subsequent encounter
+00363 S83241A 1 Other tear of medial meniscus, current injury, right knee, i Other tear of medial meniscus, current injury, right knee, initial encounter
+00364 S83241D 1 Other tear of medial meniscus, current injury, right knee, s Other tear of medial meniscus, current injury, right knee, subsequent encounter
+00365 S83242A 1 Other tear of medial meniscus, current injury, left knee, in Other tear of medial meniscus, current injury, left knee, initial encounter
+00366 S83242D 1 Other tear of medial meniscus, current injury, left knee, su Other tear of medial meniscus, current injury, left knee, subsequent encounter
+00367 S83249A 1 Other tear of medial meniscus, current injury, unspecified k Other tear of medial meniscus, current injury, unspecified knee, initial encounter
+00368 S83249D 1 Other tear of medial meniscus, current injury, unspecified k Other tear of medial meniscus, current injury, unspecified knee, subsequent encounter
+00369 S83251A 1 Bucket-handle tear of lateral meniscus, current injury, righ Bucket-handle tear of lateral meniscus, current injury, right knee, initial encounter
+00370 S83251D 1 Bucket-handle tear of lateral meniscus, current injury, righ Bucket-handle tear of lateral meniscus, current injury, right knee, subsequent encounter
+00371 S83252A 1 Bucket-handle tear of lateral meniscus, current injury, left Bucket-handle tear of lateral meniscus, current injury, left knee, initial encounter
+00372 S83252D 1 Bucket-handle tear of lateral meniscus, current injury, left Bucket-handle tear of lateral meniscus, current injury, left knee, subsequent encounter
+00373 S83259A 1 Bucket-handle tear of lateral meniscus, current injury, unsp Bucket-handle tear of lateral meniscus, current injury, unspecified knee, initial encounter
+00374 S83259D 1 Bucket-handle tear of lateral meniscus, current injury, unsp Bucket-handle tear of lateral meniscus, current injury, unspecified knee, subsequent encounter
+00375 S83261A 1 Peripheral tear of lateral meniscus, current injury, right k Peripheral tear of lateral meniscus, current injury, right knee, initial encounter
+00376 S83261D 1 Peripheral tear of lateral meniscus, current injury, right k Peripheral tear of lateral meniscus, current injury, right knee, subsequent encounter
+00377 S83262A 1 Peripheral tear of lateral meniscus, current injury, left kn Peripheral tear of lateral meniscus, current injury, left knee, initial encounter
+00378 S83262D 1 Peripheral tear of lateral meniscus, current injury, left kn Peripheral tear of lateral meniscus, current injury, left knee, subsequent encounter
+00379 S83269A 1 Peripheral tear of lateral meniscus, current injury, unspeci Peripheral tear of lateral meniscus, current injury, unspecified knee, initial encounter
+00380 S83269D 1 Peripheral tear of lateral meniscus, current injury, unspeci Peripheral tear of lateral meniscus, current injury, unspecified knee, subsequent encounter
+00381 S83271A 1 Complex tear of lateral meniscus, current injury, right knee Complex tear of lateral meniscus, current injury, right knee, initial encounter
+00382 S83271D 1 Complex tear of lateral meniscus, current injury, right knee Complex tear of lateral meniscus, current injury, right knee, subsequent encounter
+00383 S83272A 1 Complex tear of lateral meniscus, current injury, left knee, Complex tear of lateral meniscus, current injury, left knee, initial encounter
+00384 S83272D 1 Complex tear of lateral meniscus, current injury, left knee, Complex tear of lateral meniscus, current injury, left knee, subsequent encounter
+00385 S83279A 1 Complex tear of lateral meniscus, current injury, unspecifie Complex tear of lateral meniscus, current injury, unspecified knee, initial encounter
+00386 S83279D 1 Complex tear of lateral meniscus, current injury, unspecifie Complex tear of lateral meniscus, current injury, unspecified knee, subsequent encounter
+00387 S83281A 1 Other tear of lateral meniscus, current injury, right knee,  Other tear of lateral meniscus, current injury, right knee, initial encounter
+00388 S83281D 1 Other tear of lateral meniscus, current injury, right knee,  Other tear of lateral meniscus, current injury, right knee, subsequent encounter
+00389 S83282A 1 Other tear of lateral meniscus, current injury, left knee, i Other tear of lateral meniscus, current injury, left knee, initial encounter
+00390 S83282D 1 Other tear of lateral meniscus, current injury, left knee, s Other tear of lateral meniscus, current injury, left knee, subsequent encounter
+00391 S83289A 1 Other tear of lateral meniscus, current injury, unspecified  Other tear of lateral meniscus, current injury, unspecified knee, initial encounter
+00392 S83289D 1 Other tear of lateral meniscus, current injury, unspecified  Other tear of lateral meniscus, current injury, unspecified knee, subsequent encounter
+00393 S830    0 Subluxation and dislocation of patella                       Subluxation and dislocation of patella
+00394 S83001A 1 Unspecified subluxation of right patella, initial encounter  Unspecified subluxation of right patella, initial encounter
+00395 S83001D 1 Unspecified subluxation of right patella, subsequent encount Unspecified subluxation of right patella, subsequent encounter
+00396 S83002A 1 Unspecified subluxation of left patella, initial encounter   Unspecified subluxation of left patella, initial encounter
+00397 S83002D 1 Unspecified subluxation of left patella, subsequent encounte Unspecified subluxation of left patella, subsequent encounter
+00398 S83003A 1 Unspecified subluxation of unspecified patella, initial enco Unspecified subluxation of unspecified patella, initial encounter
+00399 S83003D 1 Unspecified subluxation of unspecified patella, subsequent e Unspecified subluxation of unspecified patella, subsequent encounter
+00400 S83004A 1 Unspecified dislocation of right patella, initial encounter  Unspecified dislocation of right patella, initial encounter
+00401 S83004D 1 Unspecified dislocation of right patella, subsequent encount Unspecified dislocation of right patella, subsequent encounter
+00402 S83005A 1 Unspecified dislocation of left patella, initial encounter   Unspecified dislocation of left patella, initial encounter
+00403 S83005D 1 Unspecified dislocation of left patella, subsequent encounte Unspecified dislocation of left patella, subsequent encounter
+00404 S83006A 1 Unspecified dislocation of unspecified patella, initial enco Unspecified dislocation of unspecified patella, initial encounter
+00405 S83006D 1 Unspecified dislocation of unspecified patella, subsequent e Unspecified dislocation of unspecified patella, subsequent encounter
+00406 S8361XA 1 Sprain of the superior tibiofibular joint and ligament, righ Sprain of the superior tibiofibular joint and ligament, right knee, initial encounter
+00407 S8361XD 1 Sprain of the superior tibiofibular joint and ligament, righ Sprain of the superior tibiofibular joint and ligament, right knee, subsequent encounter
+00408 S8391XA 1 Sprain of unspecified site of right knee, initial encounter  Sprain of unspecified site of right knee, initial encounter
+00409 S8391XD 1 Sprain of unspecified site of right knee, subsequent encount Sprain of unspecified site of right knee, subsequent encounter
+00410 S8362XA 1 Sprain of the superior tibiofibular joint and ligament, left Sprain of the superior tibiofibular joint and ligament, left knee, initial encounter
+00411 S8362XD 1 Sprain of the superior tibiofibular joint and ligament, left Sprain of the superior tibiofibular joint and ligament, left knee, subsequent encounter
+00412 S8392XA 1 Sprain of unspecified site of left knee, initial encounter   Sprain of unspecified site of left knee, initial encounter
+00413 S8392XD 1 Sprain of unspecified site of left knee, subsequent encounte Sprain of unspecified site of left knee, subsequent encounter
+00414 S8360XA 1 Sprain of the superior tibiofibular joint and ligament, unsp Sprain of the superior tibiofibular joint and ligament, unspecified knee, initial encounter
+00415 S8360XD 1 Sprain of the superior tibiofibular joint and ligament, unsp Sprain of the superior tibiofibular joint and ligament, unspecified knee, subsequent encounter
+00416 S8390XA 1 Sprain of unspecified site of unspecified knee, initial enco Sprain of unspecified site of unspecified knee, initial encounter
+00417 S8390XD 1 Sprain of unspecified site of unspecified knee, subsequent e Sprain of unspecified site of unspecified knee, subsequent encounter
+00418 M222    0 Patellofemoral disorders                                     Patellofemoral disorders
+00419 M222X1  1 Patellofemoral disorders, right knee                         Patellofemoral disorders, right knee
+00420 M222X2  1 Patellofemoral disorders, left knee                          Patellofemoral disorders, left knee
+00421 M222X9  1 Patellofemoral disorders, unspecified knee                   Patellofemoral disorders, unspecified knee
+00422 M2240   1 Chondromalacia patellae, unspecified knee                    Chondromalacia patellae, unspecified knee
+00423 M2241   1 Chondromalacia patellae, right knee                          Chondromalacia patellae, right knee
+00424 M2242   1 Chondromalacia patellae, left knee                           Chondromalacia patellae, left knee
+00425 M2250   1 Chronic instability of patella, unspecified knee             Chronic instability of patella, unspecified knee
+00426 M2251   1 Chronic instability of patella, right knee                   Chronic instability of patella, right knee
+00427 M2252   1 Chronic instability of patella, left knee                    Chronic instability of patella, left knee
+00428 M94261  1 Chondromalacia, right knee                                   Chondromalacia, right knee
+00429 M94262  1 Chondromalacia, left knee                                    Chondromalacia, left knee
+00430 M94269  1 Chondromalacia, unspecified knee                             Chondromalacia, unspecified knee
+00431 M7650   1 Patellar tendinitis, unspecified knee                        Patellar tendinitis, unspecified knee
+00432 M7651   1 Patellar tendinitis, right knee                              Patellar tendinitis, right knee
+00433 M7652   1 Patellar tendinitis, left knee                               Patellar tendinitis, left knee
+00434 M7630   1 Iliotibial band syndrome, unspecified leg                    Iliotibial band syndrome, unspecified leg
+00435 M7631   1 Iliotibial band syndrome, right leg                          Iliotibial band syndrome, right leg
+00436 M7632   1 Iliotibial band syndrome, left leg                           Iliotibial band syndrome, left leg
+00437 M7040   1 Prepatellar bursitis, unspecified knee                       Prepatellar bursitis, unspecified knee
+00438 M7041   1 Prepatellar bursitis, right knee                             Prepatellar bursitis, right knee
+00439 M7042   1 Prepatellar bursitis, left knee                              Prepatellar bursitis, left knee
+00440 M7050   1 Other bursitis of knee, unspecified knee                     Other bursitis of knee, unspecified knee
+00441 M7051   1 Other bursitis of knee, right knee                           Other bursitis of knee, right knee
+00442 M7052   1 Other bursitis of knee, left knee                            Other bursitis of knee, left knee
+00443 M232    0 Derangement of meniscus due to old tear or injury            Derangement of meniscus due to old tear or injury
+00444 M23201  1 Derangement of unspecified meniscus due to old tear or injur Derangement of unspecified meniscus due to old tear or injury, right knee
+00445 M23202  1 Derangement of unspecified meniscus due to old tear or injur Derangement of unspecified meniscus due to old tear or injury, left knee
+00446 M23209  1 Derangement of unspecified meniscus due to old tear or injur Derangement of unspecified meniscus due to old tear or injury, unspecified knee
+00447 M23221  1 Derangement of posterior horn of medial meniscus due to old  Derangement of posterior horn of medial meniscus due to old tear or injury, right knee
+00448 M23222  1 Derangement of posterior horn of medial meniscus due to old  Derangement of posterior horn of medial meniscus due to old tear or injury, left knee
+00449 M23229  1 Derangement of posterior horn of medial meniscus due to old  Derangement of posterior horn of medial meniscus due to old tear or injury, unspecified knee
+00450 M23231  1 Derangement of other medial meniscus due to old tear or inju Derangement of other medial meniscus due to old tear or injury, right knee
+00451 M23232  1 Derangement of other medial meniscus due to old tear or inju Derangement of other medial meniscus due to old tear or injury, left knee
+00452 M23239  1 Derangement of other medial meniscus due to old tear or inju Derangement of other medial meniscus due to old tear or injury, unspecified knee
+00453 M23261  1 Derangement of other lateral meniscus due to old tear or inj Derangement of other lateral meniscus due to old tear or injury, right knee
+00454 M23262  1 Derangement of other lateral meniscus due to old tear or inj Derangement of other lateral meniscus due to old tear or injury, left knee
+00455 M23269  1 Derangement of other lateral meniscus due to old tear or inj Derangement of other lateral meniscus due to old tear or injury, unspecified knee
+00456 S82001A 1 Unspecified fracture of right patella, initial encounter     Unspecified fracture of right patella, initial encounter
+00457 S82001D 1 Unspecified fracture of right patella, subsequent encounter  Unspecified fracture of right patella, subsequent encounter
+00458 S82101A 1 Unspecified fracture of upper end of right tibia, initial en Unspecified fracture of upper end of right tibia, initial encounter
+00459 S82101D 1 Unspecified fracture of upper end of right tibia, subsequent Unspecified fracture of upper end of right tibia, subsequent encounter
+00460 S72401A 1 Unspecified fracture of lower end of right femur, initial en Unspecified fracture of lower end of right femur, initial encounter
+00461 S72401D 1 Unspecified fracture of lower end of right femur, subsequent Unspecified fracture of lower end of right femur, subsequent encounter
+00462 S82002A 1 Unspecified fracture of left patella, initial encounter      Unspecified fracture of left patella, initial encounter
+00463 S82002D 1 Unspecified fracture of left patella, subsequent encounter   Unspecified fracture of left patella, subsequent encounter
+00464 S82102A 1 Unspecified fracture of upper end of left tibia, initial enc Unspecified fracture of upper end of left tibia, initial encounter
+00465 S82102D 1 Unspecified fracture of upper end of left tibia, subsequent  Unspecified fracture of upper end of left tibia, subsequent encounter
+00466 S72402A 1 Unspecified fracture of lower end of left femur, initial enc Unspecified fracture of lower end of left femur, initial encounter
+00467 S72402D 1 Unspecified fracture of lower end of left femur, subsequent  Unspecified fracture of lower end of left femur, subsequent encounter
+00468 S82009A 1 Unspecified fracture of unspecified patella, initial encount Unspecified fracture of unspecified patella, initial encounter
+00469 S82009D 1 Unspecified fracture of unspecified patella, subsequent enco Unspecified fracture of unspecified patella, subsequent encounter
+00470 S82109A 1 Unspecified fracture of upper end of unspecified tibia, init Unspecified fracture of upper end of unspecified tibia, initial encounter
+00471 S82109D 1 Unspecified fracture of upper end of unspecified tibia, subs Unspecified fracture of upper end of unspecified tibia, subsequent encounter
+00472 S72409A 1 Unspecified fracture of lower end of unspecified femur, init Unspecified fracture of lower end of unspecified femur, initial encounter
+00473 S72409D 1 Unspecified fracture of lower end of unspecified femur, subs Unspecified fracture of lower end of unspecified femur, subsequent encounter
+00474 S760    0 Injury of muscle, fascia and tendon of hip                   Injury of muscle, fascia and tendon of hip
+00475 S76011A 1 Strain of muscle, fascia and tendon of right hip, initial en Strain of muscle, fascia and tendon of right hip, initial encounter
+00476 S76011D 1 Strain of muscle, fascia and tendon of right hip, subsequent Strain of muscle, fascia and tendon of right hip, subsequent encounter
+00477 S76012A 1 Strain of muscle, fascia and tendon of left hip, initial enc Strain of muscle, fascia and tendon of left hip, initial encounter
+00478 S76012D 1 Strain of muscle, fascia and tendon of left hip, subsequent  Strain of muscle, fascia and tendon of left hip, subsequent encounter
+00479 S76019A 1 Strain of muscle, fascia and tendon of unspecified hip, init Strain of muscle, fascia and tendon of unspecified hip, initial encounter
+00480 S76019D 1 Strain of muscle, fascia and tendon of unspecified hip, subs Strain of muscle, fascia and tendon of unspecified hip, subsequent encounter
+00481 S76111A 1 Strain of quadriceps muscle, fascia and tendon, right thigh, Strain of quadriceps muscle, fascia and tendon, right thigh, initial encounter
+00482 S76111D 1 Strain of quadriceps muscle, fascia and tendon, right thigh, Strain of quadriceps muscle, fascia and tendon, right thigh, subsequent encounter
+00483 S76112A 1 Strain of quadriceps muscle, fascia and tendon, left thigh,  Strain of quadriceps muscle, fascia and tendon, left thigh, initial encounter
+00484 S76112D 1 Strain of quadriceps muscle, fascia and tendon, left thigh,  Strain of quadriceps muscle, fascia and tendon, left thigh, subsequent encounter
+00485 S76119A 1 Strain of quadriceps muscle, fascia and tendon, unspecified  Strain of quadriceps muscle, fascia and tendon, unspecified thigh, initial encounter
+00486 S76119D 1 Strain of quadriceps muscle, fascia and tendon, unspecified  Strain of quadriceps muscle, fascia and tendon, unspecified thigh, subsequent encounter
+00487 S76211A 1 Strain of adductor muscle, fascia and tendon of right thigh, Strain of adductor muscle, fascia and tendon of right thigh, initial encounter
+00488 S76211D 1 Strain of adductor muscle, fascia and tendon of right thigh, Strain of adductor muscle, fascia and tendon of right thigh, subsequent encounter
+00489 S76212A 1 Strain of adductor muscle, fascia and tendon of left thigh,  Strain of adductor muscle, fascia and tendon of left thigh, initial encounter
+00490 S76212D 1 Strain of adductor muscle, fascia and tendon of left thigh,  Strain of adductor muscle, fascia and tendon of left thigh, subsequent encounter
+00491 S76219A 1 Strain of adductor muscle, fascia and tendon of unspecified  Strain of adductor muscle, fascia and tendon of unspecified thigh, initial encounter
+00492 S76219D 1 Strain of adductor muscle, fascia and tendon of unspecified  Strain of adductor muscle, fascia and tendon of unspecified thigh, subsequent encounter
+00493 S731    0 Sprain of hip                                                Sprain of hip
+00494 S73101A 1 Unspecified sprain of right hip, initial encounter           Unspecified sprain of right hip, initial encounter
+00495 S73101D 1 Unspecified sprain of right hip, subsequent encounter        Unspecified sprain of right hip, subsequent encounter
+00496 S73102A 1 Unspecified sprain of left hip, initial encounter            Unspecified sprain of left hip, initial encounter
+00497 S73102D 1 Unspecified sprain of left hip, subsequent encounter         Unspecified sprain of left hip, subsequent encounter
+00498 S73109A 1 Unspecified sprain of unspecified hip, initial encounter     Unspecified sprain of unspecified hip, initial encounter
+00499 S73109D 1 Unspecified sprain of unspecified hip, subsequent encounter  Unspecified sprain of unspecified hip, subsequent encounter
+00500 S73111A 1 Iliofemoral ligament sprain of right hip, initial encounter  Iliofemoral ligament sprain of right hip, initial encounter
+00501 S73111D 1 Iliofemoral ligament sprain of right hip, subsequent encount Iliofemoral ligament sprain of right hip, subsequent encounter
+00502 S73112A 1 Iliofemoral ligament sprain of left hip, initial encounter   Iliofemoral ligament sprain of left hip, initial encounter
+00503 S73112D 1 Iliofemoral ligament sprain of left hip, subsequent encounte Iliofemoral ligament sprain of left hip, subsequent encounter
+00504 S73119A 1 Iliofemoral ligament sprain of unspecified hip, initial enco Iliofemoral ligament sprain of unspecified hip, initial encounter
+00505 S73119D 1 Iliofemoral ligament sprain of unspecified hip, subsequent e Iliofemoral ligament sprain of unspecified hip, subsequent encounter
+00506 S73121A 1 Ischiocapsular ligament sprain of right hip, initial encount Ischiocapsular ligament sprain of right hip, initial encounter
+00507 S73121D 1 Ischiocapsular ligament sprain of right hip, subsequent enco Ischiocapsular ligament sprain of right hip, subsequent encounter
+00508 S73122A 1 Ischiocapsular ligament sprain of left hip, initial encounte Ischiocapsular ligament sprain of left hip, initial encounter
+00509 S73122D 1 Ischiocapsular ligament sprain of left hip, subsequent encou Ischiocapsular ligament sprain of left hip, subsequent encounter
+00510 S73129A 1 Ischiocapsular ligament sprain of unspecified hip, initial e Ischiocapsular ligament sprain of unspecified hip, initial encounter
+00511 S73129D 1 Ischiocapsular ligament sprain of unspecified hip, subsequen Ischiocapsular ligament sprain of unspecified hip, subsequent encounter
+00512 S73191A 1 Other sprain of right hip, initial encounter                 Other sprain of right hip, initial encounter
+00513 S73191D 1 Other sprain of right hip, subsequent encounter              Other sprain of right hip, subsequent encounter
+00514 S73192A 1 Other sprain of left hip, initial encounter                  Other sprain of left hip, initial encounter
+00515 S73192D 1 Other sprain of left hip, subsequent encounter               Other sprain of left hip, subsequent encounter
+00516 S73199A 1 Other sprain of unspecified hip, initial encounter           Other sprain of unspecified hip, initial encounter
+00517 S73199D 1 Other sprain of unspecified hip, subsequent encounter        Other sprain of unspecified hip, subsequent encounter
+00518 S730    0 Subluxation and dislocation of hip                           Subluxation and dislocation of hip
+00519 S73001A 1 Unspecified subluxation of right hip, initial encounter      Unspecified subluxation of right hip, initial encounter
+00520 S73001D 1 Unspecified subluxation of right hip, subsequent encounter   Unspecified subluxation of right hip, subsequent encounter
+00521 S73002A 1 Unspecified subluxation of left hip, initial encounter       Unspecified subluxation of left hip, initial encounter
+00522 S73002D 1 Unspecified subluxation of left hip, subsequent encounter    Unspecified subluxation of left hip, subsequent encounter
+00523 S73003A 1 Unspecified subluxation of unspecified hip, initial encounte Unspecified subluxation of unspecified hip, initial encounter
+00524 S73003D 1 Unspecified subluxation of unspecified hip, subsequent encou Unspecified subluxation of unspecified hip, subsequent encounter
+00525 S73004A 1 Unspecified dislocation of right hip, initial encounter      Unspecified dislocation of right hip, initial encounter
+00526 S73004D 1 Unspecified dislocation of right hip, subsequent encounter   Unspecified dislocation of right hip, subsequent encounter
+00527 S73005A 1 Unspecified dislocation of left hip, initial encounter       Unspecified dislocation of left hip, initial encounter
+00528 S73005D 1 Unspecified dislocation of left hip, subsequent encounter    Unspecified dislocation of left hip, subsequent encounter
+00529 S73006A 1 Unspecified dislocation of unspecified hip, initial encounte Unspecified dislocation of unspecified hip, initial encounter
+00530 S73006D 1 Unspecified dislocation of unspecified hip, subsequent encou Unspecified dislocation of unspecified hip, subsequent encounter
+00531 S72001A 1 Fracture of unspecified part of neck of right femur, initial Fracture of unspecified part of neck of right femur, initial encounter
+00532 S72001D 1 Fracture of unspecified part of neck of right femur, subsequ Fracture of unspecified part of neck of right femur, subsequent encounter
+00533 S72101A 1 Unspecified trochanteric fracture of right femur, initial en Unspecified trochanteric fracture of right femur, initial encounter
+00534 S72101D 1 Unspecified trochanteric fracture of right femur, subsequent Unspecified trochanteric fracture of right femur, subsequent encounter
+00535 S72301A 1 Unspecified fracture of shaft of right femur, initial encoun Unspecified fracture of shaft of right femur, initial encounter
+00536 S72301D 1 Unspecified fracture of shaft of right femur, subsequent enc Unspecified fracture of shaft of right femur, subsequent encounter
+00537 S72002A 1 Fracture of unspecified part of neck of left femur, initial  Fracture of unspecified part of neck of left femur, initial encounter
+00538 S72002D 1 Fracture of unspecified part of neck of left femur, subseque Fracture of unspecified part of neck of left femur, subsequent encounter
+00539 S72102A 1 Unspecified trochanteric fracture of left femur, initial enc Unspecified trochanteric fracture of left femur, initial encounter
+00540 S72102D 1 Unspecified trochanteric fracture of left femur, subsequent  Unspecified trochanteric fracture of left femur, subsequent encounter
+00541 S72302A 1 Unspecified fracture of shaft of left femur, initial encount Unspecified fracture of shaft of left femur, initial encounter
+00542 S72302D 1 Unspecified fracture of shaft of left femur, subsequent enco Unspecified fracture of shaft of left femur, subsequent encounter
+00543 S72009A 1 Fracture of unspecified part of neck of unspecified femur, i Fracture of unspecified part of neck of unspecified femur, initial encounter
+00544 S72009D 1 Fracture of unspecified part of neck of unspecified femur, s Fracture of unspecified part of neck of unspecified femur, subsequent encounter
+00545 S72109A 1 Unspecified trochanteric fracture of unspecified femur, init Unspecified trochanteric fracture of unspecified femur, initial encounter
+00546 S72109D 1 Unspecified trochanteric fracture of unspecified femur, subs Unspecified trochanteric fracture of unspecified femur, subsequent encounter
+00547 S72309A 1 Unspecified fracture of shaft of unspecified femur, initial  Unspecified fracture of shaft of unspecified femur, initial encounter
+00548 S72309D 1 Unspecified fracture of shaft of unspecified femur, subseque Unspecified fracture of shaft of unspecified femur, subsequent encounter
+00549 M7060   1 Trochanteric bursitis, unspecified hip                       Trochanteric bursitis, unspecified hip
+00550 M7061   1 Trochanteric bursitis, right hip                             Trochanteric bursitis, right hip
+00551 M7062   1 Trochanteric bursitis, left hip                              Trochanteric bursitis, left hip
+00552 M7070   1 Other bursitis of unspecified hip                            Other bursitis of unspecified hip
+00553 M7071   1 Other bursitis of right hip                                  Other bursitis of right hip
+00554 M7072   1 Other bursitis of left hip                                   Other bursitis of left hip
+00555 M7600   1 Gluteal tendinitis, unspecified hip                          Gluteal tendinitis, unspecified hip
+00556 M7601   1 Gluteal tendinitis, right hip                                Gluteal tendinitis, right hip
+00557 M7602   1 Gluteal tendinitis, left hip                                 Gluteal tendinitis, left hip
+00558 M7610   1 Psoas tendinitis, unspecified hip                            Psoas tendinitis, unspecified hip
+00559 M7611   1 Psoas tendinitis, right hip                                  Psoas tendinitis, right hip
+00560 M7612   1 Psoas tendinitis, left hip                                   Psoas tendinitis, left hip
+00561 M7620   1 Iliac crest spur, unspecified hip                            Iliac crest spur, unspecified hip
+00562 M7621   1 Iliac crest spur, right hip                                  Iliac crest spur, right hip
+00563 M7622   1 Iliac crest spur, left hip                                   Iliac crest spur, left hip
+00564 M7989   1 Other specified soft tissue disorders                        Other specified soft tissue disorders
+00565 S39012A 1 Strain of muscle, fascia and tendon of lower back, initial e Strain of muscle, fascia and tendon of lower back, initial encounter
+00566 S39012D 1 Strain of muscle, fascia and tendon of lower back, subsequen Strain of muscle, fascia and tendon of lower back, subsequent encounter
+00567 S39011A 1 Strain of muscle, fascia and tendon of abdomen, initial enco Strain of muscle, fascia and tendon of abdomen, initial encounter
+00568 S39011D 1 Strain of muscle, fascia and tendon of abdomen, subsequent e Strain of muscle, fascia and tendon of abdomen, subsequent encounter
+00569 S39013A 1 Strain of muscle, fascia and tendon of pelvis, initial encou Strain of muscle, fascia and tendon of pelvis, initial encounter
+00570 S39013D 1 Strain of muscle, fascia and tendon of pelvis, subsequent en Strain of muscle, fascia and tendon of pelvis, subsequent encounter
+00571 S934    0 Sprain of ankle                                              Sprain of ankle
+00572 S93401A 1 Sprain of unspecified ligament of right ankle, initial encou Sprain of unspecified ligament of right ankle, initial encounter
+00573 S93401D 1 Sprain of unspecified ligament of right ankle, subsequent en Sprain of unspecified ligament of right ankle, subsequent encounter
+00574 S93402A 1 Sprain of unspecified ligament of left ankle, initial encoun Sprain of unspecified ligament of left ankle, initial encounter
+00575 S93402D 1 Sprain of unspecified ligament of left ankle, subsequent enc Sprain of unspecified ligament of left ankle, subsequent encounter
+00576 S93409A 1 Sprain of unspecified ligament of unspecified ankle, initial Sprain of unspecified ligament of unspecified ankle, initial encounter
+00577 S93409D 1 Sprain of unspecified ligament of unspecified ankle, subsequ Sprain of unspecified ligament of unspecified ankle, subsequent encounter
+00578 S93411A 1 Sprain of deltoid ligament of right ankle, initial encounter Sprain of deltoid ligament of right ankle, initial encounter
+00579 S93411D 1 Sprain of deltoid ligament of right ankle, subsequent encoun Sprain of deltoid ligament of right ankle, subsequent encounter
+00580 S93412A 1 Sprain of deltoid ligament of left ankle, initial encounter  Sprain of deltoid ligament of left ankle, initial encounter
+00581 S93412D 1 Sprain of deltoid ligament of left ankle, subsequent encount Sprain of deltoid ligament of left ankle, subsequent encounter
+00582 S93419A 1 Sprain of deltoid ligament of unspecified ankle, initial enc Sprain of deltoid ligament of unspecified ankle, initial encounter
+00583 S93419D 1 Sprain of deltoid ligament of unspecified ankle, subsequent  Sprain of deltoid ligament of unspecified ankle, subsequent encounter
+00584 S93421A 1 Sprain of calcaneofibular ligament of right ankle, initial e Sprain of calcaneofibular ligament of right ankle, initial encounter
+00585 S93421D 1 Sprain of calcaneofibular ligament of right ankle, subsequen Sprain of calcaneofibular ligament of right ankle, subsequent encounter
+00586 S93422A 1 Sprain of calcaneofibular ligament of left ankle, initial en Sprain of calcaneofibular ligament of left ankle, initial encounter
+00587 S93422D 1 Sprain of calcaneofibular ligament of left ankle, subsequent Sprain of calcaneofibular ligament of left ankle, subsequent encounter
+00588 S93429A 1 Sprain of calcaneofibular ligament of unspecified ankle, ini Sprain of calcaneofibular ligament of unspecified ankle, initial encounter
+00589 S93429D 1 Sprain of calcaneofibular ligament of unspecified ankle, sub Sprain of calcaneofibular ligament of unspecified ankle, subsequent encounter
+00590 S93431A 1 Sprain of tibiofibular ligament of right ankle, initial enco Sprain of tibiofibular ligament of right ankle, initial encounter
+00591 S93431D 1 Sprain of tibiofibular ligament of right ankle, subsequent e Sprain of tibiofibular ligament of right ankle, subsequent encounter
+00592 S93432A 1 Sprain of tibiofibular ligament of left ankle, initial encou Sprain of tibiofibular ligament of left ankle, initial encounter
+00593 S93432D 1 Sprain of tibiofibular ligament of left ankle, subsequent en Sprain of tibiofibular ligament of left ankle, subsequent encounter
+00594 S93439A 1 Sprain of tibiofibular ligament of unspecified ankle, initia Sprain of tibiofibular ligament of unspecified ankle, initial encounter
+00595 S93439D 1 Sprain of tibiofibular ligament of unspecified ankle, subseq Sprain of tibiofibular ligament of unspecified ankle, subsequent encounter
+00596 S93491A 1 Sprain of other ligament of right ankle, initial encounter   Sprain of other ligament of right ankle, initial encounter
+00597 S93491D 1 Sprain of other ligament of right ankle, subsequent encounte Sprain of other ligament of right ankle, subsequent encounter
+00598 S93492A 1 Sprain of other ligament of left ankle, initial encounter    Sprain of other ligament of left ankle, initial encounter
+00599 S93492D 1 Sprain of other ligament of left ankle, subsequent encounter Sprain of other ligament of left ankle, subsequent encounter
+00600 S93499A 1 Sprain of other ligament of unspecified ankle, initial encou Sprain of other ligament of unspecified ankle, initial encounter
+00601 S93499D 1 Sprain of other ligament of unspecified ankle, subsequent en Sprain of other ligament of unspecified ankle, subsequent encounter
+00602 S860    0 Injury of Achilles tendon                                    Injury of Achilles tendon
+00603 S86011A 1 Strain of right Achilles tendon, initial encounter           Strain of right Achilles tendon, initial encounter
+00604 S86011D 1 Strain of right Achilles tendon, subsequent encounter        Strain of right Achilles tendon, subsequent encounter
+00605 S86012A 1 Strain of left Achilles tendon, initial encounter            Strain of left Achilles tendon, initial encounter
+00606 S86012D 1 Strain of left Achilles tendon, subsequent encounter         Strain of left Achilles tendon, subsequent encounter
+00607 S86019A 1 Strain of unspecified Achilles tendon, initial encounter     Strain of unspecified Achilles tendon, initial encounter
+00608 S86019D 1 Strain of unspecified Achilles tendon, subsequent encounter  Strain of unspecified Achilles tendon, subsequent encounter
+00609 S86021A 1 Laceration of right Achilles tendon, initial encounter       Laceration of right Achilles tendon, initial encounter
+00610 S86021D 1 Laceration of right Achilles tendon, subsequent encounter    Laceration of right Achilles tendon, subsequent encounter
+00611 S86022A 1 Laceration of left Achilles tendon, initial encounter        Laceration of left Achilles tendon, initial encounter
+00612 S86022D 1 Laceration of left Achilles tendon, subsequent encounter     Laceration of left Achilles tendon, subsequent encounter
+00613 S86029A 1 Laceration of unspecified Achilles tendon, initial encounter Laceration of unspecified Achilles tendon, initial encounter
+00614 S86029D 1 Laceration of unspecified Achilles tendon, subsequent encoun Laceration of unspecified Achilles tendon, subsequent encounter
+00615 S86111A 1 Strain of other muscle(s) and tendon(s) of posterior muscle  Strain of other muscle(s) and tendon(s) of posterior muscle group at lower leg level, right leg, initial encounter
+00616 S86111D 1 Strain of other muscle(s) and tendon(s) of posterior muscle  Strain of other muscle(s) and tendon(s) of posterior muscle group at lower leg level, right leg, subsequent encounter
+00617 S86311A 1 Strain of muscle(s) and tendon(s) of peroneal muscle group a Strain of muscle(s) and tendon(s) of peroneal muscle group at lower leg level, right leg, initial encounter
+00618 S86311D 1 Strain of muscle(s) and tendon(s) of peroneal muscle group a Strain of muscle(s) and tendon(s) of peroneal muscle group at lower leg level, right leg, subsequent encounter
+00619 S86112A 1 Strain of other muscle(s) and tendon(s) of posterior muscle  Strain of other muscle(s) and tendon(s) of posterior muscle group at lower leg level, left leg, initial encounter
+00620 S86112D 1 Strain of other muscle(s) and tendon(s) of posterior muscle  Strain of other muscle(s) and tendon(s) of posterior muscle group at lower leg level, left leg, subsequent encounter
+00621 S86312A 1 Strain of muscle(s) and tendon(s) of peroneal muscle group a Strain of muscle(s) and tendon(s) of peroneal muscle group at lower leg level, left leg, initial encounter
+00622 S86312D 1 Strain of muscle(s) and tendon(s) of peroneal muscle group a Strain of muscle(s) and tendon(s) of peroneal muscle group at lower leg level, left leg, subsequent encounter
+00623 S86119A 1 Strain of other muscle(s) and tendon(s) of posterior muscle  Strain of other muscle(s) and tendon(s) of posterior muscle group at lower leg level, unspecified leg, initial encounter
+00624 S86119D 1 Strain of other muscle(s) and tendon(s) of posterior muscle  Strain of other muscle(s) and tendon(s) of posterior muscle group at lower leg level, unspecified leg, subsequent encounter
+00625 S86319A 1 Strain of muscle(s) and tendon(s) of peroneal muscle group a Strain of muscle(s) and tendon(s) of peroneal muscle group at lower leg level, unspecified leg, initial encounter
+00626 S86319D 1 Strain of muscle(s) and tendon(s) of peroneal muscle group a Strain of muscle(s) and tendon(s) of peroneal muscle group at lower leg level, unspecified leg, subsequent encounter
+00627 S8261XA 1 Displaced fracture of lateral malleolus of right fibula, ini Displaced fracture of lateral malleolus of right fibula, initial encounter
+00628 S8261XD 1 Displaced fracture of lateral malleolus of right fibula, sub Displaced fracture of lateral malleolus of right fibula, subsequent encounter
+00629 S8262XA 1 Displaced fracture of lateral malleolus of left fibula, init Displaced fracture of lateral malleolus of left fibula, initial encounter
+00630 S8262XD 1 Displaced fracture of lateral malleolus of left fibula, subs Displaced fracture of lateral malleolus of left fibula, subsequent encounter
+00631 S8263XA 1 Displaced fracture of lateral malleolus of unspecified fibul Displaced fracture of lateral malleolus of unspecified fibula, initial encounter
+00632 S8263XD 1 Displaced fracture of lateral malleolus of unspecified fibul Displaced fracture of lateral malleolus of unspecified fibula, subsequent encounter
+00633 S92301A 1 Fracture of unspecified metatarsal bone(s), right foot, init Fracture of unspecified metatarsal bone(s), right foot, initial encounter
+00634 S92301D 1 Fracture of unspecified metatarsal bone(s), right foot, subs Fracture of unspecified metatarsal bone(s), right foot, subsequent encounter
+00635 S92302A 1 Fracture of unspecified metatarsal bone(s), left foot, initi Fracture of unspecified metatarsal bone(s), left foot, initial encounter
+00636 S92302D 1 Fracture of unspecified metatarsal bone(s), left foot, subse Fracture of unspecified metatarsal bone(s), left foot, subsequent encounter
+00637 S92309A 1 Fracture of unspecified metatarsal bone(s), unspecified foot Fracture of unspecified metatarsal bone(s), unspecified foot, initial encounter
+00638 S92309D 1 Fracture of unspecified metatarsal bone(s), unspecified foot Fracture of unspecified metatarsal bone(s), unspecified foot, subsequent encounter
+00639 M7660   1 Achilles tendinitis, unspecified leg                         Achilles tendinitis, unspecified leg
+00640 M7661   1 Achilles tendinitis, right leg                               Achilles tendinitis, right leg
+00641 M7662   1 Achilles tendinitis, left leg                                Achilles tendinitis, left leg
+00642 M7670   1 Peroneal tendinitis, unspecified leg                         Peroneal tendinitis, unspecified leg
+00643 M7671   1 Peroneal tendinitis, right leg                               Peroneal tendinitis, right leg
+00644 M7672   1 Peroneal tendinitis, left leg                                Peroneal tendinitis, left leg
+00645 M76811  1 Anterior tibial syndrome, right leg                          Anterior tibial syndrome, right leg
+00646 M76812  1 Anterior tibial syndrome, left leg                           Anterior tibial syndrome, left leg
+00647 M76819  1 Anterior tibial syndrome, unspecified leg                    Anterior tibial syndrome, unspecified leg
+00648 M76821  1 Posterior tibial tendinitis, right leg                       Posterior tibial tendinitis, right leg
+00649 M76822  1 Posterior tibial tendinitis, left leg                        Posterior tibial tendinitis, left leg
+00650 M76829  1 Posterior tibial tendinitis, unspecified leg                 Posterior tibial tendinitis, unspecified leg
+00651 M722    1 Plantar fascial fibromatosis                                 Plantar fascial fibromatosis
+00652 M7740   1 Metatarsalgia, unspecified foot                              Metatarsalgia, unspecified foot
+00653 M7741   1 Metatarsalgia, right foot                                    Metatarsalgia, right foot
+00654 M7742   1 Metatarsalgia, left foot                                     Metatarsalgia, left foot
+00655 M7700   1 Medial epicondylitis, unspecified elbow                      Medial epicondylitis, unspecified elbow
+00656 M7701   1 Medial epicondylitis, right elbow                            Medial epicondylitis, right elbow
+00657 M7702   1 Medial epicondylitis, left elbow                             Medial epicondylitis, left elbow
+00658 M7710   1 Lateral epicondylitis, unspecified elbow                     Lateral epicondylitis, unspecified elbow
+00659 M7711   1 Lateral epicondylitis, right elbow                           Lateral epicondylitis, right elbow
+00660 M7712   1 Lateral epicondylitis, left elbow                            Lateral epicondylitis, left elbow
+00661 S534    0 Sprain of elbow                                              Sprain of elbow
+00662 S53401A 1 Unspecified sprain of right elbow, initial encounter         Unspecified sprain of right elbow, initial encounter
+00663 S53401D 1 Unspecified sprain of right elbow, subsequent encounter      Unspecified sprain of right elbow, subsequent encounter
+00664 S53402A 1 Unspecified sprain of left elbow, initial encounter          Unspecified sprain of left elbow, initial encounter
+00665 S53402D 1 Unspecified sprain of left elbow, subsequent encounter       Unspecified sprain of left elbow, subsequent encounter
+00666 S53409A 1 Unspecified sprain of unspecified elbow, initial encounter   Unspecified sprain of unspecified elbow, initial encounter
+00667 S53409D 1 Unspecified sprain of unspecified elbow, subsequent encounte Unspecified sprain of unspecified elbow, subsequent encounter
+00668 S53421A 1 Radial collateral ligament sprain of right elbow, initial en Radial collateral ligament sprain of right elbow, initial encounter
+00669 S53421D 1 Radial collateral ligament sprain of right elbow, subsequent Radial collateral ligament sprain of right elbow, subsequent encounter
+00670 S53422A 1 Radial collateral ligament sprain of left elbow, initial enc Radial collateral ligament sprain of left elbow, initial encounter
+00671 S53422D 1 Radial collateral ligament sprain of left elbow, subsequent  Radial collateral ligament sprain of left elbow, subsequent encounter
+00672 S53429A 1 Radial collateral ligament sprain of unspecified elbow, init Radial collateral ligament sprain of unspecified elbow, initial encounter
+00673 S53429D 1 Radial collateral ligament sprain of unspecified elbow, subs Radial collateral ligament sprain of unspecified elbow, subsequent encounter
+00674 S53431A 1 Ulnar collateral ligament sprain of right elbow, initial enc Ulnar collateral ligament sprain of right elbow, initial encounter
+00675 S53431D 1 Ulnar collateral ligament sprain of right elbow, subsequent  Ulnar collateral ligament sprain of right elbow, subsequent encounter
+00676 S53432A 1 Ulnar collateral ligament sprain of left elbow, initial enco Ulnar collateral ligament sprain of left elbow, initial encounter
+00677 S53432D 1 Ulnar collateral ligament sprain of left elbow, subsequent e Ulnar collateral ligament sprain of left elbow, subsequent encounter
+00678 S53439A 1 Ulnar collateral ligament sprain of unspecified elbow, initi Ulnar collateral ligament sprain of unspecified elbow, initial encounter
+00679 S53439D 1 Ulnar collateral ligament sprain of unspecified elbow, subse Ulnar collateral ligament sprain of unspecified elbow, subsequent encounter
+00680 S63501A 1 Unspecified sprain of right wrist, initial encounter         Unspecified sprain of right wrist, initial encounter
+00681 S63501D 1 Unspecified sprain of right wrist, subsequent encounter      Unspecified sprain of right wrist, subsequent encounter
+00682 S62001A 1 Unspecified fracture of navicular [scaphoid] bone of right w Unspecified fracture of navicular [scaphoid] bone of right wrist, initial encounter
+00683 S62001D 1 Unspecified fracture of navicular [scaphoid] bone of right w Unspecified fracture of navicular [scaphoid] bone of right wrist, subsequent encounter
+00684 S52501A 1 Unspecified fracture of the lower end of right radius, initi Unspecified fracture of the lower end of right radius, initial encounter
+00685 S52501D 1 Unspecified fracture of the lower end of right radius, subse Unspecified fracture of the lower end of right radius, subsequent encounter
+00686 S63611A 1 Unspecified sprain of right thumb, initial encounter         Unspecified sprain of right thumb, initial encounter
+00687 S63611D 1 Unspecified sprain of right thumb, subsequent encounter      Unspecified sprain of right thumb, subsequent encounter
+00688 S63502A 1 Unspecified sprain of left wrist, initial encounter          Unspecified sprain of left wrist, initial encounter
+00689 S63502D 1 Unspecified sprain of left wrist, subsequent encounter       Unspecified sprain of left wrist, subsequent encounter
+00690 S62002A 1 Unspecified fracture of navicular [scaphoid] bone of left wr Unspecified fracture of navicular [scaphoid] bone of left wrist, initial encounter
+00691 S62002D 1 Unspecified fracture of navicular [scaphoid] bone of left wr Unspecified fracture of navicular [scaphoid] bone of left wrist, subsequent encounter
+00692 S52502A 1 Unspecified fracture of the lower end of left radius, initia Unspecified fracture of the lower end of left radius, initial encounter
+00693 S52502D 1 Unspecified fracture of the lower end of left radius, subseq Unspecified fracture of the lower end of left radius, subsequent encounter
+00694 S63612A 1 Unspecified sprain of left thumb, initial encounter          Unspecified sprain of left thumb, initial encounter
+00695 S63612D 1 Unspecified sprain of left thumb, subsequent encounter       Unspecified sprain of left thumb, subsequent encounter
+00696 S63509A 1 Unspecified sprain of unspecified wrist, initial encounter   Unspecified sprain of unspecified wrist, initial encounter
+00697 S63509D 1 Unspecified sprain of unspecified wrist, subsequent encounte Unspecified sprain of unspecified wrist, subsequent encounter
+00698 S62009A 1 Unspecified fracture of navicular [scaphoid] bone of unspeci Unspecified fracture of navicular [scaphoid] bone of unspecified wrist, initial encounter
+00699 S62009D 1 Unspecified fracture of navicular [scaphoid] bone of unspeci Unspecified fracture of navicular [scaphoid] bone of unspecified wrist, subsequent encounter
+00700 S52509A 1 Unspecified fracture of the lower end of unspecified radius, Unspecified fracture of the lower end of unspecified radius, initial encounter
+00701 S52509D 1 Unspecified fracture of the lower end of unspecified radius, Unspecified fracture of the lower end of unspecified radius, subsequent encounter
+00702 S63619A 1 Unspecified sprain of unspecified thumb, initial encounter   Unspecified sprain of unspecified thumb, initial encounter
+00703 S63619D 1 Unspecified sprain of unspecified thumb, subsequent encounte Unspecified sprain of unspecified thumb, subsequent encounter
+00704 S134XXA 1 Sprain of ligaments of cervical spine, initial encounter     Sprain of ligaments of cervical spine, initial encounter
+00705 S134XXD 1 Sprain of ligaments of cervical spine, subsequent encounter  Sprain of ligaments of cervical spine, subsequent encounter
+00706 S161XXA 1 Strain of muscle, fascia and tendon at neck level, initial e Strain of muscle, fascia and tendon at neck level, initial encounter
+00707 S161XXD 1 Strain of muscle, fascia and tendon at neck level, subsequen Strain of muscle, fascia and tendon at neck level, subsequent encounter
+00708 S335XXA 1 Sprain of ligaments of lumbar spine, initial encounter       Sprain of ligaments of lumbar spine, initial encounter
+00709 S335XXD 1 Sprain of ligaments of lumbar spine, subsequent encounter    Sprain of ligaments of lumbar spine, subsequent encounter
+00710 S336XXA 1 Sprain of sacroiliac joint, initial encounter                Sprain of sacroiliac joint, initial encounter
+00711 S336XXD 1 Sprain of sacroiliac joint, subsequent encounter             Sprain of sacroiliac joint, subsequent encounter
+00712 M5450   1 Low back pain, unspecified                                   Low back pain, unspecified
+00713 M5451   1 Vertebrogenic low back pain                                  Vertebrogenic low back pain
+00714 M5459   1 Other low back pain                                          Other low back pain
+00715 M542    1 Cervicalgia                                                  Cervicalgia
+00716 M5126   1 Other intervertebral disc displacement, lumbar region        Other intervertebral disc displacement, lumbar region
+00717 M5127   1 Other intervertebral disc displacement, lumbosacral region   Other intervertebral disc displacement, lumbosacral region
+00718 M5416   1 Radiculopathy, lumbar region                                 Radiculopathy, lumbar region
+00719 M5417   1 Radiculopathy, lumbosacral region                            Radiculopathy, lumbosacral region
+00720 M4726   1 Other spondylosis with radiculopathy, lumbar region          Other spondylosis with radiculopathy, lumbar region
+00721 M4316   1 Spondylolisthesis, lumbar region                             Spondylolisthesis, lumbar region
+00722 S060X0A 1 Concussion without loss of consciousness, initial encounter  Concussion without loss of consciousness, initial encounter
+00723 S060X0D 1 Concussion without loss of consciousness, subsequent encount Concussion without loss of consciousness, subsequent encounter
+00724 S060X1A 1 Concussion with loss of consciousness of 30 minutes or less, Concussion with loss of consciousness of 30 minutes or less, initial encounter
+00725 S060X1D 1 Concussion with loss of consciousness of 30 minutes or less, Concussion with loss of consciousness of 30 minutes or less, subsequent encounter
+00726 S060X9A 1 Concussion with loss of consciousness of unspecified duratio Concussion with loss of consciousness of unspecified duration, initial encounter
+00727 S060X9D 1 Concussion with loss of consciousness of unspecified duratio Concussion with loss of consciousness of unspecified duration, subsequent encounter
+00728 M7910   1 Myalgia, unspecified site                                    Myalgia, unspecified site
+00729 M7918   1 Myalgia, other site                                          Myalgia, other site
+00730 M62838  1 Other muscle spasm                                           Other muscle spasm
+00731 M6281   1 Muscle weakness (generalized)                                Muscle weakness (generalized)
+00732 M6250   1 Muscle wasting and atrophy, not elsewhere classified, unspec Muscle wasting and atrophy, not elsewhere classified, unspecified site
+00733 R262    1 Difficulty in walking, not elsewhere classified              Difficulty in walking, not elsewhere classified
+00734 R2689   1 Other abnormalities of gait and mobility                     Other abnormalities of gait and mobility
+00735 R2681   1 Unsteadiness on feet                                         Unsteadiness on feet
+00736 Z9181   1 History of falling                                           History of falling
