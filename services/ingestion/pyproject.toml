@@ -8,7 +8,7 @@ dependencies = [
   "moveai-clinical-rules",
   "psycopg[binary,pool]>=3.2",
   "selectolax>=0.3",
-  "pypdf>=4.3",
+  "pypdf[image]>=4.3",
   "httpx>=0.27",
   "anthropic>=0.40",
 ]
