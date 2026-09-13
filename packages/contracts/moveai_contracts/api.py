@@ -282,6 +282,8 @@ class CampaignDetail(CampaignCard):
     limits: CampaignLimits
     budget: dict[str, Any]
     warnings: list[str]
+    # Pages discovery found but could not read, grouped by publisher: what to accept on the Sources page.
+    pending_publishers: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class RunAction(BaseModel):

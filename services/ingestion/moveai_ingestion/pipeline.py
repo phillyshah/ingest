@@ -23,6 +23,7 @@ from .source_policies import effective_domains, materialise_rights_grant, policy
 from .storage import content_key, get_storage
 
 NEXT = {
+    "discover": None,  # a campaign-level stage: it enqueues access_check jobs for what it finds, one per page
     "access_check": "fetch",
     "fetch": "parse",
     "parse": "extract",
@@ -330,7 +331,14 @@ def stage_enqueue_review(conn: psycopg.Connection, job: dict) -> dict:
     return {"queued_for_review": n}
 
 
+def stage_discover(conn: psycopg.Connection, job: dict) -> dict:
+    from .campaigns import stage_discover as _discover  # campaigns imports this module's siblings; keep the cycle lazy
+
+    return _discover(conn, job)
+
+
 STAGE_FN = {
+    "discover": stage_discover,
     "access_check": stage_access_check,
     "fetch": stage_fetch,
     "parse": stage_parse,

@@ -165,7 +165,8 @@ def test_campaign_jobs_carry_the_conditions_body_region(admin, conn):
     c = admin.post("/ingestion-campaigns", json={"title": "region", "scope": scope}).json()
     admin.post(f"/ingestion-campaigns/{c['id']}/runs")
     regions = {
-        r["payload"]["region"] for r in conn.execute("select payload from ingestion_job where campaign_id=%s", (c["id"],)).fetchall()
+        r["payload"]["region"]
+        for r in conn.execute("select payload from ingestion_job where campaign_id=%s and stage<>'discover'", (c["id"],)).fetchall()
     }
     expected = conn.execute("select body_region from condition where internal_code='mcl_tear_surgical_repair'").fetchone()["body_region"]
     assert regions == {expected}

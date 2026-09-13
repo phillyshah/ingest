@@ -74,6 +74,14 @@ again.
 **When a campaign parks a source.** The Needs Attention card names the publisher and what it is waiting for.
 Nearly always that is step 3 above.
 
+**What discovery reads before acceptance.** A campaign with no URLs looks through every listed publisher's site
+index (its `robots.txt` and sitemaps) for pages about the condition, whether or not that publisher's terms are
+accepted yet. Those two files exist for crawlers and contain no publisher content; reading them is how the
+campaign can say "14 pages about knee replacement on NHS — accept its terms to read them". The pages themselves
+are only fetched from accepted publishers. The campaign's Overview lists what was found but not read, by
+publisher; accept the terms here, then press *start* on the campaign and the next run picks those pages up.
+Rejected publishers are not indexed at all.
+
 ---
 
 ## Adding a publisher

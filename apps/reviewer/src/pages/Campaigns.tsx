@@ -118,7 +118,7 @@ function NewCampaign({ onClose }: { onClose: () => void }) {
           but nobody should have to answer six questions to create a draft. */}
       <details style={{ marginTop: 12 }}>
         <summary className="small">Advanced settings</summary>
-        <label className="f" style={{ marginTop: 8 }}>Documents to read <span className="muted small">— one URL per line, from a publisher whose terms have been accepted on the Sources page. There is no automatic web search yet: a campaign with no URLs reads only sources already linked to this condition, and a new condition has none.</span>
+        <label className="f" style={{ marginTop: 8 }}>Specific documents to read <span className="muted small">— optional, one URL per line. Leave empty and the run searches the site indexes of the listed publishers (and the web, if a search provider is configured) for pages about the condition. Pages are only read from publishers whose terms have been accepted on the Sources page; anything else found is listed for you, never read.</span>
           <textarea rows={2} value={urls} onChange={(e) => setUrls(e.target.value)} />
         </label>
         <div className="row" style={{ marginTop: 8 }}>

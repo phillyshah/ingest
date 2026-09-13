@@ -408,7 +408,7 @@ def test_campaign_lifecycle(admin, pt, lead, conn):
     assert admin.get("/ingestion-campaigns").json()["total"] == 0  # archived by default
     assert admin.get("/ingestion-campaigns?include_archived=true").json()["total"] == 1
     ev = admin.get(f"/ingestion-campaigns/{cid}/events").json()["items"]
-    assert [e["event"] for e in ev if e["event"] != "job"] == [
+    assert [e["event"] for e in ev if e["event"] not in ("job", "discovered")] == [
         "created",
         "scope_revised",
         "started",

@@ -160,7 +160,8 @@ def test_a_redirect_target_is_parked_as_a_pending_campaign_source(conn, users, m
 
 
 # ---------------------------------------------------------------- strategy text tells the truth
-def test_strategy_text_no_longer_implies_the_campaign_searches_a_publisher(conn):
+def test_strategy_text_says_what_discovery_will_and_will_not_do(conn, monkeypatch):
+    monkeypatch.delenv("DISCOVERY_PROVIDERS", raising=False)  # MOVEAI_ENV=test → no discovery
     out = scope_preview(
         conn,
         None,
@@ -175,7 +176,26 @@ def test_strategy_text_no_longer_implies_the_campaign_searches_a_publisher(conn)
         },
     )
     assert not any(s.startswith("allowlisted publisher:") for s in out["proposed_strategy"])
-    assert any("no automatic discovery" in s for s in out["proposed_strategy"])
+    assert any("discovery is switched off" in s for s in out["proposed_strategy"])
+    assert any("never fetched" in s for s in out["proposed_strategy"])
+    monkeypatch.setenv("DISCOVERY_PROVIDERS", "sitemap")
+    from moveai_ingestion.source_policies import sync
+
+    sync(conn)  # listed publishers, none accepted
+    out = scope_preview(
+        conn,
+        None,
+        {
+            "ailment_text": None,
+            "codes": [],
+            "limits": LIMITS,
+            "supplied_source_urls": [],
+            "scope_confirmed": False,
+            "exclusion": {},
+            "refinements": {},
+        },
+    )
+    assert any("not read until a rights reviewer accepts" in s for s in out["proposed_strategy"])
 
 
 # ---------------------------------------------------------------- web graphics carry the rights grant

@@ -6,6 +6,11 @@
 - The allowlist of publishers lives in `fixtures/source-policies/` and in the `source_policy` table. A domain is
   readable only when its licence terms have been fetched from its own site AND a rights reviewer has signed that
   exact text. Never widen a licence in a publisher entry; never add a domain whose articles are licensed per-article.
+- Discovery (`discovery.py`) may read a listed publisher's `robots.txt` and sitemaps before its terms are signed —
+  those files exist for crawlers and carry no content — and may call a web search API. Neither makes a page
+  readable: fetching still needs `source_policy.effective`; everything else found is parked as a pending campaign
+  item, never fetched. Rejected publishers are not indexed. Ranking is a heuristic over URLs/titles
+  (`fixtures/discovery/vocabulary.yaml`) that only decides what is worth fetching within the run's limits.
 - `unknown` is never a negative finding. Laterality never defaults. Passive/assisted/resisted are distinct variants.
 - Rights `unknown` blocks the use. Media may be null everywhere; text-only content must still flow.
 - Approved versions are immutable (DB trigger). Editing a clinical field invalidates approval.
