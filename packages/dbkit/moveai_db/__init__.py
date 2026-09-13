@@ -44,7 +44,54 @@ def database_url() -> str:
 
 
 def connect(url: str | None = None, *, autocommit: bool = False) -> psycopg.Connection[dict[str, Any]]:
+    """A fresh, dedicated connection. For the worker, scripts and tests — long-lived processes that hold one.
+
+    A request-serving process must not call this per request: see `pool()`.
+    """
     return psycopg.connect(url or database_url(), row_factory=dict_row, autocommit=autocommit)
+
+
+_POOL = None
+
+
+def pool():
+    """The process-wide connection pool, created on first use.
+
+    Why a pool and not a connection per request: the deployed database sits behind Supabase's session pooler,
+    which admits 15 clients in total. The API used to open a new connection for every request, another for the
+    audit record, and one per open board tab for the live stream — with the worker and scheduler holding theirs,
+    a couple of browser tabs polling was enough to hit the ceiling and turn every request into a 500. The pool
+    caps what this process can hold (`DB_POOL_MAX`, default 6) and reuses connections instead of reopening them.
+    """
+    global _POOL
+    if _POOL is None:
+        from psycopg_pool import ConnectionPool
+
+        _POOL = ConnectionPool(
+            database_url(),
+            min_size=0,
+            max_size=int(os.environ.get("DB_POOL_MAX", "6")),
+            timeout=float(os.environ.get("DB_POOL_WAIT_S", "15")),  # how long a request waits for a free connection
+            max_idle=120,  # let idle connections go, so the pooler's slots are free for the worker and scripts
+            kwargs={"row_factory": dict_row},
+            open=True,
+        )
+    return _POOL
+
+
+@contextmanager
+def pooled() -> Iterator[psycopg.Connection[dict[str, Any]]]:
+    """A pooled connection for the duration of the block; committed on a clean exit, rolled back on an exception,
+    then returned to the pool. The same shape as `with connect() as c:` so call sites read identically."""
+    with pool().connection() as conn:
+        yield conn
+
+
+def close_pool() -> None:
+    global _POOL
+    if _POOL is not None:
+        _POOL.close()
+        _POOL = None
 
 
 @contextmanager
