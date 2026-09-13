@@ -14,6 +14,13 @@ RUN useradd -r -u 10002 moveai-worker && chown -R moveai-worker /app
 # See Dockerfile.api: creates the same mount point with the same permissions so the shared named volume is seeded
 # correctly regardless of which container starts first. This container only ever mounts it read-only.
 RUN mkdir -p /srv/moveai/uploads && chmod 1777 /srv/moveai/uploads
+# The object-storage volume (moveai_ingestion.storage.LocalStorage, LOCAL_STORAGE_DIR): every fetched source's
+# bytes and every extracted image get written here. This container is the only writer, but api reads it back for
+# GET /media/{id}/file, so it gets the same treatment as the uploads mount above — created here (and in
+# Dockerfile.api) with matching world-writable permissions so whichever container's image seeds the empty named
+# volume first leaves it writable by both. Without this the volume comes up root-owned and every fetch dies with
+# "PermissionError: .../storage/sources", retries a few times, and dead-letters.
+RUN mkdir -p /app/.demo-out/storage && chmod 1777 /app/.demo-out/storage
 USER moveai-worker
 # See Dockerfile.api: `uv run` needs a writable $HOME cache that this system account does not have.
 CMD ["/app/.venv/bin/python", "-m", "moveai_ingestion.worker"]
