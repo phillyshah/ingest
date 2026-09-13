@@ -18,6 +18,10 @@ RUN useradd -r -u 10001 moveai && chown -R moveai /app
 # across the two images, and without this the mount point is created by Docker owned by root, and every upload
 # 500s on a permission-denied write.
 RUN mkdir -p /srv/moveai/uploads && chmod 1777 /srv/moveai/uploads
+# See Dockerfile.worker: the object-storage volume the worker writes fetched bytes and extracted images to.
+# GET /media/{id}/file reads it back from here, so this container needs it mounted too (read-only — this
+# container never writes to it). Created with the same permissions for the same volume-seeding-race reason.
+RUN mkdir -p /app/.demo-out/storage && chmod 1777 /app/.demo-out/storage
 USER moveai
 ARG GIT_SHA=unknown
 ARG BUILT_AT=unknown
