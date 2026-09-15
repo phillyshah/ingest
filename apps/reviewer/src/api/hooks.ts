@@ -13,6 +13,9 @@ export interface CampaignDetailT extends Card {
   budget: Record<string, unknown>; warnings: string[]; maintenance_enabled: boolean;
   /** What discovery found but could not read, grouped by publisher — the next thing to accept on the Sources page. */
   pending_publishers?: { domain: string; publisher: string | null; review_state: string | null; evidence_state: string | null; count: number; reason: string; pages: string[] }[];
+  /** Per page actually read: what came out of it, and when nothing did, why. */
+  source_outcomes?: { source_version_id: string; url: string; publisher: string | null; state: string; claims: number; variants: number; via: string | null; title: string | null; outcome: string }[];
+  conditions?: { code: string; name: string }[];
 }
 
 export const useCampaigns = (params = "") => useQuery({ queryKey: ["campaigns", params], queryFn: () => get<{ items: Card[]; total: number; server_time: string }>(`/ingestion-campaigns${params}`), refetchInterval: 10_000 });
@@ -48,10 +51,12 @@ export interface SourcePolicy {
   domain: string; publisher: string; license_id: string; policy_reference: string; scope_note: string | null;
   evidence_state: "uncaptured" | "captured" | "drifted" | "unreachable";
   review_state: "pending" | "signed" | "rejected"; review_note: string | null; reviewed_at: string | null;
-  effective: boolean; blocked_by: string | null; terms_excerpt: string | null; terms_fetched_at: string | null;
+  effective: boolean; blocked_by: string | null; status: PolicyStatus;
+  terms_excerpt: string | null; terms_fetched_at: string | null; terms_error: string | null; terms_attempted_at: string | null;
   permissions: Record<string, "allowed" | "denied" | "unknown">;
   license: { id: string; name: string; url: string | null; summary: string | null; notes: string[] };
 }
+export type PolicyStatus = "readable" | "awaiting_acceptance" | "terms_unread" | "accepted_but_unusable" | "rejected";
 /** A source as the Files tab lists it: what it is, where it came from, and how far it got. */
 export interface SourceRow {
   id: string; canonical_url: string; publisher: string | null; title: string | null; source_type: string;
@@ -64,7 +69,19 @@ export const useSources = (limit = 200) =>
   useQuery({ queryKey: ["sources", limit], queryFn: () => get<{ items: SourceRow[]; total: number }>(`/sources?limit=${limit}`), refetchInterval: 10_000 });
 
 export const useSourcePolicies = () =>
-  useQuery({ queryKey: ["source-policies"], queryFn: () => get<{ items: SourcePolicy[]; readable: number; total: number }>("/source-policies") });
+  useQuery({
+    queryKey: ["source-policies"],
+    queryFn: () => get<{ items: SourcePolicy[]; readable: number; total: number; by_status: Partial<Record<PolicyStatus, number>> }>("/source-policies"),
+  });
+
+/** Read a publisher's terms page again, now, from the server. Not a decision: it only fetches the text. */
+export function useCaptureTerms() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (domain: string) => post<SourcePolicy>(`/source-policies/${domain}/capture`, {}),
+    onSettled: () => void qc.invalidateQueries({ queryKey: ["source-policies"] }),
+  });
+}
 
 export function useSourcePolicyDecision() {
   const qc = useQueryClient();

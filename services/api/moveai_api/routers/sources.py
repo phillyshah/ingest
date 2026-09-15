@@ -169,7 +169,7 @@ def list_sources(
                   (select count(*) from ingestion_job j where j.source_version_id=l.id and j.state in ('queued','running'))::int as jobs_active,
                   (select display_name from app_user u where u.id=s.owner_user_id) as uploaded_by
              from source s left join latest l on l.source_id=s.id
-            where (%s::text is null or allowlist_state=%s) order by s.created_at desc limit %s""",
+            where (%s::text is null or allowlist_state=%s) order by s.created_at desc, s.id limit %s""",
         (state, state, limit + 1),
     ).fetchall()
     return paginate(clean_all(rows), limit)

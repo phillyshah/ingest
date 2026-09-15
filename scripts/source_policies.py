@@ -23,99 +23,36 @@ being readable without anyone having to notice.
 from __future__ import annotations
 
 import argparse
-import hashlib
-import re
 import sys
-from datetime import UTC, datetime
 from typing import Any
 
 import httpx
 import psycopg
-from moveai_db import J, connect
-from moveai_ingestion.parse import parse_html
-from moveai_ingestion.source_policies import PolicyError, load_publishers, reject, sign, sync
+from moveai_db import connect
+from moveai_ingestion.source_policies import (
+    CAPTURE_HEADERS as HTTP_HEADERS,
+)
+from moveai_ingestion.source_policies import (
+    CAPTURE_TIMEOUT_S,
+    PolicyError,
+    capture_terms,
+    load_publishers,
+    record_capture,
+    reject,
+    sign,
+    sync,
+)
 from psycopg.rows import dict_row
 from selectolax.parser import HTMLParser
-
-CAPTURE_TIMEOUT_S = 30
-MAX_TERMS_BYTES = 4 * 1024 * 1024
-QUOTE_CHARS = 600
-
-# Identify honestly and send the headers any well-formed HTTP client sends. Several publishers returned 403 to a
-# bare User-Agent with no Accept headers. This is not a disguise: the agent string still says what this is and why
-# it is here. If a publisher still refuses, that is their answer and it gets recorded as one — we do not pretend to
-# be a browser to get around it.
-HTTP_HEADERS = {
-    "User-Agent": "MoveAI-Ingest/0.1 (licence terms verification; allowlist only)",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-GB,en;q=0.9",
-}
 
 # Words that appear in a link to a terms, licence or copyright page. Used only to *suggest* candidates to a human;
 # nothing here picks a policy_reference on its own.
 TERMS_HINTS = ("terms", "copyright", "licence", "license", "usage", "reuse", "rights", "disclaimer", "policies", "policy")
 
 
-def terms_text(content: bytes) -> str:
-    """The licence terms as text, normalised so that presentation changes are not read as licence changes.
-
-    Hashing the raw bytes would flag a new cookie banner or a rotated analytics tag as a change of terms, and a
-    re-verification prompt that cries wolf is one nobody reads. Hashing extracted, whitespace-normalised text
-    means the hash moves when the words move.
-    """
-    doc = parse_html(content)
-    return re.sub(r"\s+", " ", doc.text()).strip()
-
-
 def capture_one(client: httpx.Client, pol: dict[str, Any]) -> dict[str, Any]:
-    """Fetch one publisher's terms page. Returns the evidence fields to store; never raises for a bad site."""
-    try:
-        resp = client.get(pol["policy_reference"])
-    except httpx.HTTPError as e:
-        return {"state": "unreachable", "evidence": {"error": f"{type(e).__name__}: {e}", "attempted_at": datetime.now(UTC).isoformat()}}
-    if resp.status_code != 200:
-        # Name the status. The first real run reported these as "0 chars", which reads like an empty page and sent
-        # the diagnosis straight past the actual cause — a 403 (the site refuses unknown clients) and a 404 (the
-        # URL in the policy file is simply wrong) need completely different fixes, and neither is "0 chars".
-        meaning = {
-            403: "the site refused this client",
-            404: "no such page — the policy_reference URL is wrong",
-            429: "rate limited; try again later",
-        }.get(resp.status_code, "")
-        return {
-            "state": "unreachable",
-            "evidence": {
-                "http_status": resp.status_code,
-                "final_url": str(resp.url),
-                "error": f"HTTP {resp.status_code}" + (f" — {meaning}" if meaning else ""),
-                "attempted_at": datetime.now(UTC).isoformat(),
-            },
-        }
-    content = resp.content[:MAX_TERMS_BYTES]
-    text = terms_text(content)
-    if len(text) < 200:
-        # A terms page that extracts to nothing is almost always a JavaScript shell or a consent interstitial.
-        # Signing that would be signing a blank page.
-        return {
-            "state": "unreachable",
-            "evidence": {
-                "http_status": resp.status_code,
-                "final_url": str(resp.url),
-                "error": f"only {len(text)} characters of text; the page is probably rendered client-side",
-                "attempted_at": datetime.now(UTC).isoformat(),
-            },
-        }
-    return {
-        "state": "captured",
-        "evidence": {
-            "sha256": hashlib.sha256(text.encode()).hexdigest(),
-            "fetched_at": datetime.now(UTC).isoformat(),
-            "http_status": resp.status_code,
-            "final_url": str(resp.url),
-            "text_chars": len(text),
-            "quoted_span": text[:QUOTE_CHARS],
-        },
-    }
+    """Kept as a name the tests use; the work lives in moveai_ingestion.source_policies."""
+    return capture_terms(pol["policy_reference"], client)
 
 
 def cmd_find_terms(conn: psycopg.Connection, args: argparse.Namespace) -> int:
@@ -205,19 +142,11 @@ def cmd_capture(conn: psycopg.Connection, args: argparse.Namespace) -> int:
     ) as client:
         for pol in rows:
             out = capture_one(client, pol)
-            state = out["state"]
-            new_sha = out["evidence"].get("sha256")
-            # Drift is not just "different from last time" — it is "different from what someone signed". That is
-            # the comparison that matters, and the one that must be loud.
-            if state == "captured" and pol["signed_evidence_sha256"] and new_sha != pol["signed_evidence_sha256"]:
-                state = "drifted"
+            row = record_capture(conn, pol, out)
+            if row["evidence_state"] == "drifted":
                 drifted += 1
-            conn.execute(
-                "update source_policy set evidence=%s, evidence_state=%s where id=%s",
-                (J(out["evidence"]), state, pol["id"]),
-            )
             detail = out["evidence"].get("error") or f"{out['evidence'].get('text_chars', 0)} chars"
-            print(f"  {state:<11} {pol['domain']:<28} {detail}")
+            print(f"  {row['evidence_state']:<11} {pol['domain']:<28} {detail}")
 
     conn.commit()
     if drifted:

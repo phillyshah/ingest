@@ -15,7 +15,9 @@ database, and it requires a signature over the exact terms text on record. Code 
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -269,6 +271,131 @@ def materialise_rights_grant(conn: psycopg.Connection, source_version_id: Any, u
             J(evidence),
         ),
     ).fetchone()
+
+
+# ------------------------------------------------------------------ reading a publisher's terms
+# Lives here rather than in scripts/source_policies.py so the reviewer app can offer "read their terms now" as a
+# button. Nothing about the rule changes: this only fetches and records the text; a person still has to read it
+# and accept it before the publisher becomes readable.
+CAPTURE_TIMEOUT_S = 30
+MAX_TERMS_BYTES = 4 * 1024 * 1024
+QUOTE_CHARS = 600
+MIN_TERMS_CHARS = 200
+
+# Identify honestly and send the headers any well-formed HTTP client sends. Several publishers returned 403 to a
+# bare User-Agent with no Accept headers. This is not a disguise: the agent string still says what this is and why
+# it is here. If a publisher still refuses, that is their answer and it gets recorded as one — we do not pretend to
+# be a browser to get around it.
+CAPTURE_HEADERS = {
+    "User-Agent": "MoveAI-Ingest/0.1 (licence terms verification; allowlist only)",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-GB,en;q=0.9",
+}
+
+_HTTP_MEANING = {
+    403: "the site refuses automated clients. A different terms URL may work; otherwise this publisher cannot be verified this way.",
+    404: "no such page — the terms URL on record is wrong and needs correcting in the publisher list.",
+    429: "rate limited; try again in a few minutes.",
+    503: "the site is temporarily unavailable; try again shortly.",
+}
+
+
+def terms_text(content: bytes) -> str:
+    """The licence terms as text, normalised so that presentation changes are not read as licence changes.
+
+    Hashing the raw bytes would flag a new cookie banner or a rotated analytics tag as a change of terms, and a
+    re-verification prompt that cries wolf is one nobody reads. Hashing extracted, whitespace-normalised text
+    means the hash moves when the words move.
+    """
+    import re
+
+    from .parse import parse_html
+
+    return re.sub(r"\s+", " ", parse_html(content).text()).strip()
+
+
+def capture_terms(policy_reference: str, client: Any = None, timeout: float = CAPTURE_TIMEOUT_S) -> dict[str, Any]:
+    """Fetch one publisher's terms page. Returns {state, evidence}; never raises for a bad site.
+
+    `timeout` is shorter when this runs inside a web request than in the batch script: a request-served capture
+    is holding one of the API's few pooled database connections while it waits on someone else's server.
+    """
+    import httpx
+
+    own = client is None
+    if own:
+        client = httpx.Client(follow_redirects=True, timeout=timeout, headers=CAPTURE_HEADERS)
+    try:
+        try:
+            resp = client.get(policy_reference)
+        except httpx.HTTPError as e:
+            return {
+                "state": "unreachable",
+                "evidence": {"error": f"{type(e).__name__}: {e}", "attempted_at": datetime.now(UTC).isoformat()},
+            }
+        if resp.status_code != 200:
+            # Name the status. The first real run reported these as "0 chars", which reads like an empty page and
+            # sent the diagnosis straight past the actual cause — a 403 (the site refuses unknown clients) and a
+            # 404 (the URL is simply wrong) need completely different fixes, and neither is "0 chars".
+            meaning = _HTTP_MEANING.get(resp.status_code, "")
+            return {
+                "state": "unreachable",
+                "evidence": {
+                    "http_status": resp.status_code,
+                    "final_url": str(resp.url),
+                    "error": f"HTTP {resp.status_code}" + (f" — {meaning}" if meaning else ""),
+                    "attempted_at": datetime.now(UTC).isoformat(),
+                },
+            }
+        text = terms_text(resp.content[:MAX_TERMS_BYTES])
+        if len(text) < MIN_TERMS_CHARS:
+            # A terms page that extracts to nothing is almost always a JavaScript shell or a consent interstitial.
+            # Signing that would be signing a blank page.
+            return {
+                "state": "unreachable",
+                "evidence": {
+                    "http_status": resp.status_code,
+                    "final_url": str(resp.url),
+                    "error": f"only {len(text)} characters of text; the page is probably rendered client-side",
+                    "attempted_at": datetime.now(UTC).isoformat(),
+                },
+            }
+        return {
+            "state": "captured",
+            "evidence": {
+                "sha256": hashlib.sha256(text.encode()).hexdigest(),
+                "fetched_at": datetime.now(UTC).isoformat(),
+                "http_status": resp.status_code,
+                "final_url": str(resp.url),
+                "text_chars": len(text),
+                "quoted_span": text[:QUOTE_CHARS],
+            },
+        }
+    finally:
+        if own:
+            client.close()
+
+
+def record_capture(conn: psycopg.Connection, pol: dict[str, Any], out: dict[str, Any]) -> dict[str, Any]:
+    """Store a capture result against a policy, marking drift when the text no longer matches what was signed."""
+    state = out["state"]
+    new_sha = out["evidence"].get("sha256")
+    # Drift is not just "different from last time" — it is "different from what someone signed". That is the
+    # comparison that matters, and the one that must be loud.
+    if state == "captured" and pol["signed_evidence_sha256"] and new_sha != pol["signed_evidence_sha256"]:
+        state = "drifted"
+    return conn.execute(
+        "update source_policy set evidence=%s, evidence_state=%s where id=%s returning *",
+        (J(out["evidence"]), state, pol["id"]),
+    ).fetchone()
+
+
+def capture(conn: psycopg.Connection, domain: str, client: Any = None, timeout: float = CAPTURE_TIMEOUT_S) -> dict[str, Any]:
+    """Read one publisher's terms page now and record what came back."""
+    pol = conn.execute("select * from source_policy where domain=%s", (domain.lower(),)).fetchone()
+    if pol is None:
+        raise PolicyError(f"no policy for domain {domain!r}")
+    return record_capture(conn, pol, capture_terms(pol["policy_reference"], client, timeout))
 
 
 def sign(conn: psycopg.Connection, domain: str, reviewer_id: Any, note: str | None = None) -> dict[str, Any]:

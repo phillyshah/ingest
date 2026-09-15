@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useConditions, useExercise, useExercises } from "../api/hooks";
 import { useAuth, hasRole } from "../auth";
 import { Badge, Err, KV, fmt, stateKind } from "../components/ui";
@@ -7,7 +7,10 @@ import { Badge, Err, KV, fmt, stateKind } from "../components/ui";
 export default function Exercises() {
   const { entityId } = useParams();
   const { session } = useAuth();
-  const [f, setF] = useState({ q: "", region: "", condition: "", assistance: "", phase: "", equipment: "", setting: "", review_status: "", include_unpublished: hasRole(session, "pt", "clinical_lead", "source_admin", "rights_reviewer", "auditor") });
+  // A link can arrive pre-filtered (a campaign pointing at "the exercises this condition already has"), so the
+  // filters start from the query string rather than always from empty.
+  const [sp] = useSearchParams();
+  const [f, setF] = useState({ q: sp.get("q") ?? "", region: sp.get("region") ?? "", condition: sp.get("condition") ?? "", assistance: "", phase: sp.get("phase") ?? "", equipment: "", setting: "", review_status: "", include_unpublished: hasRole(session, "pt", "clinical_lead", "source_admin", "rights_reviewer", "auditor") });
   const params = "?" + Object.entries(f).filter(([, v]) => v !== "" && v !== false).map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`).join("&");
   const q = useExercises(params);
   const conds = useConditions();
